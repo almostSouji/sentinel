@@ -1,0 +1,29 @@
+# Packages
+node_modules/
+
+# Log files
+logs/
+*.log
+npm-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+
+# Env
+.env
+config.yml
+
+# Dist
+dist/
+typings/
+docs/
+
+# Miscellaneous
+.tmp/
+coverage/
+data/
+
+# Testing
+test*.*
