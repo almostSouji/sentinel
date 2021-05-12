@@ -60,7 +60,15 @@ async function analyze(message: Message | PartialMessage, isEdit = false) {
 			return;
 		}
 
-		const { webhook_id, webhook_token, severe_attributes, high_threshold, high_amount, monitor_channels } = config;
+		const {
+			webhook_id,
+			webhook_token,
+			severe_attributes,
+			high_threshold,
+			high_amount,
+			monitor_channels,
+			notifications,
+		} = config;
 		const channels = monitor_channels ?? [];
 
 		if (!channels.includes(message.channel.id)) return;
@@ -96,11 +104,11 @@ async function analyze(message: Message | PartialMessage, isEdit = false) {
 		}
 
 		const severe = tags.filter((tag) => {
-			return severe_attributes.some((attr) => tag.key === attr.key && tag.score.value > (attr.threshold ?? 0));
+			return severe_attributes.some((attr) => tag.key === attr.key && tag.score.value > (attr.threshold ?? 999));
 		});
 
-		const high = tags.filter((tag) => tag.score.value > (high_threshold ?? 0));
-		const severityLevel = severe.length ? 3 : high.length > (high_amount ?? 0) ? 2 : 1;
+		const high = tags.filter((tag) => tag.score.value > (high_threshold ?? 999));
+		const severityLevel = severe.length ? 3 : high.length > (high_amount ?? 999) ? 2 : 1;
 		const color = colors[severityLevel];
 
 		const embed = new MessageEmbed()
@@ -126,11 +134,18 @@ async function analyze(message: Message | PartialMessage, isEdit = false) {
 			)
 			.setAuthor(message.author?.tag ?? 'Anonymous', message.author?.displayAvatarURL());
 
-		void hook.send({
+		const roles = notifications?.roles ?? [];
+		const users = notifications?.users ?? [];
+		const level = notifications?.level ?? 999;
+
+		const notificationParts = [...roles.map((role) => `<@&${role}>`), ...users.map((user) => `<@${user}>`)];
+
+		void hook.send(severityLevel >= level ? `${notifications?.prefix ?? ''}${notificationParts.join(', ')}` : null, {
 			avatarURL: client.user?.displayAvatarURL(),
 			username: client.user?.username,
 			allowedMentions: {
-				parse: [],
+				users,
+				roles,
 			},
 			embeds: [embed],
 		});

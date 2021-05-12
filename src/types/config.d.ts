@@ -14,9 +14,17 @@ export interface ConfigGuildData {
 	high_threshold: number | null;
 	high_amount: number | null;
 	monitor_channels: string[] | null;
+	notifications: NotificationData | null;
 }
 
 export interface AttributeData {
 	key: Attribute;
 	threshold: number | null;
+}
+
+export interface NotificationData {
+	roles: string[] | null;
+	users: string[] | null;
+	level: number | null;
+	prefix: string | null;
 }
