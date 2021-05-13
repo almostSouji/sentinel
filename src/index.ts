@@ -7,7 +7,7 @@ import { readFileSync } from 'fs';
 import YAML from 'yaml';
 import { Config } from './types/config';
 import { analyzeText } from './perspective';
-import { PerspectiveAttribute, Score, Scores } from './types/perspective';
+import { PerspectiveAttribute, Scores } from './types/perspective';
 
 const configs = YAML.parse(readFileSync('./config.yml', 'utf8')) as Config;
 
@@ -16,10 +16,6 @@ export interface ProcessEnv {
 	PERSPECTIVE_TOKE: string;
 	DISCORD_WEBHOOK_ID: string;
 	DISCORD_WEBHOOK_TOKEN: string;
-}
-
-function colorCode(num: number) {
-	return num > 0.9 ? 31 : num > 0.8 ? 33 : num > 0.7 ? 36 : 32;
 }
 
 const colors = {
@@ -33,10 +29,6 @@ const client = new Client({
 		intents: ['GUILD_MESSAGES', 'GUILDS'],
 	},
 });
-
-function format(key: PerspectiveAttribute, score: Score): string {
-	return `\x1b[${colorCode(score.value)}m${key}\x1b[0m`;
-}
 
 async function analyze(message: Message | PartialMessage, isEdit = false) {
 	try {
@@ -66,7 +58,6 @@ async function analyze(message: Message | PartialMessage, isEdit = false) {
 		if (!channels.includes(message.channel.id)) return;
 
 		const res = await analyzeText(message.content, monitor_attributes?.map((a) => a.key) ?? []);
-		const logTags = [];
 		const tags = [];
 		for (const [k, s] of Object.entries(res.attributeScores)) {
 			const attribute = k as PerspectiveAttribute;
@@ -76,16 +67,9 @@ async function analyze(message: Message | PartialMessage, isEdit = false) {
 			);
 
 			if (trip) {
-				logTags.push(format(attribute, scores.summaryScore));
 				tags.push({ key: attribute, score: scores.summaryScore });
 			}
 		}
-		logger.log(
-			'rating',
-			`${isEdit ? '[edit] ' : ''}${message.author?.tag ?? '[Anon Author]'} #${message.channel.name}${
-				logTags.length ? ` (${logTags.join(', ')})` : ''
-			}: ${message.content}`,
-		);
 
 		if (!webhook_id || !webhook_token) return;
 
