@@ -1,5 +1,22 @@
 export type ScoreType = 'PROBABILIY';
 export type LanguageShort = 'en' | 'es' | 'fr' | 'de' | 'pt' | 'it' | 'ru';
+export type PerspectiveAttribute =
+	| 'TOXICITY' // en, fr, de, pt, it, ru
+	| 'SEVERE_TOXICITY' // en, fr, es, de, it, pt, ru
+	| 'IDENTITY_ATTACK' // de, it, pt, ru, en
+	| 'INSULT' // de, it, pt, ru, en
+	| 'PROFANITY' // de, it, pt, ru, en
+	| 'THREAT' // de, it, pt, ru, en
+	| 'SEXUALLY_EXPLICIT' // EXPERIMENTAL en
+	| 'FLIRTATION' // EXPERIMENTAL en
+	| 'ATTACK_ON_AUTHOR' // NYT en
+	| 'ATTACK_ON_COMMENTER' // NYT en
+	| 'INCOHERENT' // NYT en
+	| 'INFLAMMATORY' // NYT en
+	| 'LIKELY_TO_REJECT' // NYT en
+	| 'OBSCENE' // NYT en
+	| 'SPAM' // NYT en
+	| 'UNSUBSTANTIAL'; // NYT en
 
 export interface Score {
 	value: number;

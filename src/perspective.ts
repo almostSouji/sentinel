@@ -1,21 +1,16 @@
 import { google } from 'googleapis';
-import { PerspectiveResponseData, PerspectiveResponse } from './types/perspective';
+import { PerspectiveResponseData, PerspectiveResponse, PerspectiveAttribute } from './types/perspective';
 
-export async function analyzeText(text: string): Promise<PerspectiveResponseData> {
+export async function analyzeText(text: string, attributes: PerspectiveAttribute[]): Promise<PerspectiveResponseData> {
 	const client = await google.discoverAPI('https://commentanalyzer.googleapis.com/$discovery/rest?version=v1alpha1');
+
+	const requestedAttributes = Object.fromEntries(attributes.map((a) => [a, {}]));
+
 	const analyzeRequest = {
 		comment: {
 			text,
 		},
-		requestedAttributes: {
-			TOXICITY: {},
-			SEVERE_TOXICITY: {},
-			THREAT: {},
-			IDENTITY_ATTACK: {},
-			SEXUALLY_EXPLICIT: {},
-			INSULT: {},
-			FLIRTATION: {},
-		},
+		requestedAttributes,
 		doNotStore: true,
 		languages: ['en'],
 	};

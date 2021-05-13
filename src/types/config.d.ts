@@ -1,4 +1,4 @@
-import { Attribute } from '..';
+import { PerspectiveAttribute } from './perspective';
 
 // Config:
 
@@ -13,12 +13,16 @@ export interface ConfigGuildData {
 	severe_attributes: AttributeData[] | null;
 	high_threshold: number | null;
 	high_amount: number | null;
+	log_threshold: number | null;
+	log_amount: number | null;
 	monitor_channels: string[] | null;
 	notifications: NotificationData | null;
+	monitor_attributes: AttributeData[] | null;
+	attribute_threshold: number | null;
 }
 
 export interface AttributeData {
-	key: Attribute;
+	key: PerspectiveAttribute;
 	threshold: number | null;
 }
 

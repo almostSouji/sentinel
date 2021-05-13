@@ -7,7 +7,7 @@ import { readFileSync } from 'fs';
 import YAML from 'yaml';
 import { Config } from './types/config';
 import { analyzeText } from './perspective';
-import { Score, Scores } from './types/perspective';
+import { PerspectiveAttribute, Score, Scores } from './types/perspective';
 
 const configs = YAML.parse(readFileSync('./config.yml', 'utf8')) as Config;
 
@@ -28,25 +28,13 @@ const colors = {
 	3: COLOR_SEVERE,
 } as const;
 
-const thresholds = {
-	INSULT: 0.6,
-	THREAT: 0.6,
-	IDENTITY_ATTACK: 0.6,
-	TOXICITY: 0.6,
-	SEVERE_TOXICITY: 0.6,
-	SEXUALLY_EXPLICIT: 0.6,
-	FLIRTATION: 0.6,
-} as const;
-
-export type Attribute = keyof typeof thresholds;
-
 const client = new Client({
 	ws: {
 		intents: ['GUILD_MESSAGES', 'GUILDS'],
 	},
 });
 
-function format(key: Attribute, score: Score): string {
+function format(key: PerspectiveAttribute, score: Score): string {
 	return `\x1b[${colorCode(score.value)}m${key}\x1b[0m`;
 }
 
@@ -64,23 +52,30 @@ async function analyze(message: Message | PartialMessage, isEdit = false) {
 			webhook_id,
 			webhook_token,
 			severe_attributes,
+			monitor_attributes,
 			high_threshold,
 			high_amount,
 			monitor_channels,
 			notifications,
+			attribute_threshold,
+			log_threshold,
+			log_amount,
 		} = config;
 		const channels = monitor_channels ?? [];
 
 		if (!channels.includes(message.channel.id)) return;
 
-		const res = await analyzeText(message.content);
+		const res = await analyzeText(message.content, monitor_attributes?.map((a) => a.key) ?? []);
 		const logTags = [];
 		const tags = [];
 		for (const [k, s] of Object.entries(res.attributeScores)) {
-			const attribute = k as Attribute;
+			const attribute = k as PerspectiveAttribute;
 			const scores = s as Scores;
+			const trip = monitor_attributes?.some(
+				(a) => a.key === attribute && scores.summaryScore.value > (a.threshold ?? attribute_threshold ?? 0),
+			);
 
-			if (scores.summaryScore.value > thresholds[attribute]) {
+			if (trip) {
 				logTags.push(format(attribute, scores.summaryScore));
 				tags.push({ key: attribute, score: scores.summaryScore });
 			}
@@ -96,7 +91,8 @@ async function analyze(message: Message | PartialMessage, isEdit = false) {
 
 		const hook = new WebhookClient(webhook_id, webhook_token);
 
-		if (!tags.some((tag) => tag.score.value > 0.9)) return;
+		const considerable = tags.filter((tag) => tag.score.value >= (log_threshold ?? 0));
+		if (considerable.length < (log_amount ?? 0)) return;
 
 		if (!severe_attributes) {
 			logger.error(`Missing severe tags data for ${message.guild?.id ?? 'Direct Message'}`);
@@ -104,15 +100,17 @@ async function analyze(message: Message | PartialMessage, isEdit = false) {
 		}
 
 		const severe = tags.filter((tag) => {
-			return severe_attributes.some((attr) => tag.key === attr.key && tag.score.value > (attr.threshold ?? 999));
+			return severe_attributes.some(
+				(attr) => tag.key === attr.key && tag.score.value > (attr.threshold ?? attribute_threshold ?? 0),
+			);
 		});
 
-		const high = tags.filter((tag) => tag.score.value > (high_threshold ?? 999));
-		const severityLevel = severe.length ? 3 : high.length > (high_amount ?? 999) ? 2 : 1;
+		const high = tags.filter((tag) => tag.score.value > (high_threshold ?? 0));
+		const severityLevel = severe.length ? 3 : high.length >= (high_amount ?? 0) ? 2 : 1;
 		const color = colors[severityLevel];
 
 		const embed = new MessageEmbed()
-			.setDescription(truncate(message.content, 1_990))
+			.setDescription(truncate(message.content.replace(/\n+/g, '\n').replace(/\s+/g, ' '), 1_990))
 			.setColor(color)
 			.addField(
 				'Attribute Flags',
@@ -136,7 +134,7 @@ async function analyze(message: Message | PartialMessage, isEdit = false) {
 
 		const roles = notifications?.roles ?? [];
 		const users = notifications?.users ?? [];
-		const level = notifications?.level ?? 999;
+		const level = notifications?.level ?? 0;
 
 		const notificationParts = [...roles.map((role) => `<@&${role}>`), ...users.map((user) => `<@${user}>`)];
 
