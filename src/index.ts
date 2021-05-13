@@ -11,6 +11,19 @@ import { PerspectiveAttribute, Scores } from './types/perspective';
 
 const configs = YAML.parse(readFileSync('./config.yml', 'utf8')) as Config;
 
+let start = Date.now();
+const messages: Map<string, number> = new Map();
+
+function increment(guild: string) {
+	const current = messages.get(guild) ?? 0;
+	messages.set(guild, current + 1);
+}
+
+setInterval(() => {
+	messages.clear();
+	start = Date.now();
+}, 60 * 60 * 1000);
+
 export interface ProcessEnv {
 	DISCORD_TOKEN: string;
 	PERSPECTIVE_TOKE: string;
@@ -58,6 +71,7 @@ async function analyze(message: Message | PartialMessage, isEdit = false) {
 
 		if (!channels.includes(message.channel.id)) return;
 
+		increment(message.guild?.id ?? 'dm');
 		const res = await analyzeText(message.content, monitor_attributes?.map((a) => a.key) ?? []);
 		const tags = [];
 		for (const [k, s] of Object.entries(res.attributeScores)) {
@@ -144,6 +158,25 @@ client.on('messageUpdate', (oldMessage, newMessage) => {
 	void analyze(newMessage, true);
 });
 
-client.on('ready', () => console.log(`\x1b[32m${client.user!.tag} is watching!\x1b[0m`));
+function formatLoad(load: number) {
+	const code = load > 60 ? 31 : load > 30 ? 33 : 32;
+	return `\x1b[${code}m${load.toFixed(2)}\x1b[0m`;
+}
+
+client.on('ready', () => {
+	logger.log('info', `\x1b[32m${client.user!.tag} is watching!\x1b[0m`);
+	setInterval(() => {
+		let total = 0;
+		for (const [k, v] of messages.entries()) {
+			const rate = v / ((Date.now() - start) / (1000 * 60));
+			total += rate;
+			logger.log(
+				'info',
+				`Guild ${client.guilds.resolve(k)?.name ?? 'unknown'}: checking ${formatLoad(rate)} messages/minute.`,
+			);
+		}
+		logger.log('info', `Total load: ${formatLoad(total)} messages/minute`);
+	}, 5 * 60 * 1000);
+});
 
 void client.login(process.env.DISCORD_TOKEN);

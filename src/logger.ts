@@ -5,7 +5,8 @@ const loggerLevels = {
 		error: 0,
 		debug: 1,
 		warn: 2,
-		rating: 3,
+		info: 3,
+		rating: 4,
 	},
 	colors: {
 		error: 'red',
