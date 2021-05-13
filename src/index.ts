@@ -38,9 +38,7 @@ const colors = {
 } as const;
 
 const client = new Client({
-	ws: {
-		intents: ['GUILD_MESSAGES', 'GUILDS'],
-	},
+	intents: ['GUILD_MESSAGES', 'GUILDS'],
 });
 
 async function analyze(message: Message | PartialMessage, isEdit = false) {
