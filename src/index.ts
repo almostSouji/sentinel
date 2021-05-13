@@ -102,7 +102,7 @@ async function analyze(message: Message | PartialMessage, isEdit = false) {
 		});
 
 		const high = tags.filter((tag) => tag.score.value > (high_threshold ?? 0));
-		const severityLevel = severe.length >= (severe_amount ?? 0) ? 3 : high.length >= (high_amount ?? 0) ? 2 : 1;
+		const severityLevel = severe.length >= (severe_amount ?? 1) ? 3 : high.length >= (high_amount ?? 1) ? 2 : 1;
 		const color = colors[severityLevel];
 
 		const embed = new MessageEmbed()
