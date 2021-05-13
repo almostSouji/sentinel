@@ -18,7 +18,6 @@ config.yml
 # Dist
 dist/
 typings/
-docs/
 
 # Miscellaneous
 .tmp/
