@@ -2,10 +2,8 @@
 guilds: # <guild[]>
   # guild id
   - id: # <string>
-    # webhook token to use for logging
-    webhook_token: # <string>
-    # webhook id to use for logging
-    webhook_id: # <string>
+    # channel to log in
+    log_channel: # <string>
     # threshold to use as fallback
     attribute_threshold: # [number] # defaults on the more specific flag attributes
     # list of attributes that should be considered severe (level 3)

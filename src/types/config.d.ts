@@ -8,8 +8,7 @@ export interface Config {
 
 export interface ConfigGuildData {
 	id: string | null;
-	webhook_token: string | null;
-	webhook_id: string | null;
+	log_channel: string | null;
 	severe_attributes: AttributeData[] | null;
 	high_threshold: number | null;
 	high_amount: number | null;

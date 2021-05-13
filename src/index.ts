@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
-import { Client, Message, MessageEmbed, PartialMessage, WebhookClient } from 'discord.js';
+import { Client, Message, MessageEmbed, PartialMessage, Permissions } from 'discord.js';
 import { logger } from './logger';
 import { truncate } from './util';
 import { COLOR_ALERT, COLOR_MILD, COLOR_SEVERE } from './constants';
@@ -45,17 +45,16 @@ const client = new Client({
 
 async function analyze(message: Message | PartialMessage, isEdit = false) {
 	try {
-		if (message.channel.type === 'dm' || !message.content) return;
+		if (message.channel.type === 'dm' || !message.content || !message.guild) return;
 
 		const config = configs.guilds.find((e) => e.id === message.guild?.id);
 		if (!config) {
-			logger.error(`No configuration found for ${message.guild?.id ?? 'Direct Message'}!`);
+			logger.error(`No configuration found for ${message.guild.id}!`);
 			return;
 		}
 
 		const {
-			webhook_id,
-			webhook_token,
+			log_channel,
 			severe_attributes,
 			monitor_attributes,
 			high_threshold,
@@ -69,9 +68,9 @@ async function analyze(message: Message | PartialMessage, isEdit = false) {
 		} = config;
 		const channels = monitor_channels ?? [];
 
-		if (!channels.includes(message.channel.id)) return;
+		if (!channels.includes(message.channel.id) || !log_channel) return;
 
-		increment(message.guild?.id ?? 'dm');
+		increment(message.guild.id);
 		const res = await analyzeText(message.content, monitor_attributes?.map((a) => a.key) ?? []);
 		const tags = [];
 		for (const [k, s] of Object.entries(res.attributeScores)) {
@@ -86,9 +85,17 @@ async function analyze(message: Message | PartialMessage, isEdit = false) {
 			}
 		}
 
-		if (!webhook_id || !webhook_token) return;
-
-		const hook = new WebhookClient(webhook_id, webhook_token);
+		const channel = message.guild.channels.resolve(log_channel);
+		const hasPerms =
+			channel
+				?.permissionsFor(client.user!)
+				?.has([
+					Permissions.FLAGS.VIEW_CHANNEL,
+					Permissions.FLAGS.SEND_MESSAGES,
+					Permissions.FLAGS.EMBED_LINKS,
+					Permissions.FLAGS.READ_MESSAGE_HISTORY,
+				]) ?? false;
+		if (!channel || !channel.isText() || !hasPerms) return;
 
 		const considerable = tags.filter((tag) => tag.score.value >= (log_threshold ?? 0));
 		if (considerable.length < (log_amount ?? 0)) return;
@@ -134,14 +141,12 @@ async function analyze(message: Message | PartialMessage, isEdit = false) {
 
 		const notificationParts = [...roles.map((role) => `<@&${role}>`), ...users.map((user) => `<@${user}>`)];
 
-		void hook.send(severityLevel >= level ? `${notifications?.prefix ?? ''}${notificationParts.join(', ')}` : null, {
-			avatarURL: client.user?.displayAvatarURL(),
-			username: client.user?.username,
+		void channel.send(severityLevel >= level ? `${notifications?.prefix ?? ''}${notificationParts.join(', ')}` : null, {
 			allowedMentions: {
 				users,
 				roles,
 			},
-			embeds: [embed],
+			embed,
 		});
 	} catch (err) {
 		logger.error(err);
