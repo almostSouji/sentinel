@@ -52,6 +52,7 @@ async function analyze(message: Message | PartialMessage, isEdit = false) {
 			attribute_threshold,
 			log_threshold,
 			log_amount,
+			severe_amount,
 		} = config;
 		const channels = monitor_channels ?? [];
 
@@ -78,19 +79,16 @@ async function analyze(message: Message | PartialMessage, isEdit = false) {
 		const considerable = tags.filter((tag) => tag.score.value >= (log_threshold ?? 0));
 		if (considerable.length < (log_amount ?? 0)) return;
 
-		if (!severe_attributes) {
-			logger.error(`Missing severe tags data for ${message.guild?.id ?? 'Direct Message'}`);
-			return;
-		}
+		const severeConfig = severe_attributes ?? [];
 
 		const severe = tags.filter((tag) => {
-			return severe_attributes.some(
+			return severeConfig.some(
 				(attr) => tag.key === attr.key && tag.score.value > (attr.threshold ?? attribute_threshold ?? 0),
 			);
 		});
 
 		const high = tags.filter((tag) => tag.score.value > (high_threshold ?? 0));
-		const severityLevel = severe.length ? 3 : high.length >= (high_amount ?? 0) ? 2 : 1;
+		const severityLevel = severe.length >= (severe_amount ?? 0) ? 3 : high.length >= (high_amount ?? 0) ? 2 : 1;
 		const color = colors[severityLevel];
 
 		const embed = new MessageEmbed()

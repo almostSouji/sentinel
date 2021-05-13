@@ -19,6 +19,7 @@ export interface ConfigGuildData {
 	notifications: NotificationData | null;
 	monitor_attributes: AttributeData[] | null;
 	attribute_threshold: number | null;
+	severe_amount: number | null;
 }
 
 export interface AttributeData {
