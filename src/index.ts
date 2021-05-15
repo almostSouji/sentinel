@@ -142,6 +142,7 @@ async function analyze(message: Message | PartialMessage, isEdit = false) {
 		const notificationParts = [...roles.map((role) => `<@&${role}>`), ...users.map((user) => `<@${user}>`)];
 		const content = severityLevel >= level ? `${notifications?.prefix ?? ''}${notificationParts.join(', ')}` : null;
 
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 		const buttonExperiment = guildExperiments.find((e) => e.type === 1);
 		if (buttonExperiment && message.author && severityLevel >= (buttonExperiment.level ?? 0)) {
 			buttons(message.client, message.channel.id, embed, message.author.id, message.id, content, {
