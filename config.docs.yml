@@ -40,3 +40,9 @@ guilds: # <guild[]>
       level: # [number] # default: 0
       # string to prefix the notifications with
       prefix: # [string] # default: ''
+    # experiments enabled for this server
+    experiments: # [<unknown>]
+      - type: # [number] type of this experiment
+      # additional keys based on the experiment in question
+      # buttons #
+      # type 1 # level: [number] # default: 0

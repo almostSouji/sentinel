@@ -1,13 +1,14 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
-import { Client, Message, MessageEmbed, PartialMessage, Permissions } from 'discord.js';
+import { Client, Message, MessageEmbed, PartialMessage, Permissions, User } from 'discord.js';
 import { logger } from './logger';
 import { truncate } from './util';
-import { COLOR_ALERT, COLOR_MILD, COLOR_SEVERE } from './constants';
+import { COLOR_ALERT, COLOR_DARK, COLOR_MILD, COLOR_SEVERE } from './constants';
 import { readFileSync } from 'fs';
 import YAML from 'yaml';
 import { Config } from './types/config';
 import { analyzeText } from './perspective';
 import { PerspectiveAttribute, Scores } from './types/perspective';
+import { buttons, Component } from './experiments';
 
 const configs = YAML.parse(readFileSync('./config.yml', 'utf8')) as Config;
 
@@ -47,7 +48,6 @@ async function analyze(message: Message | PartialMessage, isEdit = false) {
 
 		const config = configs.guilds.find((e) => e.id === message.guild?.id);
 		if (!config) {
-			logger.error(`No configuration found for ${message.guild.id}!`);
 			return;
 		}
 
@@ -63,7 +63,9 @@ async function analyze(message: Message | PartialMessage, isEdit = false) {
 			log_threshold,
 			log_amount,
 			severe_amount,
+			experiments,
 		} = config;
+		const guildExperiments = experiments ?? [];
 		const channels = monitor_channels ?? [];
 
 		if (!channels.includes(message.channel.id) || !log_channel) return;
@@ -138,8 +140,18 @@ async function analyze(message: Message | PartialMessage, isEdit = false) {
 		const level = notifications?.level ?? 0;
 
 		const notificationParts = [...roles.map((role) => `<@&${role}>`), ...users.map((user) => `<@${user}>`)];
+		const content = severityLevel >= level ? `${notifications?.prefix ?? ''}${notificationParts.join(', ')}` : null;
 
-		void channel.send(severityLevel >= level ? `${notifications?.prefix ?? ''}${notificationParts.join(', ')}` : null, {
+		const buttonExperiment = guildExperiments.find((e) => e.type === 1);
+		if (buttonExperiment && message.author && severityLevel >= (buttonExperiment.level ?? 0)) {
+			buttons(message.client, message.channel.id, embed, message.author.id, message.id, content, {
+				users,
+				roles,
+			});
+			return;
+		}
+
+		void channel.send(content, {
 			allowedMentions: {
 				users,
 				roles,
@@ -180,6 +192,109 @@ client.on('ready', () => {
 		}
 		logger.log('info', `Total load: ${formatLoad(total)} messages/minute`);
 	}, 5 * 60 * 1000);
+});
+
+client.ws.on('INTERACTION_CREATE', async (data: any) => {
+	if (data.type !== 3) return; // only allow buttons
+	const guild = client.guilds.cache.get(data.guild_id);
+	if (!guild) return;
+	// console.log(data);
+	const executor = new User(client, data.member.user);
+	const messageParts: string[] = [];
+	const components: Component[] = [];
+
+	const [op, target, secondaryTarget] = data.data.custom_id.split('-');
+	if (op === 'ban' || op === 'ban_and_delete') {
+		try {
+			const user = await client.users.fetch(target);
+			messageParts.push(`• \`${executor.tag}\` banned \`${user.tag}\``);
+		} catch {
+			messageParts.push(`• \`${executor.tag}\` could not ban \`${target as string}\``);
+		}
+	}
+	if (op === 'ban_and_delete' || op === 'delete') {
+		const [c, m] = secondaryTarget.split('/');
+		const channel = client.channels.cache.get(c);
+		if (!channel || !channel.isText()) return;
+		try {
+			await channel.messages.delete(m);
+			messageParts.push(`• \`${executor.tag}\` deleted the message`);
+		} catch {
+			messageParts.push(`• \`${executor.tag}\` could not delete the message`);
+		}
+	}
+
+	if (op === 'delete') {
+		components.push({
+			type: 2,
+			style: 4,
+			custom_id: `ban-${target as string}-${secondaryTarget as string}`,
+			label: 'Ban',
+			emoji: {
+				id: '842716245203091476',
+			},
+		});
+		components.push({
+			type: 2,
+			style: 2,
+			custom_id: `dismiss`,
+			label: 'Dismiss',
+		});
+	}
+
+	const messageData = data.message;
+	messageData.components = null;
+	const embed = messageData?.embeds[0];
+
+	if (!embed) return;
+
+	if (op === 'dismiss') {
+		messageParts.push(`• \`${executor.tag}\` dismissed buttons`);
+	}
+
+	if (op === 'approve') {
+		messageParts.push(`• \`${executor.tag}\` approved this message`);
+	}
+
+	const e = new MessageEmbed(embed)
+		.setFooter(`Last action by ${executor.tag}`, executor.displayAvatarURL())
+		.setColor(op === 'approve' ? COLOR_DARK : embed.color ?? COLOR_DARK);
+
+	if (messageParts.length) {
+		const actionFieldIndex = e.fields.findIndex((field: any) => field.name === 'Actions');
+		if (actionFieldIndex < 0) {
+			e.addField('Actions', messageParts.join('\n'));
+		} else {
+			e.spliceFields(actionFieldIndex, 1, {
+				name: 'Actions',
+				value: `${e.fields[actionFieldIndex].value}\n${messageParts.join('\n')}`,
+			});
+		}
+	}
+
+	const responseData: any = {
+		content: data.message.content || null,
+		embeds: [e.toJSON()],
+		components: [],
+	};
+
+	if (components.length) {
+		responseData.components = [
+			{
+				type: 1,
+				components,
+			},
+		];
+	}
+
+	// eslint-disable-next-line @typescript-eslint/dot-notation
+	const api = client['api'] as any;
+	api.interactions(data.id, data.token).callback.post({
+		data: {
+			data: responseData,
+			type: 7,
+		},
+	});
 });
 
 void client.login(process.env.DISCORD_TOKEN);
