@@ -204,6 +204,8 @@ client.ws.on('INTERACTION_CREATE', async (data: any) => {
 	const messageParts: string[] = [];
 	const components: Component[] = [];
 
+	if (!data.message.components?.[0]?.components?.some((c: any) => c.custom_id === data.data.custom_id)) return;
+
 	const [op, target, secondaryTarget] = data.data.custom_id.split('-');
 	if (op === 'ban' || op === 'ban_and_delete') {
 		try {
