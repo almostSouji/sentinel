@@ -5,7 +5,7 @@ LABEL maintainer "almostSouji <https://github.com/almostSouji>"
 ENV DISCORD_TOKEN=\
 	PERSPECTIVE_TOKEN=\
 	FORCE_COLOR=1
-WORKDIR /usr/discord-status-webhook
+WORKDIR /usr/sentinel
 COPY package.json ./
 RUN apk add --update \
 	&& apk add --no-cache ca-certificates \
