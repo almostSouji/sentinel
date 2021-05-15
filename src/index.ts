@@ -8,7 +8,7 @@ import YAML from 'yaml';
 import { Config } from './types/config';
 import { analyzeText } from './perspective';
 import { PerspectiveAttribute, Scores } from './types/perspective';
-import { buttons, Component } from './experiments';
+import { buttons, Component, verifyPayload } from './experiments';
 
 const configs = YAML.parse(readFileSync('./config.yml', 'utf8')) as Config;
 
@@ -204,13 +204,16 @@ client.ws.on('INTERACTION_CREATE', async (data: any) => {
 	const messageParts: string[] = [];
 	const components: Component[] = [];
 
-	const [op, target, secondaryTarget] = data.data.custom_id.split('-');
+	const payload = verifyPayload(data.data.custom_id);
+	if (payload === null) return;
+
+	const [op, target, secondaryTarget] = payload.split('-');
 	if (op === 'ban' || op === 'ban_and_delete') {
 		try {
 			const user = await client.users.fetch(target);
 			messageParts.push(`• \`${executor.tag}\` banned \`${user.tag}\``);
 		} catch {
-			messageParts.push(`• \`${executor.tag}\` could not ban \`${target as string}\``);
+			messageParts.push(`• \`${executor.tag}\` could not ban \`${target}\``);
 		}
 	}
 	if (op === 'ban_and_delete' || op === 'delete') {
@@ -229,7 +232,7 @@ client.ws.on('INTERACTION_CREATE', async (data: any) => {
 		components.push({
 			type: 2,
 			style: 4,
-			custom_id: `ban-${target as string}-${secondaryTarget as string}`,
+			custom_id: `ban-${target}-${secondaryTarget}`,
 			label: 'Ban',
 			emoji: {
 				id: '842716245203091476',
