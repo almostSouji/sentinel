@@ -50,7 +50,8 @@
 			"project": "./tsconfig.eslint.json"
 		},
 		"rules": {
-			"@typescript-eslint/naming-convention": 0
+			"@typescript-eslint/naming-convention": 0,
+			"no-console": 1
 		}
 	},
 	"prettier": {
