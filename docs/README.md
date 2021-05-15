@@ -1,14 +1,13 @@
 # About
 
-![Sentinel Icon](./images/t1_circle_icon_100.png) Project Sentinel is a private discord bot watching Discord channels for toxicity and alerting moderators of incidents. This procedure is based on Attributes that a pre-trained AI model spots in the message content it is provided. Based on these Attributes and their probability, the project sets thresholds and emphasis to classify and pre-sort comments posted in specified Discord channels. Moderators can then review these comments via message links and investigate and handle the situation as appropriate.
+![Sentinel Icon (purple shield with exclamation mark)](./images/sentinel_no_bg_100.png) Project Sentinel is a private discord bot watching Discord channels for toxicity and alerting moderators of incidents. This procedure is based on Attributes that a pre-trained AI model spots in the message content it is provided. Based on these Attributes and their probability, the project sets thresholds and emphasis to classify and pre-sort comments posted in specified Discord channels. Moderators can then review these comments via message links and investigate and handle the situation as appropriate.
 
-This project is still in an alpha stage and can't be guaranteed to ever get out of it.
+This project is in a very early alpha state!
 
-- Project Sentinel runs on the Discord account `Sentinel#9223` with ApplicationID and UserID `840710376831057920`.
-- The owner, developer, and contact is the Discord user `Souji#0001` with userID `83886770768314368`.
-- In the current state, the project uses the [Perspective API](https://perspectiveapi.com/) to tag messages with Attribute probabilities.
+- Project Sentinel: ![discord clyde icon](./images/clyde_20.png) `Sentinel#9223` ID: `840710376831057920`
+- Owner and Developer: ![discord clyde icon](./images/clyde_20.png) `Souji#0001` ID: `83886770768314368`
 
-The icon artwork was traced from a photo by [Krists Luhaers](https://unsplash.com/@kristsll) under the [unsplash license](https://unsplash.com/license).
+In the current state, the project uses the [Perspective API](https://perspectiveapi.com/) to tag messages with Attribute probabilities.
 
 # Terms of Service
 
@@ -24,5 +23,4 @@ The icon artwork was traced from a photo by [Krists Luhaers](https://unsplash.co
 2. To set Sentinel up, I will require a set of data, which the server staff allows me to save persistently.
 3. Perspective API is used with the `doNotStore` parameter, preventing any data retention by third parties.
 4. Debug logs to improve the flow of the app may be employed temporarily and may log any data necessary. Log entries of any kind do not persist.
-5. Logged data includes a rough estimate of messages per time frame observed in the specified channels.
-6. Sentinel does not log or otherwise make data visible outside of the application's purpose.
+5. Sentinel does not log or otherwise make data visible outside of the application's purpose.
