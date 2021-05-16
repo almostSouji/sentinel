@@ -8,3 +8,8 @@ services:
     restart: always
     env_file:
       - ./.env
+  redis:
+    image: redis:alpine
+    command: ['redis-server', '--appendonly', 'yes']
+    volumes:
+      - ./redis-volume:/data

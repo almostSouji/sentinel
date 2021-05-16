@@ -1,23 +1,39 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
-import { Client, Message, MessageEmbed, NewsChannel, PartialMessage, Permissions, TextChannel, User } from 'discord.js';
+import { Message, MessageEmbed, NewsChannel, PartialMessage, Permissions, TextChannel, User } from 'discord.js';
 import { logger } from './logger';
 import { truncate } from './util';
 import { COLOR_ALERT, COLOR_DARK, COLOR_MILD, COLOR_SEVERE } from './constants';
-import { readFileSync } from 'fs';
-import YAML from 'yaml';
-import { ButtonExperiment, Config, IgnoreExperiment } from './types/config';
 import { analyzeText } from './perspective';
 import { PerspectiveAttribute, Scores } from './types/perspective';
 import { buttons, Component } from './experiments';
-
-const configs = YAML.parse(readFileSync('./config.yml', 'utf8')) as Config;
+import Client from './structures/Client';
+import {
+	ATTRIBUTES,
+	ATTRIBUTES_AMOUNT,
+	ATTRIBUTES_HIGH_AMOUNT,
+	ATTRIBUTES_HIGH_THRESHOLD,
+	ATTRIBUTES_SEVERE,
+	ATTRIBUTES_SEVERE_AMOUNT,
+	ATTRIBUTES_THRESHOLD,
+	CHANNELS_LOG,
+	CHANNELS_WATCHING,
+	EXPERIMENT_BUTTONS,
+	EXPERIMENT_BUTTONS_LEVEL,
+	EXPERIMENT_IGNORE,
+	NOTIF_LEVEL,
+	NOTIF_PREFIX,
+	NOTIF_ROLES,
+	NOTIF_USERS,
+	SCIENCE_MESSAGES,
+} from './keys';
 
 let start = Date.now();
 const messages: Map<string, number> = new Map();
 
-function increment(guild: string) {
+function increment(client: Client, guild: string) {
 	const current = messages.get(guild) ?? 0;
 	messages.set(guild, current + 1);
+	void redis.zincrby(SCIENCE_MESSAGES, 1, guild);
 }
 
 setInterval(() => {
@@ -41,90 +57,92 @@ const colors = {
 const client = new Client({
 	intents: ['GUILD_MESSAGES', 'GUILDS'],
 });
+const { redis } = client;
 
 async function analyze(message: Message | PartialMessage, isEdit = false) {
 	try {
+		const { content, channel, guild, system, type: messageType, author } = message;
+
 		if (
-			message.channel.type === 'dm' ||
-			!message.content ||
-			!message.guild ||
-			message.system ||
-			!['DEFAULT', 'REPLY'].includes(message.type || '')
+			channel.type === 'dm' ||
+			!content ||
+			!guild ||
+			system ||
+			!['DEFAULT', 'REPLY'].includes(messageType ?? '') ||
+			!author
 		)
 			return;
 
-		const config = configs.guilds.find((e) => e.id === message.guild?.id);
-		if (!config) {
-			return;
-		}
+		const isWatch = await redis.sismember(CHANNELS_WATCHING(guild.id), channel.id);
+		if (!isWatch) return;
 
-		const {
-			log_channel,
-			severe_attributes,
-			monitor_attributes,
-			high_threshold,
-			high_amount,
-			monitor_channels,
-			notifications,
-			attribute_threshold,
-			log_threshold,
-			log_amount,
-			severe_amount,
-			experiments,
-		} = config;
-		const guildExperiments = experiments ?? [];
-		const channels = monitor_channels ?? [];
+		const ignorePrefix = await redis.get(EXPERIMENT_IGNORE(guild.id));
+		if (ignorePrefix && content.startsWith(ignorePrefix)) return;
 
-		if (!channels.includes(message.channel.id) || !log_channel) return;
+		const checkAttributes = await redis.zrange(ATTRIBUTES(guild.id), 0, -1);
+		if (!checkAttributes.length) return;
 
-		const ignoreExperiment = guildExperiments.find((e) => e.type === 2) as IgnoreExperiment | null;
-		if (message.content.startsWith(ignoreExperiment?.prefix ?? '--')) return;
-
-		increment(message.guild.id);
-		const res = await analyzeText(message.content, monitor_attributes?.map((a) => a.key) ?? []);
+		increment(message.client, guild.id);
+		const res = await analyzeText(content, checkAttributes as PerspectiveAttribute[]);
 		const tags = [];
-		for (const [k, s] of Object.entries(res.attributeScores)) {
-			const attribute = k as PerspectiveAttribute;
-			const scores = s as Scores;
-			const trip = monitor_attributes?.some(
-				(a) => a.key === attribute && scores.summaryScore.value > (a.threshold ?? attribute_threshold ?? 0),
-			);
+		let tripped = 0;
+		const logThreshold = parseInt((await redis.get(ATTRIBUTES_THRESHOLD(guild.id))) ?? '0', 10);
 
-			if (trip) {
-				tags.push({ key: attribute, score: scores.summaryScore });
+		const attributes = await redis.zrange(ATTRIBUTES(guild.id), 0, -1, 'WITHSCORES');
+		for (const [k, s] of Object.entries(res.attributeScores)) {
+			const scores = s as Scores;
+			const index = attributes.findIndex((a) => a === k);
+			if (index > -1) {
+				const threshold = attributes[index + 1];
+				if (scores.summaryScore.value * 100 > parseInt(threshold, 10)) {
+					tags.push({ key: k, score: scores.summaryScore });
+				}
+				if (scores.summaryScore.value * 100 > logThreshold) {
+					tripped++;
+				}
 			}
 		}
 
-		const channel = message.guild.channels.resolve(log_channel);
+		const attributeAmount = parseInt((await redis.get(ATTRIBUTES_AMOUNT(guild.id))) ?? '1', 10);
+
+		if (!tags.length || tripped < attributeAmount) return;
+
+		const logChannel = guild.channels.resolve((await redis.get(CHANNELS_LOG(guild.id))) ?? '');
+		if (!logChannel || !logChannel.isText()) return;
+
 		const hasPerms =
-			channel
-				?.permissionsFor(client.user!)
+			logChannel
+				.permissionsFor(client.user!)
 				?.has([
 					Permissions.FLAGS.VIEW_CHANNEL,
 					Permissions.FLAGS.SEND_MESSAGES,
 					Permissions.FLAGS.EMBED_LINKS,
 					Permissions.FLAGS.READ_MESSAGE_HISTORY,
 				]) ?? false;
-		if (!channel || !channel.isText() || !hasPerms) return;
+		if (!hasPerms) return;
+		if (tags.length < parseInt((await redis.get(ATTRIBUTES_AMOUNT(guild.id))) ?? '0', 10)) return;
 
-		const considerable = tags.filter((tag) => tag.score.value >= (log_threshold ?? 0));
-		if (considerable.length < (log_amount ?? 0)) return;
+		const severeAttributes = await redis.zrange(ATTRIBUTES_SEVERE(guild.id), 0, -1, 'WITHSCORES');
+		const severeAmount = parseInt((await redis.get(ATTRIBUTES_SEVERE_AMOUNT(guild.id))) ?? '1', 10);
+		const highThreshold = parseInt((await redis.get(ATTRIBUTES_HIGH_THRESHOLD(guild.id))) ?? '0', 10);
+		const highAmount = parseInt((await redis.get(ATTRIBUTES_HIGH_AMOUNT(guild.id))) ?? '1', 10);
 
-		const severeConfig = severe_attributes ?? [];
-
-		const severe = tags.filter((tag) => {
-			return severeConfig.some(
-				(attr) => tag.key === attr.key && tag.score.value > (attr.threshold ?? attribute_threshold ?? 0),
-			);
+		const severe = tags.filter(({ key, score }) => {
+			const index = severeAttributes.findIndex((a) => a === key);
+			if (index > -1) {
+				const threshold = severeAttributes[index + 1];
+				return score.value * 100 >= parseInt(threshold, 10);
+			}
+			return false;
 		});
 
-		const high = tags.filter((tag) => tag.score.value > (high_threshold ?? 0));
-		const severityLevel = severe.length >= (severe_amount ?? 1) ? 3 : high.length >= (high_amount ?? 1) ? 2 : 1;
+		const high = tags.filter((tag) => tag.score.value * 100 >= highThreshold);
+		const severityLevel = severe.length >= severeAmount ? 3 : high.length >= highAmount ? 2 : 1;
 		const color = colors[severityLevel];
 
 		const metaDataParts: string[] = [];
 
-		metaDataParts.push(`• Channel: <#${message.channel.id}>`);
+		metaDataParts.push(`• Channel: <#${channel.id}>`);
 		metaDataParts.push(`• Message link: [jump ➔](${message.url})`);
 
 		if (isEdit) {
@@ -143,7 +161,7 @@ async function analyze(message: Message | PartialMessage, isEdit = false) {
 		}
 
 		const embed = new MessageEmbed()
-			.setDescription(truncate(message.content.replace(/\n+/g, '\n').replace(/\s+/g, ' '), 1_990))
+			.setDescription(truncate(content.replace(/\n+/g, '\n').replace(/\s+/g, ' '), 1_990))
 			.setColor(color)
 			.addField(
 				'Attribute Flags',
@@ -162,26 +180,26 @@ async function analyze(message: Message | PartialMessage, isEdit = false) {
 				message.author?.displayAvatarURL(),
 			);
 
-		const roles = notifications?.roles ?? [];
-		const users = notifications?.users ?? [];
-		const level = notifications?.level ?? 0;
+		const roles = await redis.smembers(NOTIF_ROLES(guild.id));
+		const users = await redis.smembers(NOTIF_USERS(guild.id));
+		const notificationLevel = parseInt((await redis.get(NOTIF_LEVEL(guild.id))) ?? '0', 10);
+		const prefix = await redis.get(NOTIF_PREFIX(guild.id));
 
 		const notificationParts = [...roles.map((role) => `<@&${role}>`), ...users.map((user) => `<@${user}>`)];
-		const content = severityLevel >= level ? `${notifications?.prefix ?? ''}${notificationParts.join(', ')}` : null;
+		const newContent = severityLevel >= notificationLevel ? `${prefix ?? ''}${notificationParts.join(', ')}` : null;
 
-		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-		const buttonExperiment = guildExperiments.find((e) => e.type === 1) as ButtonExperiment | null;
-		const botPermissions = message.channel.permissionsFor(client.user!);
-
-		if (buttonExperiment && message.author && severityLevel >= (buttonExperiment.level ?? 0)) {
-			buttons(message.client, message.channel.id, embed, message.author.id, message.id, content, botPermissions, {
+		const botPermissions = channel.permissionsFor(client.user!);
+		const buttonLevelString = await redis.get(EXPERIMENT_BUTTONS_LEVEL(guild.id));
+		const buttonLevel = parseInt(buttonLevelString ?? '0', 10);
+		if (buttonLevelString && severityLevel >= buttonLevel) {
+			buttons(client, logChannel.id, embed, author.id, message.id, newContent, botPermissions, {
 				users,
 				roles,
 			});
 			return;
 		}
 
-		void channel.send(content, {
+		void logChannel.send(newContent, {
 			allowedMentions: {
 				users,
 				roles,
@@ -225,12 +243,6 @@ client.on('ready', () => {
 });
 
 client.ws.on('INTERACTION_CREATE', async (data: any) => {
-	const config = configs.guilds.find((e) => e.id === data.guild_id);
-	if (!config) return;
-	const { experiments } = config;
-	const guildExperiments = experiments ?? [];
-	const buttonExperiment = guildExperiments.find((e) => e.type === 1) as ButtonExperiment | null;
-
 	if (data.type !== 3) return; // only allow buttons
 	const guild = client.guilds.cache.get(data.guild_id);
 	if (!guild) return;
@@ -243,7 +255,10 @@ client.ws.on('INTERACTION_CREATE', async (data: any) => {
 
 	const [op, target, secondaryTarget] = data.data.custom_id.split('-');
 	if (op === 'ban' || op === 'ban_and_delete') {
-		if (buttonExperiment?.check_permissions && !new Permissions(BigInt(data.member.permissions)).has('BAN_MEMBERS'))
+		if (
+			(await redis.get(EXPERIMENT_BUTTONS(guild.id))) === 'check' &&
+			!new Permissions(BigInt(data.member.permissions)).has('BAN_MEMBERS')
+		)
 			return;
 		try {
 			const user = await client.users.fetch(target);
@@ -256,7 +271,11 @@ client.ws.on('INTERACTION_CREATE', async (data: any) => {
 	if (op === 'ban_and_delete' || op === 'delete') {
 		const [c, m] = secondaryTarget.split('/');
 		const channel = client.channels.cache.get(c) as TextChannel | NewsChannel | undefined;
-		if (buttonExperiment?.check_permissions && !channel?.permissionsFor(executor)?.has('MANAGE_MESSAGES')) return;
+		if (
+			(await redis.get(EXPERIMENT_BUTTONS(guild.id))) === 'check' &&
+			!channel?.permissionsFor(executor)?.has('MANAGE_MESSAGES')
+		)
+			return;
 		if (!channel || !channel.isText()) return;
 		try {
 			await channel.messages.delete(m);
@@ -294,13 +313,19 @@ client.ws.on('INTERACTION_CREATE', async (data: any) => {
 	const e = new MessageEmbed(embed);
 
 	if (op === 'dismiss') {
-		if (buttonExperiment?.check_permissions && !new Permissions(BigInt(data.member.permissions)).has('MANAGE_MESSAGES'))
+		if (
+			(await redis.get(EXPERIMENT_BUTTONS(guild.id))) === 'check' &&
+			!new Permissions(BigInt(data.member.permissions)).has('MANAGE_MESSAGES')
+		)
 			return;
 		messageParts.push(`• \`${executor.tag}\` dismissed buttons`);
 	}
 
 	if (op === 'approve') {
-		if (buttonExperiment?.check_permissions && !new Permissions(BigInt(data.member.permissions)).has('MANAGE_MESSAGES'))
+		if (
+			(await redis.get(EXPERIMENT_BUTTONS(guild.id))) === 'check' &&
+			!new Permissions(BigInt(data.member.permissions)).has('MANAGE_MESSAGES')
+		)
 			return;
 		messageParts.push(`• \`${executor.tag}\` approved this message`);
 		e.setColor(COLOR_DARK);

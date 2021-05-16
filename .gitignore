@@ -19,6 +19,9 @@ config.yml
 dist/
 typings/
 
+# Data
+redis-volume/
+
 # Miscellaneous
 .tmp/
 coverage/

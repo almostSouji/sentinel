@@ -18,6 +18,7 @@
 	"dependencies": {
 		"discord.js": "github:discordjs/discord.js",
 		"googleapis": "^73.0.0",
+		"ioredis": "^4.27.2",
 		"luxon": "^1.26.0",
 		"node-fetch": "^2.6.1",
 		"winston": "^3.3.3",
@@ -26,6 +27,7 @@
 	"devDependencies": {
 		"@commitlint/cli": "^9.1.2",
 		"@commitlint/config-angular": "^9.1.2",
+		"@types/ioredis": "^4.26.3",
 		"@types/luxon": "^1.26.2",
 		"@types/node": "^14.6.4",
 		"@types/node-fetch": "^2.5.8",
