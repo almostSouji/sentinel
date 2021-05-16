@@ -125,7 +125,7 @@ async function analyze(message: Message | PartialMessage, isEdit = false) {
 		const metaDataParts: string[] = [];
 
 		metaDataParts.push(`• Channel: <#${message.channel.id}>`);
-		metaDataParts.push(`• [Message link](${message.url}`);
+		metaDataParts.push(`• Message link: [jump ➔](${message.url})`);
 
 		if (isEdit) {
 			metaDataParts.push(`• Caused by message edit`);
