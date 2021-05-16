@@ -45,4 +45,6 @@ guilds: # <guild[]>
       - type: # [number] type of this experiment
       # additional keys based on the experiment in question
       # buttons #
+      # type 1 # level: [number] -> default 0 # check_permissions: [Boolean] -> default False
+      # ignore prefix #
       # type 2 # prefix: [string] -> default '--'

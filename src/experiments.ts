@@ -1,4 +1,4 @@
-import { Client, MessageEmbed, MessageMentionOptions } from 'discord.js';
+import { Client, MessageEmbed, MessageMentionOptions, Permissions } from 'discord.js';
 
 export interface ResponseData {
 	data: {
@@ -27,6 +27,7 @@ export function buttons(
 	targetUser: string,
 	targetMessage: string,
 	content: string | null,
+	permissions: Readonly<Permissions> | null,
 	allowed_mentions: MessageMentionOptions,
 ): void {
 	// eslint-disable-next-line @typescript-eslint/dot-notation
@@ -45,25 +46,29 @@ export function buttons(
 		},
 	};
 
-	response.data.components[0].components?.push({
-		type: 2,
-		style: 4,
-		custom_id: `ban_and_delete-${targetUser}-${channel}/${targetMessage}`,
-		label: 'Ban & Delete',
-		emoji: {
-			id: '842911192489787412',
-		},
-	});
+	if (permissions?.has(['BAN_MEMBERS', 'MANAGE_MESSAGES'])) {
+		response.data.components[0].components?.push({
+			type: 2,
+			style: 4,
+			custom_id: `ban_and_delete-${targetUser}-${channel}/${targetMessage}`,
+			label: 'Ban & Delete',
+			emoji: {
+				id: '842911192489787412',
+			},
+		});
+	}
 
-	response.data.components[0].components?.push({
-		type: 2,
-		style: 4,
-		custom_id: `delete-${targetUser}-${channel}/${targetMessage}`,
-		label: 'Delete',
-		emoji: {
-			id: '842716273900257352',
-		},
-	});
+	if (permissions?.has('MANAGE_MESSAGES')) {
+		response.data.components[0].components?.push({
+			type: 2,
+			style: 4,
+			custom_id: `delete-${targetUser}-${channel}/${targetMessage}`,
+			label: 'Delete',
+			emoji: {
+				id: '842716273900257352',
+			},
+		});
+	}
 
 	response.data.components[0].components?.push({
 		type: 2,

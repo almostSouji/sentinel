@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
-import { Client, Message, MessageEmbed, PartialMessage, Permissions, User } from 'discord.js';
+import { Client, Message, MessageEmbed, NewsChannel, PartialMessage, Permissions, TextChannel, User } from 'discord.js';
 import { logger } from './logger';
 import { truncate } from './util';
 import { COLOR_ALERT, COLOR_DARK, COLOR_MILD, COLOR_SEVERE } from './constants';
 import { readFileSync } from 'fs';
 import YAML from 'yaml';
-import { Config } from './types/config';
+import { ButtonExperiment, Config, IgnoreExperiment } from './types/config';
 import { analyzeText } from './perspective';
 import { PerspectiveAttribute, Scores } from './types/perspective';
 import { buttons, Component } from './experiments';
@@ -146,9 +146,11 @@ async function analyze(message: Message | PartialMessage, isEdit = false) {
 		const content = severityLevel >= level ? `${notifications?.prefix ?? ''}${notificationParts.join(', ')}` : null;
 
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-		const buttonExperiment = guildExperiments.find((e) => e.type === 1);
+		const buttonExperiment = guildExperiments.find((e) => e.type === 1) as ButtonExperiment | null;
+		const botPermissions = message.channel.permissionsFor(client.user!);
+
 		if (buttonExperiment && message.author && severityLevel >= (buttonExperiment.level ?? 0)) {
-			buttons(message.client, message.channel.id, embed, message.author.id, message.id, content, {
+			buttons(message.client, message.channel.id, embed, message.author.id, message.id, content, botPermissions, {
 				users,
 				roles,
 			});
@@ -199,10 +201,16 @@ client.on('ready', () => {
 });
 
 client.ws.on('INTERACTION_CREATE', async (data: any) => {
+	const config = configs.guilds.find((e) => e.id === data.guild_id);
+	if (!config) return;
+	const { experiments } = config;
+	const guildExperiments = experiments ?? [];
+	const buttonExperiment = guildExperiments.find((e) => e.type === 1) as ButtonExperiment | null;
+
 	if (data.type !== 3) return; // only allow buttons
 	const guild = client.guilds.cache.get(data.guild_id);
 	if (!guild) return;
-	// console.log(data);
+
 	const executor = new User(client, data.member.user);
 	const messageParts: string[] = [];
 	const components: Component[] = [];
@@ -211,6 +219,8 @@ client.ws.on('INTERACTION_CREATE', async (data: any) => {
 
 	const [op, target, secondaryTarget] = data.data.custom_id.split('-');
 	if (op === 'ban' || op === 'ban_and_delete') {
+		if (buttonExperiment?.check_permissions && !new Permissions(BigInt(data.member.permissions)).has('BAN_MEMBERS'))
+			return;
 		try {
 			const user = await client.users.fetch(target);
 			messageParts.push(`• \`${executor.tag}\` banned \`${user.tag}\``);
@@ -218,9 +228,11 @@ client.ws.on('INTERACTION_CREATE', async (data: any) => {
 			messageParts.push(`• \`${executor.tag}\` could not ban \`${target as string}\``);
 		}
 	}
+
 	if (op === 'ban_and_delete' || op === 'delete') {
 		const [c, m] = secondaryTarget.split('/');
-		const channel = client.channels.cache.get(c);
+		const channel = client.channels.cache.get(c) as TextChannel | NewsChannel | undefined;
+		if (buttonExperiment?.check_permissions && !channel?.permissionsFor(executor)?.has('MANAGE_MESSAGES')) return;
 		if (!channel || !channel.isText()) return;
 		try {
 			await channel.messages.delete(m);
@@ -231,21 +243,23 @@ client.ws.on('INTERACTION_CREATE', async (data: any) => {
 	}
 
 	if (op === 'delete') {
-		components.push({
-			type: 2,
-			style: 4,
-			custom_id: `ban-${target as string}-${secondaryTarget as string}`,
-			label: 'Ban',
-			emoji: {
-				id: '842716245203091476',
-			},
-		});
-		components.push({
-			type: 2,
-			style: 2,
-			custom_id: `dismiss`,
-			label: 'Dismiss',
-		});
+		if (guild.me?.permissions.has('BAN_MEMBERS')) {
+			components.push({
+				type: 2,
+				style: 4,
+				custom_id: `ban-${target as string}-${secondaryTarget as string}`,
+				label: 'Ban',
+				emoji: {
+					id: '842716245203091476',
+				},
+			});
+			components.push({
+				type: 2,
+				style: 2,
+				custom_id: `dismiss`,
+				label: 'Dismiss',
+			});
+		}
 	}
 
 	const messageData = data.message;
@@ -253,18 +267,22 @@ client.ws.on('INTERACTION_CREATE', async (data: any) => {
 	const embed = messageData?.embeds[0];
 
 	if (!embed) return;
+	const e = new MessageEmbed(embed);
 
 	if (op === 'dismiss') {
+		if (buttonExperiment?.check_permissions && !new Permissions(BigInt(data.member.permissions)).has('MANAGE_MESSAGES'))
+			return;
 		messageParts.push(`• \`${executor.tag}\` dismissed buttons`);
 	}
 
 	if (op === 'approve') {
+		if (buttonExperiment?.check_permissions && !new Permissions(BigInt(data.member.permissions)).has('MANAGE_MESSAGES'))
+			return;
 		messageParts.push(`• \`${executor.tag}\` approved this message`);
+		e.setColor(COLOR_DARK);
 	}
 
-	const e = new MessageEmbed(embed)
-		.setFooter(`Last action by ${executor.tag}`, executor.displayAvatarURL())
-		.setColor(op === 'approve' ? COLOR_DARK : embed.color ?? COLOR_DARK);
+	e.setFooter(`Last action by ${executor.tag}`, executor.displayAvatarURL());
 
 	if (messageParts.length) {
 		const actionFieldIndex = e.fields.findIndex((field: any) => field.name === 'Actions');

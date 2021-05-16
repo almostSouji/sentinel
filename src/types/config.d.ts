@@ -19,12 +19,18 @@ export interface ConfigGuildData {
 	monitor_attributes: AttributeData[] | null;
 	attribute_threshold: number | null;
 	severe_amount: number | null;
-	experiments: ButtonExperiment[] | null;
+	experiments: (ButtonExperiment | IgnoreExperiment)[] | null;
 }
 
 export interface ButtonExperiment {
 	type: 1;
 	level: number | null;
+	check_permissions: true | null;
+}
+
+export interface IgnoreExperiment {
+	type: 2;
+	prefix: string | null;
 }
 
 export interface AttributeData {
