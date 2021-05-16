@@ -44,7 +44,14 @@ const client = new Client({
 
 async function analyze(message: Message | PartialMessage, isEdit = false) {
 	try {
-		if (message.channel.type === 'dm' || !message.content || !message.guild) return;
+		if (
+			message.channel.type === 'dm' ||
+			!message.content ||
+			!message.guild ||
+			message.system ||
+			!['DEFAULT', 'REPLY'].includes(message.type || '')
+		)
+			return;
 
 		const config = configs.guilds.find((e) => e.id === message.guild?.id);
 		if (!config) {
@@ -118,9 +125,10 @@ async function analyze(message: Message | PartialMessage, isEdit = false) {
 		const metaDataParts: string[] = [];
 
 		metaDataParts.push(`• Channel: <#${message.channel.id}>`);
+		metaDataParts.push(`• [Message link](${message.url}`);
 
 		if (isEdit) {
-			metaDataParts.push(`• [Message link](${message.url}`);
+			metaDataParts.push(`• Caused by message edit`);
 		}
 
 		const attachments = message.attachments;
