@@ -24,3 +24,6 @@ In the current state, the project uses the [Perspective API](https://perspective
 3. Perspective API is used with the `doNotStore` parameter, preventing any data retention by third parties.
 4. Debug logs to improve the flow of the app may be employed temporarily and may log any data necessary. Log entries of any kind do not persist.
 5. Sentinel does not log or otherwise make data visible outside of the application's purpose.
+
+
+<div style="text-align:center; margin-top:50px;"><img src="./images/sentinel_ad.png"/></div>

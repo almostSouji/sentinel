@@ -11,3 +11,24 @@ a {
 a.btn {
 	display: none;
 }
+
+@font-face {
+	font-family: 'GintoNord';
+	src: url("../GintoNord-Black.ttf") format("truetype");
+}
+
+@font-face {
+	font-family: 'Whitney';
+	src: url("../Whitney-Book-Bas.otf") format("truetype");
+}
+
+$font-title: 'GintoNord', 'sans-serif';
+$font-main: 'Whitney', 'sans-serif';
+
+body {
+	font-family: $font-main;
+}
+
+h1 {
+	font-family: $font-title;
+}
