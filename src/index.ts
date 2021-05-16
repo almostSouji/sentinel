@@ -70,6 +70,9 @@ async function analyze(message: Message | PartialMessage, isEdit = false) {
 
 		if (!channels.includes(message.channel.id) || !log_channel) return;
 
+		const ignoreExperiment = guildExperiments.find((e) => e.type === 2) as IgnoreExperiment | null;
+		if (message.content.startsWith(ignoreExperiment?.prefix ?? '--')) return;
+
 		increment(message.guild.id);
 		const res = await analyzeText(message.content, monitor_attributes?.map((a) => a.key) ?? []);
 		const tags = [];
