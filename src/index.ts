@@ -157,7 +157,10 @@ async function analyze(message: Message | PartialMessage, isEdit = false) {
 				true,
 			)
 			.addField('Metadata', metaDataParts.join('\n'), true)
-			.setAuthor(message.author?.tag ?? 'Anonymous', message.author?.displayAvatarURL());
+			.setAuthor(
+				message.author ? `${message.author.tag} (${message.author.id})` : 'Anonymous',
+				message.author?.displayAvatarURL(),
+			);
 
 		const roles = notifications?.roles ?? [];
 		const users = notifications?.users ?? [];
