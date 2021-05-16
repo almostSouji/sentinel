@@ -115,6 +115,25 @@ async function analyze(message: Message | PartialMessage, isEdit = false) {
 		const severityLevel = severe.length >= (severe_amount ?? 1) ? 3 : high.length >= (high_amount ?? 1) ? 2 : 1;
 		const color = colors[severityLevel];
 
+		const metaDataParts: string[] = [];
+
+		metaDataParts.push(`• Channel: <#${message.channel.id}>`);
+
+		if (isEdit) {
+			metaDataParts.push(`• [Message link](${message.url}`);
+		}
+
+		const attachments = message.attachments;
+		if (attachments.size) {
+			let counter = 1;
+			metaDataParts.push(
+				`• Attachments (${attachments.size}): ${attachments.map((a) => `[${counter++}](${a.proxyURL})`).join(', ')}`,
+			);
+		}
+		if (message.embeds.length) {
+			metaDataParts.push(`• Embeds: ${message.embeds.length}`);
+		}
+
 		const embed = new MessageEmbed()
 			.setDescription(truncate(message.content.replace(/\n+/g, '\n').replace(/\s+/g, ' '), 1_990))
 			.setColor(color)
@@ -129,13 +148,7 @@ async function analyze(message: Message | PartialMessage, isEdit = false) {
 					.join('\n'),
 				true,
 			)
-			.addField(
-				'Metadata',
-				`• Channel: <#${message.channel.id}>${isEdit ? '\n• Message was edited' : ''}\n• [Message link](${
-					message.url
-				})`,
-				true,
-			)
+			.addField('Metadata', metaDataParts.join('\n'), true)
 			.setAuthor(message.author?.tag ?? 'Anonymous', message.author?.displayAvatarURL());
 
 		const roles = notifications?.roles ?? [];
