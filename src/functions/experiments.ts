@@ -1,4 +1,17 @@
 import { Client, MessageEmbed, MessageMentionOptions, Permissions } from 'discord.js';
+import {
+	BUTTON_ID_APPROVE,
+	BUTTON_ID_BAN_AND_DELETE,
+	BUTTON_ID_DELETE,
+	BUTTON_ID_DISMISS,
+	BUTTON_LABEL_APPROVE,
+	BUTTON_LABEL_BAN_AND_DELETE,
+	BUTTON_LABEL_DELETE,
+	BUTTON_LABEL_DISMISS,
+	EMOJI_ID_APPROVE_WHITE,
+	EMOJI_ID_BAN_WHITE,
+	EMOJI_ID_DELETE_WHITE,
+} from '../constants';
 
 export interface ResponseData {
 	data: {
@@ -22,7 +35,7 @@ export interface Component {
 
 export function buttons(
 	client: Client,
-	channel: string,
+	targetChannel: string,
 	embed: MessageEmbed,
 	targetUser: string,
 	targetMessage: string,
@@ -50,10 +63,10 @@ export function buttons(
 		response.data.components[0].components?.push({
 			type: 2,
 			style: 4,
-			custom_id: `ban_and_delete-${targetUser}-${channel}/${targetMessage}`,
-			label: 'Ban & Delete',
+			custom_id: BUTTON_ID_BAN_AND_DELETE(targetUser, targetChannel, targetMessage),
+			label: BUTTON_LABEL_BAN_AND_DELETE,
 			emoji: {
-				id: '842911192489787412',
+				id: EMOJI_ID_BAN_WHITE,
 			},
 		});
 	}
@@ -62,10 +75,10 @@ export function buttons(
 		response.data.components[0].components?.push({
 			type: 2,
 			style: 4,
-			custom_id: `delete-${targetUser}-${channel}/${targetMessage}`,
-			label: 'Delete',
+			custom_id: BUTTON_ID_DELETE(targetUser, targetChannel, targetMessage),
+			label: BUTTON_LABEL_DELETE,
 			emoji: {
-				id: '842716273900257352',
+				id: EMOJI_ID_DELETE_WHITE,
 			},
 		});
 	}
@@ -73,19 +86,19 @@ export function buttons(
 	response.data.components[0].components?.push({
 		type: 2,
 		style: 3,
-		custom_id: `approve`,
-		label: 'Approve',
+		custom_id: BUTTON_ID_APPROVE,
+		label: BUTTON_LABEL_APPROVE,
 		emoji: {
-			id: '842912618095706192',
+			id: EMOJI_ID_APPROVE_WHITE,
 		},
 	});
 
 	response.data.components[0].components?.push({
 		type: 2,
 		style: 2,
-		custom_id: `dismiss`,
-		label: 'Dismiss',
+		custom_id: BUTTON_ID_DISMISS,
+		label: BUTTON_LABEL_DISMISS,
 	});
 
-	api.channels(channel).messages.post(response);
+	api.channels(targetChannel).messages.post(response);
 }

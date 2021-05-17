@@ -1,5 +1,5 @@
 import { Message, PartialMessage, Permissions, MessageEmbed, Client } from 'discord.js';
-import { truncate } from './util';
+import { truncate, zsetZipper } from './util';
 import { COLOR_MILD, COLOR_ALERT, COLOR_SEVERE } from '../constants';
 import {
 	CHANNELS_WATCHING,
@@ -84,16 +84,14 @@ export async function analyze(message: Message | PartialMessage, isEdit = false)
 		let tripped = 0;
 		const logThreshold = parseInt((await redis.get(ATTRIBUTES_THRESHOLD(guild.id))) ?? '0', 10);
 
-		const attributes = await redis.zrange(ATTRIBUTES(guild.id), 0, -1, 'WITHSCORES');
-		for (const [k, s] of Object.entries(res.attributeScores)) {
+		for (const [key, s] of Object.entries(res.attributeScores)) {
 			const scores = s as Scores;
-			const index = attributes.findIndex((a) => a === k);
-			if (index > -1) {
-				const threshold = attributes[index + 1];
-				if (scores.summaryScore.value * 100 > parseInt(threshold, 10)) {
-					tags.push({ key: k, score: scores.summaryScore });
+			const pair = zsetZipper(checkAttributes).find(([k]) => key === k);
+			if (pair) {
+				if (scores.summaryScore.value * 100 >= parseInt(pair[1], 10)) {
+					tags.push({ key, score: scores.summaryScore });
 				}
-				if (scores.summaryScore.value * 100 > logThreshold) {
+				if (scores.summaryScore.value * 100 >= logThreshold) {
 					tripped++;
 				}
 			}
@@ -118,18 +116,14 @@ export async function analyze(message: Message | PartialMessage, isEdit = false)
 		if (!hasPerms) return;
 		if (tags.length < parseInt((await redis.get(ATTRIBUTES_AMOUNT(guild.id))) ?? '0', 10)) return;
 
-		const severeAttributes = await redis.zrange(ATTRIBUTES_SEVERE(guild.id), 0, -1, 'WITHSCORES');
+		const severeSet = await redis.zrange(ATTRIBUTES_SEVERE(guild.id), 0, -1, 'WITHSCORES');
 		const severeAmount = parseInt((await redis.get(ATTRIBUTES_SEVERE_AMOUNT(guild.id))) ?? '1', 10);
 		const highThreshold = parseInt((await redis.get(ATTRIBUTES_HIGH_THRESHOLD(guild.id))) ?? '0', 10);
 		const highAmount = parseInt((await redis.get(ATTRIBUTES_HIGH_AMOUNT(guild.id))) ?? '1', 10);
 
 		const severe = tags.filter(({ key, score }) => {
-			const index = severeAttributes.findIndex((a) => a === key);
-			if (index > -1) {
-				const threshold = severeAttributes[index + 1];
-				return score.value * 100 >= parseInt(threshold, 10);
-			}
-			return false;
+			const severeAttributes = zsetZipper(severeSet);
+			return severeAttributes.some(([k, threshold]) => k === key && score.value * 100 >= parseInt(threshold, 10));
 		});
 
 		const high = tags.filter((tag) => tag.score.value * 100 >= highThreshold);
