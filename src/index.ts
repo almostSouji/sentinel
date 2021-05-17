@@ -25,21 +25,23 @@ import {
 	NOTIF_ROLES,
 	NOTIF_USERS,
 	SCIENCE_MESSAGES,
+	SCIENCE_REQUESTS,
 } from './keys';
 
-let start = Date.now();
-const messages: Map<string, number> = new Map();
-
-function increment(client: Client, guild: string) {
-	const current = messages.get(guild) ?? 0;
-	messages.set(guild, current + 1);
-	void redis.zincrby(SCIENCE_MESSAGES, 1, guild);
+function formatLoad(load: number) {
+	const code = load > 55 ? 31 : load > 30 ? 33 : 32;
+	return `\x1b[${code}m${load.toFixed(2)}\x1b[0m`;
 }
 
-setInterval(() => {
-	messages.clear();
-	start = Date.now();
-}, 60 * 60 * 1000);
+async function increment(client: Client, guild: string) {
+	void client.redis.zincrby(SCIENCE_MESSAGES, 1, guild);
+	const requests = await client.redis.incr(SCIENCE_REQUESTS);
+	if (requests === 1) {
+		void client.redis.expire(SCIENCE_REQUESTS, 60);
+	} else if (requests >= 30) {
+		logger.log('info', `${formatLoad(requests)}/60`);
+	}
+}
 
 export interface ProcessEnv {
 	DISCORD_TOKEN: string;
@@ -82,7 +84,7 @@ async function analyze(message: Message | PartialMessage, isEdit = false) {
 		const checkAttributes = await redis.zrange(ATTRIBUTES(guild.id), 0, -1);
 		if (!checkAttributes.length) return;
 
-		increment(message.client, guild.id);
+		void increment(message.client, guild.id);
 		const res = await analyzeText(content, checkAttributes as PerspectiveAttribute[]);
 		const tags = [];
 		let tripped = 0;
@@ -221,25 +223,8 @@ client.on('messageUpdate', (oldMessage, newMessage) => {
 	void analyze(newMessage, true);
 });
 
-function formatLoad(load: number) {
-	const code = load > 60 ? 31 : load > 30 ? 33 : 32;
-	return `\x1b[${code}m${load.toFixed(2)}\x1b[0m`;
-}
-
 client.on('ready', () => {
 	logger.log('info', `\x1b[32m${client.user!.tag} is watching!\x1b[0m`);
-	setInterval(() => {
-		let total = 0;
-		for (const [k, v] of messages.entries()) {
-			const rate = v / ((Date.now() - start) / (1000 * 60));
-			total += rate;
-			logger.log(
-				'info',
-				`Guild ${client.guilds.resolve(k)?.name ?? 'unknown'}: checking ${formatLoad(rate)} messages/minute.`,
-			);
-		}
-		logger.log('info', `Total load: ${formatLoad(total)} messages/minute`);
-	}, 5 * 60 * 1000);
 });
 
 client.ws.on('INTERACTION_CREATE', async (data: any) => {

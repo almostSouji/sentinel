@@ -58,6 +58,7 @@ export const NOTIF_PREFIX = (guild: string) => `guild:${guild}:notifications:pre
 
 //* Science
 export const SCIENCE_MESSAGES = `science:message_scores`;
+export const SCIENCE_REQUESTS = `science:requests`;
 
 // 🧪 INT
 // Level required for buttons to trigger
