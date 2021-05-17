@@ -1,5 +1,5 @@
 import { google } from 'googleapis';
-import { PerspectiveResponseData, PerspectiveResponse, PerspectiveAttribute } from './types/perspective';
+import { PerspectiveResponseData, PerspectiveResponse, PerspectiveAttribute } from '../types/perspective';
 
 export async function analyzeText(text: string, attributes: PerspectiveAttribute[]): Promise<PerspectiveResponseData> {
 	const client = await google.discoverAPI('https://commentanalyzer.googleapis.com/$discovery/rest?version=v1alpha1');
