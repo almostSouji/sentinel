@@ -35,6 +35,7 @@ export interface Component {
 
 export function buttons(
 	client: Client,
+	logChannel: string,
 	targetChannel: string,
 	embed: MessageEmbed,
 	targetUser: string,
@@ -100,5 +101,5 @@ export function buttons(
 		label: BUTTON_LABEL_DISMISS,
 	});
 
-	api.channels(targetChannel).messages.post(response);
+	api.channels(logChannel).messages.post(response);
 }

@@ -56,6 +56,14 @@ export const NOTIF_LEVEL = (guild: string) => `guild:${guild}:notifications:leve
 // Prefix notifications with text
 export const NOTIF_PREFIX = (guild: string) => `guild:${guild}:notifications:prefix`;
 
+//* ZSET<level, word>
+// Flag words at provided level. Words are delimited by word boundaries, case insensitive
+export const CUSTOM_FLAGS_WORDS = (guild: string) => `guild:${guild}:custom:flags:words`;
+
+//* ZSET<level, phrase>
+// Flag phrases at provided level. Phrases can appear anywhere in text, case insensitive
+export const CUSTOM_FLAGS_PHRASES = (guild: string) => `guild:${guild}:custom:flags:phrases`;
+
 //* Science
 export const SCIENCE_MESSAGES = `science:message_scores`;
 export const SCIENCE_REQUESTS = `science:requests`;

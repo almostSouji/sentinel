@@ -2,6 +2,7 @@ export const COLOR_SEVERE = '#ed4245' as const;
 export const COLOR_ALERT = 'faa61a' as const;
 export const COLOR_MILD = '#3ba55c' as const;
 export const COLOR_DARK = '#2f3136' as const;
+export const COLOR_PURPLE = '#5865F2' as const;
 export const EMOJI_ID_DELETE_WHITE = '842716273900257352' as const;
 export const EMOJI_ID_APPROVE_WHITE = '842912618095706192' as const;
 export const EMOJI_ID_BAN_WHITE = '842911192489787412' as const;

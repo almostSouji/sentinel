@@ -6,3 +6,5 @@ export const DELETE_FAIL = (executor: string) => `•\`${executor}\` could not d
 export const DISMISSED = (executor: string) => `•\`${executor}\` reviewed this case`;
 export const APPROVED = (executor: string) => `•\`${executor}\` approved this message`;
 export const LOG_FOOTER_TEXT = (executor: string, id: string) => `Last action by ${executor} (${id})`;
+export const MATCH_PHRASE = (phrase: string, value: number, isWord: boolean) =>
+	`• Severity level \`${value}\` matched on ${isWord ? 'word' : 'phrase'} \`${phrase}\``;
