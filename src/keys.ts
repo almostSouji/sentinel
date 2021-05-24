@@ -39,6 +39,11 @@ export const ATTRIBUTES_SEVERE = (guild: string) => `guild:${guild}:attributes:s
 // Amount of severe attributes required to flag the message as severity level 3
 export const ATTRIBUTES_SEVERE_AMOUNT = (guild: string) => `guild:${guild}:attributes:severe:amount`;
 
+//* INT
+// Counting how many times each attribute has been seen above the threshold at that time
+export const ATTRIBUTE_SEEN = (guild: string, attribute: string) =>
+	`guild:${guild}:attributes:seen:attribute:${attribute}`;
+
 //* SET
 // Role IDs that should be notified
 export const NOTIF_ROLES = (guild: string) => `guild:${guild}:notifications:roles`;
@@ -64,9 +69,12 @@ export const CUSTOM_FLAGS_WORDS = (guild: string) => `guild:${guild}:custom:flag
 // Flag phrases at provided level. Phrases can appear anywhere in text, case insensitive
 export const CUSTOM_FLAGS_PHRASES = (guild: string) => `guild:${guild}:custom:flags:phrases`;
 
-//* Science
-export const SCIENCE_MESSAGES = `science:message_scores`;
-export const SCIENCE_REQUESTS = `science:requests`;
+//* INT
+// Counting total messages seen per guild (edits also count)
+export const MESSAGES_SEEN = (guild: string) => `guild:${guild}:messages:seen`;
+//* INT
+// Counting total messages checked per guild (edits also count)
+export const MESSAGES_CHECKED = (guild: string) => `guild:${guild}:messages:checked`;
 
 // 🧪 INT
 // Level required for buttons to trigger

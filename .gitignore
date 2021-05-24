@@ -20,7 +20,8 @@ dist/
 typings/
 
 # Data
-redis-volume/
+*-volume/
+*-data/
 
 # Miscellaneous
 .tmp/

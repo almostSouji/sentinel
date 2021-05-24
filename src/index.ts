@@ -32,8 +32,6 @@ import {
 export interface ProcessEnv {
 	DISCORD_TOKEN: string;
 	PERSPECTIVE_TOKE: string;
-	DISCORD_WEBHOOK_ID: string;
-	DISCORD_WEBHOOK_TOKEN: string;
 }
 
 const client = new Client({

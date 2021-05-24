@@ -1,4 +1,4 @@
-import { Message, PartialMessage, Permissions, MessageEmbed, Client } from 'discord.js';
+import { Message, PartialMessage, Permissions, MessageEmbed } from 'discord.js';
 import { mapZippedByScore, zSetZipper } from './util';
 import { COLOR_MILD, COLOR_ALERT, COLOR_SEVERE, COLOR_DARK, COLOR_PURPLE } from '../constants';
 import {
@@ -7,15 +7,16 @@ import {
 	ATTRIBUTES,
 	ATTRIBUTES_THRESHOLD,
 	ATTRIBUTES_AMOUNT,
+	ATTRIBUTE_SEEN,
 	CHANNELS_LOG,
 	ATTRIBUTES_SEVERE,
 	ATTRIBUTES_SEVERE_AMOUNT,
 	ATTRIBUTES_HIGH_THRESHOLD,
 	ATTRIBUTES_HIGH_AMOUNT,
-	SCIENCE_MESSAGES,
-	SCIENCE_REQUESTS,
 	CUSTOM_FLAGS_WORDS,
 	CUSTOM_FLAGS_PHRASES,
+	MESSAGES_SEEN,
+	MESSAGES_CHECKED,
 } from '../keys';
 import { PerspectiveAttribute, Scores } from '../types/perspective';
 import { logger } from './logger';
@@ -27,21 +28,6 @@ const colors = [COLOR_MILD, COLOR_MILD, COLOR_ALERT, COLOR_SEVERE, COLOR_PURPLE]
 
 function setSeverityColor(embed: MessageEmbed, severity: number): MessageEmbed {
 	return embed.setColor(colors[severity] ?? COLOR_DARK);
-}
-
-function formatLoad(load: number) {
-	const code = load > 55 ? 31 : load > 30 ? 33 : 32;
-	return `\x1b[${code}m${load.toFixed(2)}\x1b[0m`;
-}
-
-async function increment(client: Client, guild: string) {
-	void client.redis.zincrby(SCIENCE_MESSAGES, 1, guild);
-	const requests = await client.redis.incr(SCIENCE_REQUESTS);
-	if (requests === 1) {
-		void client.redis.expire(SCIENCE_REQUESTS, 60);
-	} else if (requests >= 30) {
-		logger.log('info', `${formatLoad(requests)}/60`);
-	}
 }
 
 export async function analyze(message: Message | PartialMessage, isEdit = false) {
@@ -56,6 +42,8 @@ export async function analyze(message: Message | PartialMessage, isEdit = false)
 			type: messageType,
 			author,
 		} = message;
+
+		void redis.incr(MESSAGES_SEEN(guild?.id ?? 'dm'));
 
 		if (
 			channel.type === 'dm' ||
@@ -116,7 +104,7 @@ export async function analyze(message: Message | PartialMessage, isEdit = false)
 		const checkAttributes = await redis.zrange(ATTRIBUTES(guild.id), 0, -1, 'WITHSCORES');
 		if (!checkAttributes.length) return;
 
-		void increment(message.client, guild.id);
+		void redis.incr(MESSAGES_CHECKED(guild.id));
 		const res = await analyzeText(
 			content,
 			checkAttributes.filter((a) => isNaN(parseInt(a, 10))) as PerspectiveAttribute[],
@@ -131,6 +119,7 @@ export async function analyze(message: Message | PartialMessage, isEdit = false)
 			if (pair) {
 				if (scores.summaryScore.value * 100 >= pair[1]) {
 					tags.push({ key, score: scores.summaryScore });
+					void redis.incr(ATTRIBUTE_SEEN(guild.id, key));
 				}
 				if (scores.summaryScore.value * 100 >= logThreshold) {
 					tripped++;
