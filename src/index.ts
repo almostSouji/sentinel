@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
-import { MessageEmbed, NewsChannel, Permissions, TextChannel, User } from 'discord.js';
-import { logger } from './functions/logger';
+import { MessageEmbed, NewsChannel, Permissions, TextChannel, User, GuildMember } from 'discord.js';
+
 import {
 	BUTTON_ACTION_APPROVE,
 	BUTTON_ACTION_BAN,
@@ -28,6 +28,7 @@ import {
 	LOG_FOOTER_TEXT,
 	READY_LOG,
 } from './messages/messages';
+import { logger } from './functions/logger';
 
 export interface ProcessEnv {
 	DISCORD_TOKEN: string;
@@ -50,7 +51,7 @@ client.on('messageUpdate', (oldMessage, newMessage) => {
 });
 
 client.on('ready', () => {
-	logger.log('info', `\x1b[32m${READY_LOG(client.user!.tag)}\x1b[0m`);
+	logger.info(`${READY_LOG(client.user!.tag)}`);
 });
 
 client.ws.on('INTERACTION_CREATE', async (data: any) => {
@@ -72,8 +73,10 @@ client.ws.on('INTERACTION_CREATE', async (data: any) => {
 		)
 			return;
 		try {
-			const user = await client.users.fetch(target);
-			messageParts.push(BAN_SUCCESS(executor.tag, user.tag));
+			const user = await guild.members.ban(target);
+			messageParts.push(
+				BAN_SUCCESS(executor.tag, user instanceof GuildMember ? user.user.tag : user instanceof User ? user.tag : user),
+			);
 		} catch {
 			messageParts.push(BAN_FAIL(executor.tag, target as string));
 		}
