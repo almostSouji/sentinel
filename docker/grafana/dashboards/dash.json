@@ -58,11 +58,11 @@
 			"percentage": false,
 			"pluginVersion": "7.5.7",
 			"pointradius": 2,
-			"points": true,
+			"points": false,
 			"renderer": "flot",
 			"seriesOverrides": [],
 			"spaceLength": 10,
-			"stack": true,
+			"stack": false,
 			"steppedLine": false,
 			"targets": [
 				{
@@ -162,7 +162,7 @@
 			"percentage": false,
 			"pluginVersion": "7.5.7",
 			"pointradius": 2,
-			"points": true,
+			"points": false,
 			"renderer": "flot",
 			"seriesOverrides": [],
 			"spaceLength": 10,
@@ -269,7 +269,7 @@
 			"percentage": false,
 			"pluginVersion": "7.5.7",
 			"pointradius": 2,
-			"points": true,
+			"points": false,
 			"renderer": "flot",
 			"seriesOverrides": [
 				{
