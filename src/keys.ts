@@ -86,3 +86,7 @@ export const EXPERIMENT_BUTTONS = (guild: string) => `guild:${guild}:experiment:
 // 🧪 STR
 // Ignore messages starting with character sequence
 export const EXPERIMENT_IGNORE = (guild: string) => `guild:${guild}:experiment:ignore:prefix`;
+
+// 🧪 STR
+// Ignore messages by members with this permission flag
+export const EXPERIMENT_IMMUNITY = (guild: string) => `guild:${guild}:experiment:immunity`;

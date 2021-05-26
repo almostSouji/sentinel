@@ -1,4 +1,4 @@
-import { Message, PartialMessage, Permissions, MessageEmbed } from 'discord.js';
+import { Message, PartialMessage, Permissions, MessageEmbed, PermissionResolvable } from 'discord.js';
 import { mapZippedByScore, zSetZipper } from './util';
 import { COLOR_MILD, COLOR_ALERT, COLOR_SEVERE, COLOR_DARK, COLOR_PURPLE } from '../constants';
 import {
@@ -17,6 +17,7 @@ import {
 	CUSTOM_FLAGS_PHRASES,
 	MESSAGES_SEEN,
 	MESSAGES_CHECKED,
+	EXPERIMENT_IMMUNITY,
 } from '../keys';
 import { PerspectiveAttribute, Scores } from '../types/perspective';
 import { logger } from './logger';
@@ -57,6 +58,9 @@ export async function analyze(message: Message | PartialMessage, isEdit = false)
 
 		const isWatch = await redis.sismember(CHANNELS_WATCHING(guild.id), channel.id);
 		if (!isWatch) return;
+
+		const immunity = await redis.get(EXPERIMENT_IMMUNITY(guild.id));
+		if (immunity && channel.permissionsFor(author)?.has(immunity as PermissionResolvable)) return;
 
 		const ignorePrefix = await redis.get(EXPERIMENT_IGNORE(guild.id));
 		if (ignorePrefix && content.startsWith(ignorePrefix)) return;
