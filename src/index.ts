@@ -1,20 +1,14 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
-import { MessageEmbed, NewsChannel, Permissions, TextChannel, User, GuildMember } from 'discord.js';
+import { MessageEmbed, Permissions, User, GuildMember } from 'discord.js';
 
 import {
 	BUTTON_ACTION_APPROVE,
 	BUTTON_ACTION_BAN,
-	BUTTON_ACTION_BAN_AND_DELETE,
 	BUTTON_ACTION_DELETE,
 	BUTTON_ACTION_DISMISS,
-	BUTTON_ID_BAN,
-	BUTTON_ID_DISMISS,
-	BUTTON_LABEL_BAN,
-	BUTTON_LABEL_DISMISS,
 	COLOR_DARK,
-	EMOJI_ID_BAN_WHITE,
 } from './constants';
-import { Component } from './functions/experiments';
+import { banButton, checkAndApplyNotice, Component, deleteButton, dismissButton } from './functions/buttons';
 import Client from './structures/Client';
 import { EXPERIMENT_BUTTONS } from './keys';
 import { analyze } from './functions/analyze';
@@ -58,74 +52,71 @@ client.ws.on('INTERACTION_CREATE', async (data: any) => {
 	if (data.type !== 3) return; // only allow buttons
 	const guild = client.guilds.cache.get(data.guild_id);
 	if (!guild) return;
+	const embed = data.message?.embeds[0];
+
+	if (!embed) return;
+	const e = new MessageEmbed(embed);
 
 	const executor = new User(client, data.member.user);
+	try {
+		await guild.members.fetch({
+			user: [executor, client.user!],
+		});
+	} catch (err) {
+		return;
+	}
 	const messageParts: string[] = [];
 	const components: Component[] = [];
 
 	if (!data.message.components?.[0]?.components?.some((c: any) => c.custom_id === data.data.custom_id)) return;
 
 	const [op, target, secondaryTarget] = data.data.custom_id.split('-');
-	if (op === BUTTON_ACTION_BAN || op === BUTTON_ACTION_BAN_AND_DELETE) {
-		if (
-			(await redis.get(EXPERIMENT_BUTTONS(guild.id))) === 'check' &&
-			!new Permissions(BigInt(data.member.permissions)).has('BAN_MEMBERS')
-		)
-			return;
-		try {
-			const user = await guild.members.ban(target);
-			messageParts.push(
-				BAN_SUCCESS(executor.tag, user instanceof GuildMember ? user.user.tag : user instanceof User ? user.tag : user),
-			);
-		} catch {
-			messageParts.push(BAN_FAIL(executor.tag, target as string));
-		}
-	}
-
-	if (op === BUTTON_ACTION_BAN_AND_DELETE || op === BUTTON_ACTION_DELETE) {
+	if (secondaryTarget) {
 		const [c, m] = secondaryTarget.split('/');
-		const channel = client.channels.cache.get(c) as TextChannel | NewsChannel | undefined;
-		if (
-			(await redis.get(EXPERIMENT_BUTTONS(guild.id))) === 'check' &&
-			!channel?.permissionsFor(executor)?.has('MANAGE_MESSAGES')
-		)
-			return;
-		if (!channel || !channel.isText()) return;
-		try {
-			await channel.messages.delete(m);
-			messageParts.push(DELETE_SUCCESS(executor.tag));
-		} catch {
-			messageParts.push(DELETE_FAIL(executor.tag));
+		const channel = guild.channels.cache.get(c);
+		const botPermissionsInButtonTargetChannel = channel?.permissionsFor(client.user!) ?? null;
+		const shouldCheckPermissions = (await redis.get(EXPERIMENT_BUTTONS(guild.id))) === 'check';
+		if (op === BUTTON_ACTION_BAN) {
+			if (shouldCheckPermissions && !new Permissions(BigInt(data.member.permissions)).has('BAN_MEMBERS')) return;
+			try {
+				const user = await guild.members.ban(target, {
+					days: 1,
+				});
+				messageParts.push(
+					BAN_SUCCESS(
+						executor.tag,
+						user instanceof GuildMember ? user.user.tag : user instanceof User ? user.tag : user,
+					),
+				);
+			} catch {
+				messageParts.push(BAN_FAIL(executor.tag, target as string));
+				if (channel?.isText()) {
+					checkAndApplyNotice(e, 'MANAGE_MESSAGES', botPermissionsInButtonTargetChannel);
+					components.push(
+						deleteButton(target, c, m, botPermissionsInButtonTargetChannel?.has('MANAGE_MESSAGES') ?? false),
+					);
+				}
+			}
+		}
+		if (op === BUTTON_ACTION_DELETE) {
+			if (shouldCheckPermissions && !channel?.permissionsFor(executor)?.has('MANAGE_MESSAGES')) return;
+			if (channel?.isText()) {
+				try {
+					await channel.messages.delete(m);
+					messageParts.push(DELETE_SUCCESS(executor.tag));
+				} catch {
+					messageParts.push(DELETE_FAIL(executor.tag));
+				} finally {
+					checkAndApplyNotice(e, 'BAN_MEMBERS', botPermissionsInButtonTargetChannel);
+					components.push(banButton(target, c, m, botPermissionsInButtonTargetChannel?.has('BAN_MEMBERS') ?? false));
+				}
+			}
 		}
 	}
 
-	if (op === BUTTON_ACTION_DELETE) {
-		if (guild.me?.permissions.has('BAN_MEMBERS')) {
-			const [c, m] = secondaryTarget.split('/');
-			components.push({
-				type: 2,
-				style: 4,
-				custom_id: BUTTON_ID_BAN(target as string, c, m),
-				label: BUTTON_LABEL_BAN,
-				emoji: {
-					id: EMOJI_ID_BAN_WHITE,
-				},
-			});
-			components.push({
-				type: 2,
-				style: 2,
-				custom_id: BUTTON_ID_DISMISS,
-				label: BUTTON_LABEL_DISMISS,
-			});
-		}
+	if (components.length) {
+		components.push(dismissButton);
 	}
-
-	const messageData = data.message;
-	messageData.components = null;
-	const embed = messageData?.embeds[0];
-
-	if (!embed) return;
-	const e = new MessageEmbed(embed);
 
 	if (op === BUTTON_ACTION_DISMISS) {
 		if (
