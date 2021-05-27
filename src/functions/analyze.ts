@@ -1,4 +1,4 @@
-import { Message, PartialMessage, Permissions, MessageEmbed, PermissionResolvable } from 'discord.js';
+import { Message, PartialMessage, Permissions, MessageEmbed } from 'discord.js';
 import { mapZippedByScore, zSetZipper } from './util';
 import { COLOR_MILD, COLOR_ALERT, COLOR_SEVERE, COLOR_DARK, COLOR_PURPLE } from '../constants';
 import {
@@ -42,6 +42,7 @@ export async function analyze(message: Message | PartialMessage, isEdit = false)
 			system,
 			type: messageType,
 			author,
+			member: authorAsMember,
 		} = message;
 
 		void redis.incr(MESSAGES_SEEN(guild?.id ?? 'dm'));
@@ -52,15 +53,16 @@ export async function analyze(message: Message | PartialMessage, isEdit = false)
 			!guild ||
 			system ||
 			!['DEFAULT', 'REPLY'].includes(messageType ?? '') ||
-			!author
+			!author ||
+			!authorAsMember
 		)
 			return;
 
 		const isWatch = await redis.sismember(CHANNELS_WATCHING(guild.id), channel.id);
 		if (!isWatch) return;
 
-		const immunity = await redis.get(EXPERIMENT_IMMUNITY(guild.id));
-		if (immunity && channel.permissionsFor(author)?.has(immunity as PermissionResolvable)) return;
+		const immunity = await redis.smembers(EXPERIMENT_IMMUNITY(guild.id));
+		if (immunity.some((id) => author.id === id || authorAsMember.roles.cache.has(id))) return;
 
 		const ignorePrefix = await redis.get(EXPERIMENT_IGNORE(guild.id));
 		if (ignorePrefix && content.startsWith(ignorePrefix)) return;
