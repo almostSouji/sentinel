@@ -1,4 +1,4 @@
-import { Client, MessageEmbed, MessageMentionOptions, Permissions, PermissionResolvable } from 'discord.js';
+import { MessageButton, Snowflake, MessageEmbed, Permissions, PermissionResolvable } from 'discord.js';
 import {
 	BUTTON_ID_APPROVE,
 	BUTTON_ID_BAN,
@@ -36,86 +36,73 @@ export interface Component {
 	disabled?: boolean;
 }
 
-export function banButton(targetUser: string, targetChannel: string, targetMessage: string, canBan: boolean) {
-	return {
+export function banButton(
+	targetUser: Snowflake,
+	targetChannel: Snowflake,
+	targetMessage: Snowflake,
+	canBan: boolean,
+): MessageButton {
+	return new MessageButton({
 		type: 2,
 		style: 4,
-		custom_id: BUTTON_ID_BAN(targetUser, targetChannel, targetMessage),
+		customID: BUTTON_ID_BAN(targetUser, targetChannel, targetMessage),
 		label: BUTTON_LABEL_BAN,
 		emoji: {
 			id: EMOJI_ID_BAN_WHITE,
 		},
 		disabled: !canBan,
-	};
+	});
 }
 
-export function deleteButton(targetUser: string, targetChannel: string, targetMessage: string, canDelete: boolean) {
-	return {
+export function deleteButton(
+	targetUser: Snowflake,
+	targetChannel: Snowflake,
+	targetMessage: Snowflake,
+	canDelete: boolean,
+): MessageButton {
+	return new MessageButton({
 		type: 2,
 		style: 4,
-		custom_id: BUTTON_ID_DELETE(targetUser, targetChannel, targetMessage),
+		customID: BUTTON_ID_DELETE(targetUser, targetChannel, targetMessage),
 		label: BUTTON_LABEL_DELETE,
 		emoji: {
 			id: EMOJI_ID_DELETE_WHITE,
 		},
 		disabled: !canDelete,
-	};
+	});
 }
 
-export const approveButton = {
+export const approveButton = new MessageButton({
 	type: 2,
 	style: 3,
-	custom_id: BUTTON_ID_APPROVE,
+	customID: BUTTON_ID_APPROVE,
 	label: BUTTON_LABEL_APPROVE,
 	emoji: {
 		id: EMOJI_ID_APPROVE_WHITE,
 	},
-};
+});
 
-export const dismissButton = {
+export const dismissButton = new MessageButton({
 	type: 2,
 	style: 2,
-	custom_id: BUTTON_ID_DISMISS,
+	customID: BUTTON_ID_DISMISS,
 	label: BUTTON_LABEL_DISMISS,
-};
+});
 
-export function sendWithButtons(
-	client: Client,
-	logChannel: string,
-	targetChannel: string,
-	embed: MessageEmbed,
-	targetUser: string,
-	targetMessage: string,
-	content: string | null,
+export function generateButtons(
+	targetChannel: Snowflake,
+	targetUser: Snowflake,
+	targetMessage: Snowflake,
 	permissions: Readonly<Permissions> | null,
-	allowed_mentions: MessageMentionOptions,
-): void {
-	// eslint-disable-next-line @typescript-eslint/dot-notation
-	const api = client['api'] as any;
-	const response: ResponseData = {
-		data: {
-			content,
-			embed,
-			components: [
-				{
-					type: 1,
-					components: [],
-				},
-			],
-			allowed_mentions,
-		},
-	};
-
-	checkAndApplyNotice(embed, ['BAN_MEMBERS', 'MANAGE_MESSAGES'], permissions ?? null);
-
-	const canBan = permissions?.has('BAN_MEMBERS') ?? false;
-	const canDelete = permissions?.has('MANAGE_MESSAGES') ?? false;
-	response.data.components[0]?.components?.push(banButton(targetUser, targetChannel, targetMessage, canBan));
-	response.data.components[0]?.components?.push(deleteButton(targetUser, targetChannel, targetMessage, canDelete));
-	response.data.components[0]?.components?.push(approveButton);
-	response.data.components[0]?.components?.push(dismissButton);
-
-	api.channels(logChannel).messages.post(response);
+): MessageButton[] {
+	const canBan = permissions?.has(Permissions.FLAGS.BAN_MEMBERS) ?? false;
+	const canDelete = permissions?.has(Permissions.FLAGS.MANAGE_MESSAGES) ?? false;
+	return [
+		banButton(targetUser, targetChannel, targetMessage, canBan),
+		deleteButton(targetUser, targetChannel, targetMessage, canDelete),
+		approveButton,
+		dismissButton,
+	];
 }
 
 export function checkAndApplyNotice(

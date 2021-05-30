@@ -1,7 +1,7 @@
-import { MessageEmbed, TextChannel, NewsChannel, Message, PartialMessage } from 'discord.js';
+import { MessageEmbed, TextChannel, NewsChannel, Message, PartialMessage, MessageActionRow } from 'discord.js';
 import { EXPERIMENT_BUTTONS_LEVEL, NOTIF_LEVEL, NOTIF_PREFIX, NOTIF_ROLES, NOTIF_USERS } from '../keys';
+import { generateButtons } from './buttons';
 import { truncate } from './util';
-import { sendWithButtons } from './buttons';
 
 export async function sendLog(
 	logChannel: TextChannel | NewsChannel,
@@ -10,10 +10,9 @@ export async function sendLog(
 	embed: MessageEmbed,
 	isEdit: boolean,
 ) {
-	if (targetMessage.channel.type === 'dm') return;
+	if (targetMessage.channel.type === 'dm' || targetMessage.partial) return;
 	const {
 		client: { redis, user: clientUser },
-		client,
 		channel: targetChannel,
 		author: targetUser,
 		content: targetContent,
@@ -33,7 +32,7 @@ export async function sendLog(
 	embed.setDescription(
 		truncate(targetContent ? targetContent.replace(/\n+/g, '\n').replace(/\s+/g, ' ') : 'no content', 1_990),
 	);
-	embed.setAuthor(targetUser ? `${targetUser.tag} (${targetUser.id})` : 'Anonymous', targetUser?.displayAvatarURL());
+	embed.setAuthor(`${targetUser.tag} (${targetUser.id})`, targetUser.displayAvatarURL());
 
 	metaDataParts.push(`• Channel: <#${targetChannel.id}>`);
 	metaDataParts.push(`• Message link: [jump ➔](${targetMessage.url})`);
@@ -57,28 +56,24 @@ export async function sendLog(
 
 	const notificationParts = [...roles.map((role) => `<@&${role}>`), ...users.map((user) => `<@${user}>`)];
 	const newContent = severityLevel >= notificationLevel ? `${prefix}${notificationParts.join(', ')}` : null;
+	const buttons = generateButtons(targetMessage.channel.id, targetMessage.author.id, targetMessage.id, botPermissions);
 	if (buttonLevelString && severityLevel >= buttonLevel) {
-		sendWithButtons(
-			client,
-			logChannel.id,
-			targetChannel.id,
-			embed,
-			targetUser?.id ?? 'invalid user',
-			targetMessage.id,
-			newContent,
-			botPermissions,
-			{
-				users,
-				roles,
-			},
-		);
-	} else {
 		void logChannel.send(newContent, {
 			embed,
 			allowedMentions: {
 				users,
 				roles,
 			},
+			components: [new MessageActionRow().addComponents(buttons)],
 		});
+		return;
 	}
+
+	void logChannel.send(newContent, {
+		embed,
+		allowedMentions: {
+			users,
+			roles,
+		},
+	});
 }

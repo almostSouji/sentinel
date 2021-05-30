@@ -8,7 +8,7 @@
 	"license": "NO_LICENSE",
 	"private": true,
 	"scripts": {
-		"build": "rimraf dist && tsc",
+		"build": "rimraf dist && tsc --skipLibCheck",
 		"start": "sh -c \"node dist/index.js | pino-pretty -c -l -t\"",
 		"deploy": "node --unhandled-rejections=strict dist/index.js",
 		"lint": "eslint src --ext .ts",
@@ -16,7 +16,7 @@
 		"prettier": "prettier --write **/*.{ts,js,json,yml,yaml}"
 	},
 	"dependencies": {
-		"discord.js": "github:discordjs/discord.js",
+		"discord.js": "github:discordjs/discord.js#9c42f571093b2565df28b756fdca4ac59cad0fe3",
 		"googleapis": "^73.0.0",
 		"ioredis": "^4.27.2",
 		"luxon": "^1.26.0",
@@ -43,7 +43,7 @@
 		"pino-pretty": "^5.0.0",
 		"prettier": "^2.1.1",
 		"rimraf": "^3.0.2",
-		"typescript": "^4.0.2"
+		"typescript": "^4.3.2"
 	},
 	"engines": {
 		"node": ">=15.0.0"
