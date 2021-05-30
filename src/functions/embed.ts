@@ -1,7 +1,7 @@
 import { MessageEmbed, TextChannel, NewsChannel, Message, PartialMessage, MessageActionRow } from 'discord.js';
 import { EXPERIMENT_BUTTONS_LEVEL, NOTIF_LEVEL, NOTIF_PREFIX, NOTIF_ROLES, NOTIF_USERS } from '../keys';
 import { generateButtons } from './buttons';
-import { truncate } from './util';
+import { truncate, truncateEmbed } from './util';
 
 export async function sendLog(
 	logChannel: TextChannel | NewsChannel,
@@ -57,6 +57,7 @@ export async function sendLog(
 	const notificationParts = [...roles.map((role) => `<@&${role}>`), ...users.map((user) => `<@${user}>`)];
 	const newContent = severityLevel >= notificationLevel ? `${prefix}${notificationParts.join(', ')}` : null;
 	const buttons = generateButtons(targetMessage.channel.id, targetMessage.author.id, targetMessage.id, botPermissions);
+	truncateEmbed(embed);
 	if (buttonLevelString && severityLevel >= buttonLevel) {
 		void logChannel.send(newContent, {
 			embed,

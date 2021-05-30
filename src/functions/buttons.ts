@@ -13,7 +13,7 @@ import {
 	EMOJI_ID_BAN_WHITE,
 	EMOJI_ID_DELETE_WHITE,
 } from '../constants';
-import { MISSING_PERMISSIONS } from '../messages/messages';
+import { BUTTONS_MISSING_BOT_PERMISSIONS } from '../messages/messages';
 
 export interface ResponseData {
 	data: {
@@ -97,12 +97,18 @@ export function generateButtons(
 ): MessageButton[] {
 	const canBan = permissions?.has(Permissions.FLAGS.BAN_MEMBERS) ?? false;
 	const canDelete = permissions?.has(Permissions.FLAGS.MANAGE_MESSAGES) ?? false;
-	return [
-		banButton(targetUser, targetChannel, targetMessage, canBan),
-		deleteButton(targetUser, targetChannel, targetMessage, canDelete),
-		approveButton,
-		dismissButton,
-	];
+	const res: MessageButton[] = [];
+	if (targetUser !== '0') {
+		res.push(banButton(targetUser, targetChannel, targetMessage, canBan));
+	}
+
+	if (targetChannel !== '0' && targetMessage !== '0') {
+		res.push(deleteButton(targetUser, targetChannel, targetMessage, canDelete));
+	}
+
+	res.push(approveButton);
+	res.push(dismissButton);
+	return res;
 }
 
 export function checkAndApplyNotice(
@@ -116,7 +122,7 @@ export function checkAndApplyNotice(
 		if (missing.length) {
 			embed.spliceFields(fieldIndex, 1, {
 				name: EMBED_TITLE_NOTICE,
-				value: MISSING_PERMISSIONS(missing),
+				value: BUTTONS_MISSING_BOT_PERMISSIONS(missing),
 			});
 		} else {
 			embed.spliceFields(fieldIndex, 1);
@@ -124,7 +130,7 @@ export function checkAndApplyNotice(
 	} else if (missing.length) {
 		embed.spliceFields(1, 0, {
 			name: EMBED_TITLE_NOTICE,
-			value: MISSING_PERMISSIONS(missing),
+			value: BUTTONS_MISSING_BOT_PERMISSIONS(missing),
 		});
 	}
 }

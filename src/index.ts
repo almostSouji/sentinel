@@ -7,6 +7,9 @@ import {
 	BUTTON_ACTION_DELETE,
 	BUTTON_ACTION_DISMISS,
 	COLOR_DARK,
+	ERROR_CODE_MISSING_PERMISSIONS,
+	ERROR_CODE_UNKNOWN_MESSAGE,
+	ERROR_CODE_UNKNOWN_USER,
 } from './constants';
 import { banButton, checkAndApplyNotice, deleteButton, dismissButton } from './functions/buttons';
 import Client from './structures/Client';
@@ -14,15 +17,19 @@ import { EXPERIMENT_BUTTONS } from './keys';
 import { analyze } from './functions/analyze';
 import {
 	APPROVED,
-	BAN_FAIL,
+	BAN_FAIL_MISSING,
+	BAN_FAIL_OTHER,
+	BAN_FAIL_UNKNOWN,
 	BAN_SUCCESS,
-	DELETE_FAIL,
+	DELETE_FAIL_OTHER,
+	DELETE_FAIL_UNKNOWN,
 	DELETE_SUCCESS,
 	DISMISSED,
 	LOG_FOOTER_TEXT,
 	READY_LOG,
 } from './messages/messages';
 import { logger } from './functions/logger';
+import { truncateEmbed } from './functions/util';
 
 export interface ProcessEnv {
 	DISCORD_TOKEN: string;
@@ -92,16 +99,40 @@ client.on('interaction', async (interaction) => {
 				);
 			} catch (error) {
 				logger.error(error);
-				messageParts.push(BAN_FAIL(executor.tag, target));
 				checkAndApplyNotice(embed, Permissions.FLAGS.MANAGE_MESSAGES, botPermissionsInButtonTargetChannel);
-				buttons.push(
-					deleteButton(
-						target,
-						c,
-						m,
-						botPermissionsInButtonTargetChannel?.has(Permissions.FLAGS.MANAGE_MESSAGES) ?? false,
-					),
-				);
+
+				if (error.code === ERROR_CODE_MISSING_PERMISSIONS) {
+					const perms = botPermissionsInButtonTargetChannel?.has(Permissions.FLAGS.MANAGE_MESSAGES) ?? false;
+					messageParts.push(BAN_FAIL_MISSING(executor.tag, target));
+					buttons.push(banButton(target, c, m, perms));
+					if (m !== '0' && c !== '0') {
+						buttons.push(deleteButton(target, c, m, perms));
+					}
+				} else if (error.code === ERROR_CODE_UNKNOWN_USER) {
+					messageParts.push(BAN_FAIL_UNKNOWN(executor.tag, target));
+					if (m !== '0' && c !== '0') {
+						buttons.push(
+							deleteButton(
+								'0',
+								c,
+								m,
+								botPermissionsInButtonTargetChannel?.has(Permissions.FLAGS.MANAGE_MESSAGES) ?? false,
+							),
+						);
+					}
+				} else {
+					messageParts.push(BAN_FAIL_OTHER(executor.tag, target));
+					if (m !== '0' && c !== '0') {
+						buttons.push(
+							deleteButton(
+								target,
+								c,
+								m,
+								botPermissionsInButtonTargetChannel?.has(Permissions.FLAGS.MANAGE_MESSAGES) ?? false,
+							),
+						);
+					}
+				}
 			}
 		}
 
@@ -111,14 +142,38 @@ client.on('interaction', async (interaction) => {
 				try {
 					await channel.messages.delete(m);
 					messageParts.push(DELETE_SUCCESS(executor.tag));
+					if (target !== '0') {
+						buttons.push(
+							banButton(
+								target,
+								c,
+								'0',
+								botPermissionsInButtonTargetChannel?.has(Permissions.FLAGS.BAN_MEMBERS) ?? false,
+							),
+						);
+					}
 				} catch (error) {
 					logger.error(error);
-					messageParts.push(DELETE_FAIL(executor.tag));
+					if (error.code === ERROR_CODE_UNKNOWN_MESSAGE) {
+						messageParts.push(DELETE_FAIL_UNKNOWN(executor.tag));
+						if (target !== '0') {
+							buttons.push(
+								banButton(
+									target,
+									c,
+									'0',
+									botPermissionsInButtonTargetChannel?.has(Permissions.FLAGS.BAN_MEMBERS) ?? false,
+								),
+							);
+						}
+					} else {
+						messageParts.push(DELETE_FAIL_OTHER(executor.tag));
+						buttons.push(
+							banButton(target, c, m, botPermissionsInButtonTargetChannel?.has(Permissions.FLAGS.BAN_MEMBERS) ?? false),
+						);
+					}
 				} finally {
 					checkAndApplyNotice(embed, Permissions.FLAGS.BAN_MEMBERS, botPermissionsInButtonTargetChannel);
-					buttons.push(
-						banButton(target, c, m, botPermissionsInButtonTargetChannel?.has(Permissions.FLAGS.BAN_MEMBERS) ?? false),
-					);
 				}
 			}
 		}
@@ -154,7 +209,7 @@ client.on('interaction', async (interaction) => {
 	}
 
 	await interaction.update({
-		embeds: [embed],
+		embeds: [truncateEmbed(embed)],
 		components: buttons.length ? [new MessageActionRow().addComponents(buttons)] : [],
 	});
 });
