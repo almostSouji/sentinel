@@ -116,7 +116,7 @@ export function checkAndApplyNotice(
 	checkAgainst: PermissionResolvable,
 	permissions: Readonly<Permissions> | null,
 ) {
-	const missing = permissions?.missing(checkAgainst) ?? [];
+	const missing = new Permissions(permissions?.missing(checkAgainst) ?? []).toArray();
 	const fieldIndex = embed.fields.findIndex((f) => f.name === EMBED_TITLE_NOTICE);
 	if (fieldIndex > 0) {
 		if (missing.length) {
