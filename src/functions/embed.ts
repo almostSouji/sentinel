@@ -1,6 +1,14 @@
-import { MessageEmbed, TextChannel, NewsChannel, Message, PartialMessage, MessageActionRow } from 'discord.js';
+import {
+	MessageEmbed,
+	TextChannel,
+	NewsChannel,
+	Message,
+	PartialMessage,
+	MessageActionRow,
+	Permissions,
+} from 'discord.js';
 import { EXPERIMENT_BUTTONS_LEVEL, NOTIF_LEVEL, NOTIF_PREFIX, NOTIF_ROLES, NOTIF_USERS } from '../keys';
-import { generateButtons } from './buttons';
+import { checkAndApplyNotice, generateButtons } from './buttons';
 import { truncate, truncateEmbed } from './util';
 
 export async function sendLog(
@@ -59,6 +67,7 @@ export async function sendLog(
 	const buttons = generateButtons(targetMessage.channel.id, targetMessage.author.id, targetMessage.id, botPermissions);
 	truncateEmbed(embed);
 	if (buttonLevelString && severityLevel >= buttonLevel) {
+		checkAndApplyNotice(embed, [Permissions.FLAGS.BAN_MEMBERS, Permissions.FLAGS.MANAGE_MESSAGES], botPermissions);
 		void logChannel.send(newContent, {
 			embed,
 			allowedMentions: {
