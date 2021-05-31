@@ -21,7 +21,6 @@ export const BUTTON_ID_DELETE = (targetUser: string, targetChannel: string, targ
 	`${BUTTON_ACTION_DELETE}-${targetUser}-${targetChannel}/${targetMessage}`;
 export const BUTTON_ID_BAN = (targetUser: string, targetChannel: string, targetMessage: string) =>
 	`${BUTTON_ACTION_BAN}-${targetUser}-${targetChannel}/${targetMessage}`;
-export const EMBED_TITLE_NOTICE = 'ℹ️ Notice' as const;
 export const ERROR_CODE_UNKNOWN_MESSAGE = 10008 as const;
 export const ERROR_CODE_UNKNOWN_USER = 10013 as const;
 export const ERROR_CODE_MISSING_PERMISSIONS = 50013 as const;

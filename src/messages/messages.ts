@@ -10,10 +10,6 @@ export const APPROVED = (executor: string) => `• \`${executor}\` approved this
 export const LOG_FOOTER_TEXT = (executor: string, id: string) => `Last action by ${executor} (${id})`;
 export const MATCH_PHRASE = (phrase: string, value: number, isWord: boolean) =>
 	`• Severity level \`${value}\` matched on ${isWord ? 'word' : 'phrase'} \`${phrase}\``;
-export const BUTTONS_MISSING_BOT_PERMISSIONS = (missing: string[]) =>
-	`Not all buttons could be enabled. Missing the following permissions in the channel the message was sent in:\n${missing
-		.map((m) => `• \`${m}\``)
-		.join('\n')}`;
 export const BAN_FAIL_MISSING = (executor: string, target: string) =>
 	`• \`${executor}\` could not ban \`${target}\` (missing permissions)`;
 export const BAN_FAIL_UNKNOWN = (executor: string, target: string) =>

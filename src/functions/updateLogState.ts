@@ -1,9 +1,11 @@
-import { Guild, MessageButton, MessageActionRow, Snowflake } from 'discord.js';
+import { Guild, MessageButton, MessageActionRow, Snowflake, MessageEmbed } from 'discord.js';
 import { BUTTON_ACTION_BAN, BUTTON_ACTION_DELETE } from '../constants';
 import { CHANNELS_LOG } from '../keys';
+import { truncateEmbed } from './util';
 
 type BanHandler = (
 	guild: Guild,
+	embed: MessageEmbed,
 	button: MessageButton,
 	row: MessageActionRow,
 	target: Snowflake,
@@ -13,6 +15,7 @@ type BanHandler = (
 
 type DeleteHandler = (
 	guild: Guild,
+	embed: MessageEmbed,
 	button: MessageButton,
 	row: MessageActionRow,
 	targetChannel: Snowflake,
@@ -47,7 +50,7 @@ export async function updateLogState(
 		if (banButton) {
 			const [, target] = banButton.customID?.split('-') ?? [];
 			for (const handler of banHandlers) {
-				const res = handler(guild, banButton, row, target, deletedStructures[0], isBanned);
+				const res = handler(guild, embed, banButton, row, target, deletedStructures[0], isBanned);
 				const change = res instanceof Promise ? await res : res;
 				changed = change || changed;
 			}
@@ -56,13 +59,14 @@ export async function updateLogState(
 			const [, , secondaryTarget] = deleteButton.customID?.split('-') ?? [];
 			const [c, m] = secondaryTarget.split('/');
 			for (const handler of deleteHandlers) {
-				const res = handler(guild, deleteButton, row, c, m, deletedStructures);
+				const res = handler(guild, embed, deleteButton, row, c, m, deletedStructures);
 				const change = res instanceof Promise ? await res : res;
 				changed = change || changed;
 			}
 		}
 
 		if (!changed) continue;
+		truncateEmbed(embed);
 		void message.edit(content.length ? content : null, {
 			embed,
 			components: buttons.length ? [new MessageActionRow().addComponents(buttons)] : [],

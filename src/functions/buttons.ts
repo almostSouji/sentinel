@@ -1,4 +1,4 @@
-import { MessageButton, Snowflake, MessageEmbed, Permissions, PermissionResolvable } from 'discord.js';
+import { MessageButton, Snowflake, Permissions, GuildMember } from 'discord.js';
 import {
 	BUTTON_ID_APPROVE,
 	BUTTON_ID_BAN,
@@ -8,12 +8,10 @@ import {
 	BUTTON_LABEL_BAN,
 	BUTTON_LABEL_DELETE,
 	BUTTON_LABEL_DISMISS,
-	EMBED_TITLE_NOTICE,
 	EMOJI_ID_APPROVE_WHITE,
 	EMOJI_ID_BAN_WHITE,
 	EMOJI_ID_DELETE_WHITE,
 } from '../constants';
-import { BUTTONS_MISSING_BOT_PERMISSIONS } from '../messages/messages';
 
 export interface ResponseData {
 	data: {
@@ -94,12 +92,12 @@ export function generateButtons(
 	targetUser: Snowflake,
 	targetMessage: Snowflake,
 	permissions: Readonly<Permissions> | null,
+	targetMember: GuildMember | null,
 ): MessageButton[] {
-	const canBan = permissions?.has(Permissions.FLAGS.BAN_MEMBERS) ?? false;
-	const canDelete = permissions?.has(Permissions.FLAGS.MANAGE_MESSAGES) ?? false;
 	const res: MessageButton[] = [];
+	const canDelete = permissions?.has(Permissions.FLAGS.MANAGE_MESSAGES) ?? false;
 	if (targetUser !== '0') {
-		res.push(banButton(targetUser, targetChannel, targetMessage, canBan));
+		res.push(banButton(targetUser, targetChannel, targetMessage, targetMember?.bannable ?? true));
 	}
 
 	if (targetChannel !== '0' && targetMessage !== '0') {
@@ -109,28 +107,4 @@ export function generateButtons(
 	res.push(approveButton);
 	res.push(dismissButton);
 	return res;
-}
-
-export function checkAndApplyNotice(
-	embed: MessageEmbed,
-	checkAgainst: PermissionResolvable,
-	permissions: Readonly<Permissions> | null,
-) {
-	const missing = new Permissions(permissions?.missing(checkAgainst) ?? []).toArray();
-	const fieldIndex = embed.fields.findIndex((f) => f.name === EMBED_TITLE_NOTICE);
-	if (fieldIndex > 0) {
-		if (missing.length) {
-			embed.spliceFields(fieldIndex, 1, {
-				name: EMBED_TITLE_NOTICE,
-				value: BUTTONS_MISSING_BOT_PERMISSIONS(missing),
-			});
-		} else {
-			embed.spliceFields(fieldIndex, 1);
-		}
-	} else if (missing.length) {
-		embed.spliceFields(1, 0, {
-			name: EMBED_TITLE_NOTICE,
-			value: BUTTONS_MISSING_BOT_PERMISSIONS(missing),
-		});
-	}
 }

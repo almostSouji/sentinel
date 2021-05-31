@@ -22,7 +22,7 @@ import {
 	ERROR_CODE_UNKNOWN_MESSAGE,
 	ERROR_CODE_UNKNOWN_USER,
 } from './constants';
-import { banButton, checkAndApplyNotice, deleteButton, dismissButton } from './functions/buttons';
+import { banButton, deleteButton, dismissButton } from './functions/buttons';
 import Client from './structures/Client';
 import { EXPERIMENT_BUTTONS } from './keys';
 import { analyze } from './functions/analyze';
@@ -116,12 +116,10 @@ client.on('interaction', async (interaction) => {
 				);
 			} catch (error) {
 				logger.error(error);
-				checkAndApplyNotice(embed, Permissions.FLAGS.MANAGE_MESSAGES, botPermissionsInButtonTargetChannel);
-
 				if (error.code === ERROR_CODE_MISSING_PERMISSIONS) {
 					const perms = botPermissionsInButtonTargetChannel?.has(Permissions.FLAGS.MANAGE_MESSAGES) ?? false;
 					messageParts.push(BAN_FAIL_MISSING(executor.tag, target));
-					buttons.push(banButton(target, c, m, perms));
+					buttons.push(banButton(target, c, m, interactionMessage.member?.bannable ?? true));
 					if (m !== '0' && c !== '0') {
 						buttons.push(deleteButton(target, c, m, perms));
 					}
@@ -160,37 +158,19 @@ client.on('interaction', async (interaction) => {
 					await channel.messages.delete(m);
 					messageParts.push(DELETE_SUCCESS(executor.tag));
 					if (target !== '0') {
-						buttons.push(
-							banButton(
-								target,
-								c,
-								'0',
-								botPermissionsInButtonTargetChannel?.has(Permissions.FLAGS.BAN_MEMBERS) ?? false,
-							),
-						);
+						buttons.push(banButton(target, c, '0', interactionMessage.member?.bannable ?? true));
 					}
 				} catch (error) {
 					logger.error(error);
 					if (error.code === ERROR_CODE_UNKNOWN_MESSAGE) {
 						messageParts.push(DELETE_FAIL_UNKNOWN(executor.tag));
 						if (target !== '0') {
-							buttons.push(
-								banButton(
-									target,
-									c,
-									'0',
-									botPermissionsInButtonTargetChannel?.has(Permissions.FLAGS.BAN_MEMBERS) ?? false,
-								),
-							);
+							buttons.push(banButton(target, c, '0', interactionMessage.member?.bannable ?? true));
 						}
 					} else {
 						messageParts.push(DELETE_FAIL_OTHER(executor.tag));
-						buttons.push(
-							banButton(target, c, m, botPermissionsInButtonTargetChannel?.has(Permissions.FLAGS.BAN_MEMBERS) ?? false),
-						);
+						buttons.push(banButton(target, c, m, interactionMessage.member?.bannable ?? true));
 					}
-				} finally {
-					checkAndApplyNotice(embed, Permissions.FLAGS.BAN_MEMBERS, botPermissionsInButtonTargetChannel);
 				}
 			}
 		}
