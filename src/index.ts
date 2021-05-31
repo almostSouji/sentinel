@@ -8,8 +8,8 @@ import {
 	Message,
 	MessageActionRow,
 	Intents,
-	Collection,
-	Snowflake,
+	DMChannel,
+	TextChannel,
 } from 'discord.js';
 
 import {
@@ -17,7 +17,6 @@ import {
 	BUTTON_ACTION_BAN,
 	BUTTON_ACTION_DELETE,
 	BUTTON_ACTION_DISMISS,
-	BUTTON_LABEL_FORCE_BAN,
 	COLOR_DARK,
 	ERROR_CODE_MISSING_PERMISSIONS,
 	ERROR_CODE_UNKNOWN_MESSAGE,
@@ -25,7 +24,7 @@ import {
 } from './constants';
 import { banButton, checkAndApplyNotice, deleteButton, dismissButton } from './functions/buttons';
 import Client from './structures/Client';
-import { CHANNELS_LOG, EXPERIMENT_BUTTONS } from './keys';
+import { EXPERIMENT_BUTTONS } from './keys';
 import { analyze } from './functions/analyze';
 import {
 	APPROVED,
@@ -42,6 +41,12 @@ import {
 } from './messages/messages';
 import { logger } from './functions/logger';
 import { truncateEmbed } from './functions/util';
+import { updateLogState } from './functions/updateLogState';
+import { handleMemberGuildState } from './functions/logStateHandlers/handleMemberGuildState';
+import { handleMessageDeletableState } from './functions/logStateHandlers/handleMessageDeletableState';
+import { handleMemberRemoval } from './functions/logStateHandlers/handleMemberRemoval';
+import { handleMessageDelete } from './functions/logStateHandlers/handleMessageDelete';
+import { handleChannelDelete } from './functions/logStateHandlers/handleChannelDelete';
 
 export interface ProcessEnv {
 	DISCORD_TOKEN: string;
@@ -49,7 +54,7 @@ export interface ProcessEnv {
 }
 
 const client = new Client({
-	intents: [Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MEMBERS],
+	intents: [Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILD_BANS],
 });
 const { redis } = client;
 
@@ -226,221 +231,40 @@ client.on('interaction', async (interaction) => {
 	});
 });
 
-client.on('messageDeleteBulk', async (m) => {
-	const first = m.first();
-	if (!first?.guild) return;
-	const deletedMessages = m as Collection<Snowflake, Message>;
-	const guild = first.guild;
-	const logChannel = guild.channels.resolve((await client.redis.get(CHANNELS_LOG(guild.id))) ?? '');
-	if (!logChannel || !logChannel.isText()) return;
-
-	for (const message of logChannel.messages.cache.values()) {
-		if (message.author.id !== client.user!.id) continue;
-		if (!message.embeds.length) continue;
-		const embed = message.embeds[0];
-		const content = message.content;
-		if (!message.components.length) continue;
-		let buttons = message.components[0].components;
-		let changed = false;
-		const deleteButton = buttons.find((b) => b.customID?.startsWith(BUTTON_ACTION_DELETE));
-
-		if (deleteButton) {
-			const [, , secondaryTarget] = deleteButton.customID?.split('-') ?? [];
-			const [, m] = secondaryTarget.split('/');
-			if (deletedMessages.has(m)) {
-				buttons = buttons.filter((b) => !b.customID?.startsWith(BUTTON_ACTION_DELETE));
-				changed = true;
-			}
-		}
-
-		if (!changed) continue;
-		void message.edit(content.length ? content : null, {
-			embed,
-			components: buttons.length ? [new MessageActionRow().addComponents(buttons)] : [],
-		});
-	}
-});
-
-client.on('messageDelete', async (deletedMessage) => {
+client.on('messageDelete', (deletedMessage) => {
 	const { guild } = deletedMessage;
 	if (!guild) return;
-	const logChannel = guild.channels.resolve((await client.redis.get(CHANNELS_LOG(guild.id))) ?? '');
-	if (!logChannel || !logChannel.isText()) return;
-
-	for (const message of logChannel.messages.cache.values()) {
-		if (message.author.id !== client.user!.id) continue;
-		if (!message.embeds.length) continue;
-		const embed = message.embeds[0];
-		const content = message.content;
-		if (!message.components.length) continue;
-		let buttons = message.components[0].components;
-		let changed = false;
-		const deleteButton = buttons.find((b) => b.customID?.startsWith(BUTTON_ACTION_DELETE));
-
-		if (deleteButton) {
-			const [, , secondaryTarget] = deleteButton.customID?.split('-') ?? [];
-			const [, m] = secondaryTarget.split('/');
-			if (deletedMessage.id === m) {
-				buttons = buttons.filter((b) => !b.customID?.startsWith(BUTTON_ACTION_DELETE));
-				changed = true;
-			}
-		}
-
-		if (!changed) continue;
-		void message.edit(content.length ? content : null, {
-			embed,
-			components: buttons.length ? [new MessageActionRow().addComponents(buttons)] : [],
-		});
-	}
+	void updateLogState(guild, [], [handleMessageDelete], [deletedMessage.id]);
 });
 
-client.on('guildBanAdd', async (ban) => {
-	const { guild } = ban;
-	const logChannel = guild.channels.resolve((await client.redis.get(CHANNELS_LOG(guild.id))) ?? '');
-	if (!logChannel || !logChannel.isText()) return;
-
-	for (const message of logChannel.messages.cache.values()) {
-		if (message.author.id !== client.user!.id) continue;
-		if (!message.embeds.length) continue;
-		const embed = message.embeds[0];
-		const content = message.content;
-		if (!message.components.length) continue;
-		let buttons = message.components[0].components;
-		let changed = false;
-		const banButton = buttons.find((b) => b.customID?.startsWith(BUTTON_ACTION_BAN));
-
-		if (banButton) {
-			const [, target] = banButton.customID?.split('-') ?? [];
-			if (target === ban.user.id) {
-				// ! user banned, remove ban button
-				buttons = buttons.filter((b) => !b.customID?.startsWith(BUTTON_ACTION_BAN));
-				changed = true;
-			}
-		}
-		if (!changed) continue;
-		void message.edit(content.length ? content : null, {
-			embed,
-			components: buttons.length ? [new MessageActionRow().addComponents(buttons)] : [],
-		});
-	}
+client.on('channelDelete', (channel) => {
+	if (channel instanceof DMChannel || !channel.isText()) return;
+	void updateLogState(channel.guild, [], [handleChannelDelete], [channel.id]);
 });
 
-client.on('guildMemberRemove', async (member) => {
-	const { guild } = member;
-	const logChannel = guild.channels.resolve((await client.redis.get(CHANNELS_LOG(guild.id))) ?? '');
-	if (!logChannel || !logChannel.isText()) return;
-
-	for (const message of logChannel.messages.cache.values()) {
-		if (message.author.id !== client.user!.id) continue;
-		if (!message.embeds.length) continue;
-		const embed = message.embeds[0];
-		const content = message.content;
-		if (!message.components.length) continue;
-		let buttons = message.components[0].components;
-		let changed = false;
-		const banButton = buttons.find((b) => b.customID?.startsWith(BUTTON_ACTION_BAN));
-
-		if (banButton) {
-			const [, target] = banButton.customID?.split('-') ?? [];
-			if (target === member.id) {
-				// ! member left, check if banned
-				const bans = await guild.bans.fetch();
-				if (bans.has(target)) {
-					// ! already banned
-					// ! remove ban button
-					buttons = buttons.filter((b) => !b.customID?.startsWith(BUTTON_ACTION_BAN));
-					changed = true;
-				} else {
-					// ! not banned yet but left
-					// ! force ban
-					banButton.setLabel(BUTTON_LABEL_FORCE_BAN);
-					changed = true;
-				}
-			}
-		}
-		if (!changed) continue;
-		void message.edit(content.length ? content : null, {
-			embed,
-			components: buttons.length ? [new MessageActionRow().addComponents(buttons)] : [],
-		});
-	}
+client.on('channelUpdate', (_, channel) => {
+	if (channel instanceof DMChannel || !channel.isText()) return;
+	// ? guard should work but doesn't due to upstream #5716
+	void updateLogState((channel as TextChannel).guild, [handleMemberGuildState], [handleMessageDeletableState]);
 });
 
-client.on('guildMemberUpdate', async (oldMember) => {
+client.on('messageDeleteBulk', (deletedMessages) => {
+	const first = deletedMessages.first();
+	if (!first?.guild) return;
+	void updateLogState(first.guild, [], [handleMessageDelete], deletedMessages.keyArray());
+});
+
+client.on('guildMemberRemove', (member) => {
+	void updateLogState(member.guild, [handleMemberRemoval], [], [member.id]);
+});
+
+client.on('guildBanAdd', (ban) => {
+	void updateLogState(ban.guild, [handleMemberRemoval], [], [ban.user.id], true);
+});
+
+client.on('guildMemberUpdate', (oldMember) => {
 	const { guild } = oldMember;
-	const logChannel = guild.channels.resolve((await client.redis.get(CHANNELS_LOG(oldMember.guild.id))) ?? '');
-	if (!logChannel || !logChannel.isText()) return;
-
-	for (const message of logChannel.messages.cache.values()) {
-		if (message.author.id !== client.user!.id) continue;
-		if (!message.embeds.length) continue;
-		const embed = message.embeds[0];
-		const content = message.content;
-		if (!message.components.length) continue;
-		let buttons = message.components[0].components;
-		let changed = false;
-		const banButton = buttons.find((b) => b.customID?.startsWith(BUTTON_ACTION_BAN));
-		const deleteButton = buttons.find((b) => b.customID?.startsWith(BUTTON_ACTION_DELETE));
-
-		if (banButton) {
-			const [, target] = banButton.customID?.split('-') ?? [];
-			try {
-				const targetMember = await guild.members.fetch(target);
-				if (targetMember.bannable === banButton.disabled) {
-					// ! ability to ban changed
-					// ! invert disabled state
-					banButton.setDisabled(!banButton.disabled);
-					changed = true;
-				}
-			} catch (error) {
-				logger.error(error);
-				const bans = await guild.bans.fetch();
-				if (bans.has(target)) {
-					// ! already banned
-					// ! remove ban button
-					buttons = buttons.filter((b) => !b.customID?.startsWith(BUTTON_ACTION_BAN));
-					changed = true;
-				} else {
-					// ! not banned yet but left
-					// ! force ban
-					banButton.setLabel(BUTTON_LABEL_FORCE_BAN);
-					changed = true;
-				}
-			}
-		}
-
-		if (deleteButton) {
-			const [, , secondaryTarget] = deleteButton.customID?.split('-') ?? [];
-			const [c, m] = secondaryTarget.split('/');
-			const channel = guild.channels.resolve(c);
-			if (!channel || !channel.isText()) {
-				// ! channel has been deleted | is not text
-				// ! remove delete button
-				buttons = buttons.filter((b) => !b.customID?.startsWith(BUTTON_ACTION_DELETE));
-				changed = true;
-			} else {
-				try {
-					const message = await channel.messages.fetch(m);
-					if (message.deletable === deleteButton.disabled) {
-						deleteButton.setDisabled(!deleteButton.disabled);
-						changed = true;
-					}
-				} catch (error) {
-					logger.error(error);
-					// ! message deleted
-					// ! remove delete button
-					buttons = buttons.filter((b) => !b.customID?.startsWith(BUTTON_ACTION_DELETE));
-					changed = true;
-				}
-			}
-		}
-
-		if (!changed) continue;
-		void message.edit(content.length ? content : null, {
-			embed,
-			components: buttons.length ? [new MessageActionRow().addComponents(buttons)] : [],
-		});
-	}
+	void updateLogState(guild, [handleMemberGuildState], [handleMessageDeletableState]);
 });
 
 void client.login(process.env.DISCORD_TOKEN);
