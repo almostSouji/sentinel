@@ -32,6 +32,9 @@ import {
 	BAN_FAIL_OTHER,
 	BAN_FAIL_UNKNOWN,
 	BAN_SUCCESS,
+	BUTTON_PRESS_MISSING_PERMISSIONS_BAN,
+	BUTTON_PRESS_MISSING_PERMISSIONS_BASE,
+	BUTTON_PRESS_MISSING_PERMISSIONS_DELETE,
 	DELETE_FAIL_OTHER,
 	DELETE_FAIL_UNKNOWN,
 	DELETE_SUCCESS,
@@ -102,7 +105,10 @@ client.on('interaction', async (interaction) => {
 		const channel = interaction.guild.channels.resolve(c);
 		const botPermissionsInButtonTargetChannel = channel?.permissionsFor(client.user!) ?? null;
 		if (op === BUTTON_ACTION_BAN) {
-			if (shouldCheckPermissions && !interaction.member.permissions.has(Permissions.FLAGS.BAN_MEMBERS)) return;
+			if (shouldCheckPermissions && !interaction.member.permissions.has(Permissions.FLAGS.BAN_MEMBERS))
+				return interaction.reply(BUTTON_PRESS_MISSING_PERMISSIONS_BAN, {
+					ephemeral: true,
+				});
 			try {
 				const user = await interaction.guild.members.ban(target, {
 					days: 1,
@@ -152,7 +158,10 @@ client.on('interaction', async (interaction) => {
 		}
 
 		if (op === BUTTON_ACTION_DELETE) {
-			if (shouldCheckPermissions && !channel?.permissionsFor(executor)?.has(Permissions.FLAGS.MANAGE_MESSAGES)) return;
+			if (shouldCheckPermissions && !channel?.permissionsFor(executor)?.has(Permissions.FLAGS.MANAGE_MESSAGES))
+				return interaction.reply(BUTTON_PRESS_MISSING_PERMISSIONS_DELETE, {
+					ephemeral: true,
+				});
 			if (channel?.isText()) {
 				try {
 					await channel.messages.delete(m);
@@ -181,12 +190,18 @@ client.on('interaction', async (interaction) => {
 	}
 
 	if (op === BUTTON_ACTION_DISMISS) {
-		if (shouldCheckPermissions && !interaction.member.permissions.has(Permissions.FLAGS.MANAGE_MESSAGES)) return;
+		if (shouldCheckPermissions && !interaction.member.permissions.has(Permissions.FLAGS.MANAGE_MESSAGES))
+			return interaction.reply(BUTTON_PRESS_MISSING_PERMISSIONS_BASE, {
+				ephemeral: true,
+			});
 		messageParts.push(DISMISSED(executor.tag));
 	}
 
 	if (op === BUTTON_ACTION_APPROVE) {
-		if (shouldCheckPermissions && !interaction.member.permissions.has(Permissions.FLAGS.MANAGE_MESSAGES)) return;
+		if (shouldCheckPermissions && !interaction.member.permissions.has(Permissions.FLAGS.MANAGE_MESSAGES))
+			return interaction.reply(BUTTON_PRESS_MISSING_PERMISSIONS_BASE, {
+				ephemeral: true,
+			});
 		messageParts.push(APPROVED(executor.tag));
 		embed.setColor(COLOR_DARK);
 	}
