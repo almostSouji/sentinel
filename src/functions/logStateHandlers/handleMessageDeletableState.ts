@@ -22,7 +22,7 @@ export async function handleMessageDeletableState(
 			return true;
 		}
 	} catch (error) {
-		logger.log(error);
+		logger.error(error);
 		row.components = row.components.filter((b) => !b.customID?.startsWith(BUTTON_ACTION_DELETE));
 		return true;
 	}
