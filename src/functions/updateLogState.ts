@@ -69,7 +69,7 @@ export async function updateLogState(
 		truncateEmbed(embed);
 		void message.edit(content.length ? content : null, {
 			embed,
-			components: buttons.length ? [new MessageActionRow().addComponents(buttons)] : [],
+			components: row.components.length ? [new MessageActionRow().addComponents(row.components)] : [],
 		});
 	}
 }

@@ -11,12 +11,8 @@ export function handleMessageDelete(
 	deletedMessages: Snowflake[] = [],
 ): boolean {
 	const channel = guild.channels.resolve(targetChannel);
-	if (!channel || !channel.isText()) {
-		row.components = row.components.filter((c) => c.customID?.startsWith(BUTTON_ACTION_DELETE));
-		return true;
-	}
-	if (deletedMessages.includes(targetMessage)) {
-		row.components = row.components.filter((b) => !b.customID?.startsWith(BUTTON_ACTION_DELETE));
+	if (!channel || !channel.isText() || deletedMessages.includes(targetMessage)) {
+		row.components = row.components.filter((c) => !c.customID?.startsWith(BUTTON_ACTION_DELETE));
 		return true;
 	}
 
