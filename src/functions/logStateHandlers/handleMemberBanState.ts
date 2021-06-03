@@ -13,10 +13,11 @@ export async function handleMemberBanState(
 	if (guild.me?.permissions.has(Permissions.FLAGS.BAN_MEMBERS)) {
 		const bans = await guild.bans.fetch();
 		if (bans.has(target)) {
-			row.components = row.components.filter((c) => c.customID?.startsWith(BUTTON_ACTION_BAN));
+			row.components = row.components.filter((c) => !c.customID?.startsWith(BUTTON_ACTION_BAN));
 			return true;
 		}
 		button.setLabel(BUTTON_LABEL_FORCE_BAN);
+		button.setDisabled(false);
 		return true;
 	}
 	if (error) {

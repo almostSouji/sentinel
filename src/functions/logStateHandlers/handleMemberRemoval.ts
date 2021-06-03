@@ -12,7 +12,7 @@ export function handleMemberRemoval(
 	isBanned?: boolean,
 ): Promise<boolean> {
 	if (isBanned && removedUser === target) {
-		row.components = row.components.filter((c) => c.customID?.startsWith(BUTTON_ACTION_BAN));
+		row.components = row.components.filter((c) => !c.customID?.startsWith(BUTTON_ACTION_BAN));
 		return Promise.resolve(true);
 	}
 	return handleMemberBanState(guild, embed, button, row, target);
