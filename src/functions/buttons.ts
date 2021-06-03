@@ -1,16 +1,16 @@
 import { MessageButton, Snowflake, Permissions, GuildMember } from 'discord.js';
 import {
-	BUTTON_ID_APPROVE,
 	BUTTON_ID_BAN,
 	BUTTON_ID_DELETE,
-	BUTTON_ID_DISMISS,
-	BUTTON_LABEL_APPROVE,
+	BUTTON_ID_QUESTION,
+	BUTTON_ID_REVIEW,
 	BUTTON_LABEL_BAN,
 	BUTTON_LABEL_DELETE,
-	BUTTON_LABEL_DISMISS,
-	EMOJI_ID_APPROVE_WHITE,
+	BUTTON_LABEL_QUESTION,
+	BUTTON_LABEL_REVIEW,
 	EMOJI_ID_BAN_WHITE,
 	EMOJI_ID_DELETE_WHITE,
+	EMOJI_ID_REVIEW_WHITE,
 } from '../constants';
 
 export interface ResponseData {
@@ -70,21 +70,26 @@ export function deleteButton(
 	});
 }
 
-export const approveButton = new MessageButton({
-	type: 2,
-	style: 3,
-	customID: BUTTON_ID_APPROVE,
-	label: BUTTON_LABEL_APPROVE,
-	emoji: {
-		id: EMOJI_ID_APPROVE_WHITE,
-	},
-});
+export function reviewButton(targetUser: Snowflake, targetChannel: Snowflake, targetMessage: Snowflake): MessageButton {
+	return new MessageButton({
+		type: 2,
+		style: 3,
+		customID: BUTTON_ID_REVIEW(targetUser, targetChannel, targetMessage),
+		label: BUTTON_LABEL_REVIEW,
+		emoji: {
+			id: EMOJI_ID_REVIEW_WHITE,
+		},
+	});
+}
 
-export const dismissButton = new MessageButton({
+export const questionButton = new MessageButton({
 	type: 2,
 	style: 2,
-	customID: BUTTON_ID_DISMISS,
-	label: BUTTON_LABEL_DISMISS,
+	customID: BUTTON_ID_QUESTION,
+	label: BUTTON_LABEL_QUESTION,
+	emoji: {
+		name: '❔',
+	},
 });
 
 export function generateButtons(
@@ -104,7 +109,7 @@ export function generateButtons(
 		res.push(deleteButton(targetUser, targetChannel, targetMessage, canDelete));
 	}
 
-	res.push(approveButton);
-	res.push(dismissButton);
+	res.push(reviewButton(targetUser, targetChannel, targetMessage));
+	res.push(questionButton);
 	return res;
 }

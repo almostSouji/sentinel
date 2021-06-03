@@ -13,34 +13,33 @@ import {
 } from 'discord.js';
 
 import {
-	BUTTON_ACTION_APPROVE,
 	BUTTON_ACTION_BAN,
 	BUTTON_ACTION_DELETE,
-	BUTTON_ACTION_DISMISS,
-	COLOR_DARK,
+	BUTTON_ACTION_QUESTION,
+	BUTTON_ACTION_REVIEW,
 	ERROR_CODE_MISSING_PERMISSIONS,
 	ERROR_CODE_UNKNOWN_MESSAGE,
 	ERROR_CODE_UNKNOWN_USER,
 } from './constants';
-import { banButton, deleteButton, dismissButton } from './functions/buttons';
+import { banButton, deleteButton, questionButton } from './functions/buttons';
 import Client from './structures/Client';
 import { EXPERIMENT_BUTTONS } from './keys';
 import { analyze } from './functions/analyze';
 import {
-	APPROVED,
+	REVIEWED,
 	BAN_FAIL_MISSING,
 	BAN_FAIL_OTHER,
 	BAN_FAIL_UNKNOWN,
 	BAN_SUCCESS,
 	BUTTON_PRESS_MISSING_PERMISSIONS_BAN,
-	BUTTON_PRESS_MISSING_PERMISSIONS_BASE,
+	BUTTON_PRESS_MISSING_PERMISSIONS_REVIEW,
 	BUTTON_PRESS_MISSING_PERMISSIONS_DELETE,
 	DELETE_FAIL_OTHER,
 	DELETE_FAIL_UNKNOWN,
 	DELETE_SUCCESS,
-	DISMISSED,
 	LOG_FOOTER_TEXT,
 	READY_LOG,
+	BUTTON_PRESS_EXPLANATION,
 } from './messages/messages';
 import { logger } from './functions/logger';
 import { truncateEmbed } from './functions/util';
@@ -186,24 +185,21 @@ client.on('interaction', async (interaction) => {
 	}
 
 	if (buttons.length) {
-		buttons.push(dismissButton);
+		buttons.push(questionButton);
 	}
 
-	if (op === BUTTON_ACTION_DISMISS) {
+	if (op === BUTTON_ACTION_REVIEW) {
 		if (shouldCheckPermissions && !interaction.member.permissions.has(Permissions.FLAGS.MANAGE_MESSAGES))
-			return interaction.reply(BUTTON_PRESS_MISSING_PERMISSIONS_BASE, {
+			return interaction.reply(BUTTON_PRESS_MISSING_PERMISSIONS_REVIEW, {
 				ephemeral: true,
 			});
-		messageParts.push(DISMISSED(executor.tag));
+		messageParts.push(REVIEWED(executor.tag));
 	}
 
-	if (op === BUTTON_ACTION_APPROVE) {
-		if (shouldCheckPermissions && !interaction.member.permissions.has(Permissions.FLAGS.MANAGE_MESSAGES))
-			return interaction.reply(BUTTON_PRESS_MISSING_PERMISSIONS_BASE, {
-				ephemeral: true,
-			});
-		messageParts.push(APPROVED(executor.tag));
-		embed.setColor(COLOR_DARK);
+	if (op === BUTTON_ACTION_QUESTION) {
+		return interaction.reply(BUTTON_PRESS_EXPLANATION, {
+			ephemeral: true,
+		});
 	}
 
 	embed.setFooter(LOG_FOOTER_TEXT(executor.tag, executor.id), executor.displayAvatarURL());
