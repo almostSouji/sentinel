@@ -18,7 +18,7 @@ export function truncate(text: string, len: number): string {
 export function zSetZipper(raw: string[], words = false): [string, number][] {
 	const res: [string, number][] = [];
 	for (let i = 0; i < raw.length; i += 2) {
-		res.push([words ? `\\b${raw[i]}\\b` : raw[i], parseInt(raw[i + 1], 10)]);
+		res.push([words ? `\\b${escapeRegex(raw[i])}\\b` : escapeRegex(raw[i]), parseInt(raw[i + 1], 10)]);
 	}
 	return res;
 }
@@ -62,4 +62,8 @@ export function truncateEmbed(embed: MessageEmbed): MessageEmbed {
 		field.value = truncate(field.value, LIMIT_EMBED_FIELD_VALUE);
 	}
 	return embed;
+}
+
+export function escapeRegex(str: string): string {
+	return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
