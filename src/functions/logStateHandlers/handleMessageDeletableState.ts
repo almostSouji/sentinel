@@ -12,7 +12,7 @@ export async function handleMessageDeletableState(
 ): Promise<boolean> {
 	const channel = guild.channels.resolve(targetChannel);
 	if (!channel || !channel.isText()) {
-		row.components = row.components.filter((c) => c.customID?.startsWith(BUTTON_ACTION_DELETE));
+		row.components = row.components.filter((c) => !c.customID?.startsWith(BUTTON_ACTION_DELETE));
 		return true;
 	}
 	try {
