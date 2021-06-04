@@ -94,3 +94,7 @@ export const EXPERIMENT_IMMUNITY = (guild: string) => `guild:${guild}:experiment
 // 🧪 INT
 // Amount of messages to pre-fetch from the log channel
 export const EXPERIMENT_PREFETCH = (guild: string) => `guild:${guild}:experiment:prefetch`;
+
+// 🧪 STR ["always"]
+// Explain button mode. Only with other buttons by default
+export const EXPERIMENT_EXPLAIN = (guild: string) => `guild:${guild}:experiment:buttons:explain`;

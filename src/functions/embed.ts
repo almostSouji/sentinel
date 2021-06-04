@@ -1,6 +1,13 @@
 import { MessageEmbed, TextChannel, NewsChannel, Message, PartialMessage, MessageActionRow } from 'discord.js';
-import { EXPERIMENT_BUTTONS_LEVEL, NOTIF_LEVEL, NOTIF_PREFIX, NOTIF_ROLES, NOTIF_USERS } from '../keys';
-import { generateButtons } from './buttons';
+import {
+	EXPERIMENT_BUTTONS_LEVEL,
+	EXPERIMENT_EXPLAIN,
+	NOTIF_LEVEL,
+	NOTIF_PREFIX,
+	NOTIF_ROLES,
+	NOTIF_USERS,
+} from '../keys';
+import { generateButtons, questionButton } from './buttons';
 import { truncate, truncateEmbed } from './util';
 
 export async function sendLog(
@@ -83,5 +90,9 @@ export async function sendLog(
 			users,
 			roles,
 		},
+		components:
+			buttonLevelString && (await redis.get(EXPERIMENT_EXPLAIN(guild.id))) === 'always'
+				? [new MessageActionRow().addComponents(questionButton)]
+				: undefined,
 	});
 }
