@@ -10,6 +10,8 @@ import {
 	Intents,
 	DMChannel,
 	TextChannel,
+	Collection,
+	Snowflake,
 } from 'discord.js';
 
 import {
@@ -23,7 +25,7 @@ import {
 } from './constants';
 import { banButton, deleteButton, questionButton } from './functions/buttons';
 import Client from './structures/Client';
-import { EXPERIMENT_BUTTONS } from './keys';
+import { CHANNELS_LOG, EXPERIMENT_BUTTONS, EXPERIMENT_PREFETCH } from './keys';
 import { analyze } from './functions/analyze';
 import {
 	REVIEWED,
@@ -71,7 +73,28 @@ client.on('messageUpdate', (oldMessage, newMessage) => {
 	void analyze(newMessage, true);
 });
 
-client.on('ready', () => {
+client.on('ready', async () => {
+	for (const guild of client.guilds.cache.values()) {
+		const a = await client.redis.get(EXPERIMENT_PREFETCH(guild.id));
+		const c = await client.redis.get(CHANNELS_LOG(guild.id));
+		if (!a || !c) continue;
+		let amount = parseInt(a, 10);
+		let last: Snowflake | null = null;
+		let b = false;
+		const channel = guild.channels.resolve(c);
+		if (isNaN(amount) || !channel || !channel.isText()) continue;
+		if (!guild.me?.permissions.has([Permissions.FLAGS.READ_MESSAGE_HISTORY, Permissions.FLAGS.VIEW_CHANNEL])) return;
+		while (amount > 0 && !b) {
+			const messages: Collection<Snowflake, Message> = await channel.messages.fetch({
+				before: last ?? undefined,
+				limit: Math.min(amount, 100),
+			});
+
+			b = last === messages.last()?.id;
+			last = messages.last()?.id ?? null;
+			amount -= messages.size;
+		}
+	}
 	logger.info(`${READY_LOG(client.user!.tag)}`);
 });
 
