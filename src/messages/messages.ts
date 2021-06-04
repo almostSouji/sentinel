@@ -17,4 +17,4 @@ export const BAN_FAIL_OTHER = (executor: string, target: string) => `• \`${exe
 export const BUTTON_PRESS_MISSING_PERMISSIONS_BAN = `To use the ban button you need permissions to ban members!`;
 export const BUTTON_PRESS_MISSING_PERMISSIONS_DELETE = `To use the delete button you need permissions to delete messages in the channel this was flagged in!`;
 export const BUTTON_PRESS_MISSING_PERMISSIONS_REVIEW = `To use the review button you need permissions to manage messages in the channel this was flagged in!`;
-export const BUTTON_PRESS_EXPLANATION = `// TODO`;
+export const BUTTON_PRESS_EXPLANATION = `This bot is still heavily under development and things might change at any point. This will eventually hold an explanation as to how the bot works. However since I'm currently not too sure about how this bot will work this placeholder is all you get for now. `;

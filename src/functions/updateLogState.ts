@@ -9,7 +9,9 @@ type BanHandler = (
 	button: MessageButton,
 	row: MessageActionRow,
 	target: Snowflake,
-	removedUser?: Snowflake,
+	targetChannel: Snowflake,
+	targetMessage: Snowflake,
+	changedUser?: Snowflake,
 	isBanned?: boolean,
 ) => boolean | Promise<boolean>;
 
@@ -27,7 +29,7 @@ export async function updateLogState(
 	guild: Guild,
 	banHandlers: BanHandler[] = [],
 	deleteHandlers: DeleteHandler[] = [],
-	deletedStructures: Snowflake[] = [],
+	changedStructures: Snowflake[] = [],
 	isBanned?: boolean,
 ): Promise<void> {
 	const { client } = guild;
@@ -48,9 +50,10 @@ export async function updateLogState(
 
 		let changed = false;
 		if (banButton) {
-			const [, target] = banButton.customID?.split('-') ?? [];
+			const [, target, secondaryTarget] = banButton.customID?.split('-') ?? [];
+			const [c, m] = secondaryTarget.split('/');
 			for (const handler of banHandlers) {
-				const res = handler(guild, embed, banButton, row, target, deletedStructures[0], isBanned);
+				const res = handler(guild, embed, banButton, row, target, c, m, changedStructures[0], isBanned);
 				const change = res instanceof Promise ? await res : res;
 				changed = change || changed;
 			}
@@ -59,7 +62,7 @@ export async function updateLogState(
 			const [, , secondaryTarget] = deleteButton.customID?.split('-') ?? [];
 			const [c, m] = secondaryTarget.split('/');
 			for (const handler of deleteHandlers) {
-				const res = handler(guild, embed, deleteButton, row, c, m, deletedStructures);
+				const res = handler(guild, embed, deleteButton, row, c, m, changedStructures);
 				const change = res instanceof Promise ? await res : res;
 				changed = change || changed;
 			}

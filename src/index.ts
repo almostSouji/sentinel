@@ -49,6 +49,7 @@ import { handleMessageDeletableState } from './functions/logStateHandlers/handle
 import { handleMemberRemoval } from './functions/logStateHandlers/handleMemberRemoval';
 import { handleMessageDelete } from './functions/logStateHandlers/handleMessageDelete';
 import { handleChannelDelete } from './functions/logStateHandlers/handleChannelDelete';
+import { handleMemberAdd } from './functions/logStateHandlers/handleMemberAdd';
 
 export interface ProcessEnv {
 	DISCORD_TOKEN: string;
@@ -243,6 +244,10 @@ client.on('messageDeleteBulk', (deletedMessages) => {
 	const first = deletedMessages.first();
 	if (!first?.guild) return;
 	void updateLogState(first.guild, [], [handleMessageDelete], deletedMessages.keyArray());
+});
+
+client.on('guildMemberAdd', (member) => {
+	void updateLogState(member.guild, [handleMemberAdd], [], [member.id]);
 });
 
 client.on('guildMemberRemove', (member) => {

@@ -8,6 +8,8 @@ export function handleMemberRemoval(
 	button: MessageButton,
 	row: MessageActionRow,
 	target: Snowflake,
+	targetChannel: Snowflake,
+	targetMessage: Snowflake,
 	removedUser?: Snowflake,
 	isBanned?: boolean,
 ): Promise<boolean> {
