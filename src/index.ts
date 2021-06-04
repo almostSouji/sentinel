@@ -41,7 +41,11 @@ import {
 	DELETE_SUCCESS,
 	LOG_FOOTER_TEXT,
 	READY_LOG,
-	BUTTON_PRESS_EXPLANATION,
+	EXPLAIN_WORKING,
+	EXPLAIN_PERCENTAGE,
+	EXPLAIN_NYT,
+	EXPLAIN_UPDATING,
+	EXPLAIN_PRIVATE,
 } from './messages/messages';
 import { logger } from './functions/logger';
 import { truncateEmbed } from './functions/util';
@@ -221,7 +225,8 @@ client.on('interaction', async (interaction) => {
 	}
 
 	if (op === BUTTON_ACTION_QUESTION) {
-		return interaction.reply(BUTTON_PRESS_EXPLANATION, {
+		const parts = [`**${EXPLAIN_WORKING}**\n`, EXPLAIN_PERCENTAGE, EXPLAIN_NYT, EXPLAIN_UPDATING, EXPLAIN_PRIVATE];
+		return interaction.reply(parts.join('\n'), {
 			ephemeral: true,
 		});
 	}

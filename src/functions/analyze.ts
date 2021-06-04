@@ -26,6 +26,16 @@ import { MATCH_PHRASE } from '../messages/messages';
 import { sendLog } from './embed';
 
 const colors = [COLOR_MILD, COLOR_MILD, COLOR_ALERT, COLOR_SEVERE, COLOR_PURPLE] as const;
+const nytflags = [
+	'ATTACK_ON_AUTHOR',
+	'ATTACK_ON_COMMENTER',
+	'INCOHERENT',
+	'INFLAMMATORY',
+	'LIKELY_TO_REJECT',
+	'OBSCENE',
+	'SPAM',
+	'UNSUBSTANTIAL',
+];
 
 function setSeverityColor(embed: MessageEmbed, severity: number): MessageEmbed {
 	return embed.setColor(colors[severity] ?? COLOR_DARK);
@@ -177,7 +187,7 @@ export async function analyze(message: Message | PartialMessage, isEdit = false)
 				.sort((a, b) => b.score.value - a.score.value)
 				.map((tag) => {
 					const percent = tag.score.value * 100;
-					return `• ${percent.toFixed(2)}% \`${tag.key}\``;
+					return `• ${percent.toFixed(2)}% \`${tag.key}\`${nytflags.includes(tag.key) ? ' ¹' : ''}`;
 				})
 				.join('\n'),
 			true,
