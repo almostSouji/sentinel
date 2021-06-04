@@ -240,6 +240,10 @@ client.on('channelUpdate', (_, channel) => {
 	void updateLogState((channel as TextChannel).guild, [handleMemberGuildState], [handleMessageDeletableState]);
 });
 
+client.on('roleUpdate', (oldRole) => {
+	void updateLogState(oldRole.guild, [handleMemberGuildState], [handleMessageDeletableState]);
+});
+
 client.on('messageDeleteBulk', (deletedMessages) => {
 	const first = deletedMessages.first();
 	if (!first?.guild) return;
