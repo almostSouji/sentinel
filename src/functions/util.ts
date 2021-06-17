@@ -102,19 +102,15 @@ export function deserializeTargets(buffer: Buffer): DeserializedTargets {
 export function serializeAttributes(op: number, attributes: number[]): string {
 	const b = Buffer.alloc(perspectiveAttributes.length * 2 + 2);
 	b.writeUInt16LE(op);
-	for (let i = 0; i < attributes.length; i++) {
-		b.writeUInt16LE(attributes[i], 2 + i * 2);
+	for (let index = 0; index < attributes.length; index++) {
+		b.writeUInt16LE(attributes[index], 2 + index * 2);
 	}
 	return b.toString('binary');
 }
 
 export function deserializeAttributes(buffer: Buffer): AttributeScoreMapEntry[] {
-	const res = perspectiveAttributes.reduce((a, c, i) => {
-		a.push({
-			key: c,
-			value: buffer.readUInt16LE(2 + i * 2) / 100,
-		});
-		return a;
-	}, [] as AttributeScoreMapEntry[]);
-	return res;
+	return perspectiveAttributes.map((key, index) => ({
+		key,
+		value: buffer.readUInt16LE(2 + index * 2) / 100,
+	}));
 }
