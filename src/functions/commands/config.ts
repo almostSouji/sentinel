@@ -1,11 +1,13 @@
 import { GuildChannel, CommandInteraction, Permissions, Snowflake } from 'discord.js';
-import { CHANNELS_LOG, IMMUNITY } from '../../keys';
+import { CHANNELS_LOG, IMMUNITY, PREFETCH } from '../../keys';
 import {
 	CONFIG_IMMUNITY_SET,
+	CONFIG_PREFETCH_SET,
 	CONFIG_SHOW_CHANNEL,
 	CONFIG_SHOW_CHANNEL_MISSING,
 	CONFIG_SHOW_CHANNEL_MISSING_PERMISSIONS,
 	CONFIG_SHOW_IMMUNITY,
+	CONFIG_SHOW_PREFETCH,
 	LOG_CHANNEL_SET,
 	LOG_NOT_TEXT,
 	LOG_NO_PERMS,
@@ -55,6 +57,9 @@ export async function configCommand(interaction: CommandInteraction) {
 		const immunityValue = await redis.get(IMMUNITY(guildID));
 		messageParts.push(CONFIG_SHOW_IMMUNITY(IMMUNITY_LEVEL[immunityValue ? parseInt(immunityValue, 10) : 0]));
 
+		const prefetchValue = await redis.get(PREFETCH(guildID));
+		messageParts.push(CONFIG_SHOW_PREFETCH(parseInt(prefetchValue ?? '0', 10)));
+
 		return interaction.reply({
 			content: messageParts.join('\n'),
 			ephemeral: true,
@@ -85,6 +90,13 @@ export async function configCommand(interaction: CommandInteraction) {
 		const level = immunityOption.value as number;
 		void redis.set(IMMUNITY(guildID), level);
 		messageParts.push(CONFIG_IMMUNITY_SET(IMMUNITY_LEVEL[level]));
+	}
+
+	const prefetchOption = options.get('prefetch');
+	if (prefetchOption) {
+		const amount = prefetchOption.value as number;
+		void redis.set(PREFETCH(guildID), amount);
+		messageParts.push(CONFIG_PREFETCH_SET(amount));
 	}
 
 	void interaction.reply({

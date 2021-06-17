@@ -25,7 +25,7 @@ import {
 	ERROR_CODE_UNKNOWN_USER,
 } from './constants';
 import Client from './structures/Client';
-import { CHANNELS_LOG, EXPERIMENT_PREFETCH } from './keys';
+import { CHANNELS_LOG, PREFETCH } from './keys';
 import { checkMessage } from './functions/checkMessage';
 import {
 	REVIEWED,
@@ -92,7 +92,7 @@ client.on('messageUpdate', (oldMessage, newMessage) => {
 
 client.on('ready', async () => {
 	for (const guild of client.guilds.cache.values()) {
-		const a = await client.redis.get(EXPERIMENT_PREFETCH(guild.id));
+		const a = await client.redis.get(PREFETCH(guild.id));
 		const c = await client.redis.get(CHANNELS_LOG(guild.id));
 		if (!a || !c) continue;
 		let amount = parseInt(a, 10);

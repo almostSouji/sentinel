@@ -48,6 +48,7 @@ export const CONFIG_SHOW_CHANNEL_MISSING_PERMISSIONS = (channel: Snowflake, miss
 	`${PREFIX_ERROR} Log channel: <#${channel}> (missing permissions: ${missing})`;
 export const CONFIG_IMMUNITY_SET = (permission: string) =>
 	`${PREFIX_SUCCESS} Immunity permission set to: \`${permission}\``;
+export const CONFIG_PREFETCH_SET = (amount: number) => `${PREFIX_SUCCESS} Prefetch messages on restart: \`${amount}\``;
 export const CONFIG_SHOW_CHANNEL = (channel: Snowflake) => `${PREFIX_SUCCESS} Log channel: <#${channel}>`;
-export const CONFIG_SHOW_IMMUNITY = (permission: string) =>
-	`${PREFIX_SUCCESS} Immunity permission set to: \`${permission}\``;
+export const CONFIG_SHOW_IMMUNITY = (permission: string) => `${PREFIX_SUCCESS} Immunity permission: \`${permission}\``;
+export const CONFIG_SHOW_PREFETCH = (amount: number) => `${PREFIX_SUCCESS} Prefetch messages on restart: \`${amount}\``;

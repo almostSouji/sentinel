@@ -50,6 +50,10 @@ export const ATTRIBUTE_SEEN = (guild: Snowflake, attribute: string) =>
 // Role IDs that should be notified
 export const NOTIF_ROLES = (guild: Snowflake) => `guild:${guild}:notifications:roles`;
 
+//* INT [0, 100, 200]
+// Amount of messages to pre-fetch from the log channel
+export const PREFETCH = (guild: Snowflake) => `guild:${guild}:prefetch`;
+
 //* SET
 // User IDs that should be notified
 export const NOTIF_USERS = (guild: Snowflake) => `guild:${guild}:notifications:users`;
@@ -86,10 +90,6 @@ export const MESSAGES_CHECKED = (guild: Snowflake) => `guild:${guild}:messages:c
 // 🧪 INT
 // Level required for buttons to trigger
 export const EXPERIMENT_BUTTONS_LEVEL = (guild: Snowflake) => `guild:${guild}:experiment:buttons:level`;
-
-// 🧪 INT
-// Amount of messages to pre-fetch from the log channel
-export const EXPERIMENT_PREFETCH = (guild: Snowflake) => `guild:${guild}:experiment:prefetch`;
 
 // 🧪 STR ["always"]
 // Explain button mode. Only with other buttons by default
