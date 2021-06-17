@@ -46,4 +46,8 @@ export const LOG_CHANNEL_SET = (channel: string) => `${PREFIX_SUCCESS} Log chann
 export const CONFIG_SHOW_CHANNEL_MISSING = `${PREFIX_ERROR} Log channel: none (required)`;
 export const CONFIG_SHOW_CHANNEL_MISSING_PERMISSIONS = (channel: Snowflake, missing: string) =>
 	`${PREFIX_ERROR} Log channel: <#${channel}> (missing permissions: ${missing})`;
+export const CONFIG_IMMUNITY_SET = (permission: string) =>
+	`${PREFIX_SUCCESS} Immunity permission set to: \`${permission}\``;
 export const CONFIG_SHOW_CHANNEL = (channel: Snowflake) => `${PREFIX_SUCCESS} Log channel: <#${channel}>`;
+export const CONFIG_SHOW_IMMUNITY = (permission: string) =>
+	`${PREFIX_SUCCESS} Immunity permission set to: \`${permission}\``;

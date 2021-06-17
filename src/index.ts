@@ -25,7 +25,7 @@ import {
 	ERROR_CODE_UNKNOWN_USER,
 } from './constants';
 import Client from './structures/Client';
-import { CHANNELS_LOG, EXPERIMENT_BUTTONS, EXPERIMENT_PREFETCH } from './keys';
+import { CHANNELS_LOG, EXPERIMENT_PREFETCH } from './keys';
 import { checkMessage } from './functions/checkMessage';
 import {
 	REVIEWED,
@@ -79,7 +79,6 @@ export function formatAttributes(values: AttributeScoreMapEntry[]): string {
 const client = new Client({
 	intents: [Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILD_BANS],
 });
-const { redis } = client;
 
 client.on('message', (message) => {
 	if (message.author.bot || !message.content.length || message.channel.type !== 'text') return;
@@ -102,7 +101,12 @@ client.on('ready', async () => {
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
 		const channel = guild.channels.resolve(c as Snowflake);
 		if (isNaN(amount) || !channel || !channel.isText()) continue;
-		if (!guild.me?.permissions.has([Permissions.FLAGS.READ_MESSAGE_HISTORY, Permissions.FLAGS.VIEW_CHANNEL])) return;
+		if (
+			!channel
+				.permissionsFor(client.user!)
+				?.has([Permissions.FLAGS.READ_MESSAGE_HISTORY, Permissions.FLAGS.VIEW_CHANNEL])
+		)
+			continue;
 		while (amount > 0 && !b) {
 			const messages: Collection<Snowflake, Message> = await channel.messages.fetch({
 				before: last ?? undefined,
@@ -144,12 +148,11 @@ client.on('interaction', async (interaction) => {
 
 	const res = Buffer.from(interaction.customID, 'binary');
 	const op = res.readInt16LE();
-	const shouldCheckPermissions = await redis.get(EXPERIMENT_BUTTONS(interaction.guild.id));
 
 	if (op === OpCodes.BAN) {
 		const { user: targetUserId } = deserializeTargets(res);
 
-		if (shouldCheckPermissions && !interaction.member.permissions.has(Permissions.FLAGS.BAN_MEMBERS)) {
+		if (!interaction.member.permissions.has(Permissions.FLAGS.BAN_MEMBERS)) {
 			return interaction.reply({
 				content: BUTTON_PRESS_MISSING_PERMISSIONS_BAN,
 				ephemeral: true,
@@ -185,17 +188,14 @@ client.on('interaction', async (interaction) => {
 	if (op === OpCodes.DELETE) {
 		const { channel: targetChannelId, message: targetMessageId } = deserializeTargets(res);
 		const channel = interaction.guild.channels.resolve(targetChannelId);
-		if (
-			shouldCheckPermissions &&
-			!channel?.permissionsFor(executor)?.has([Permissions.FLAGS.VIEW_CHANNEL, Permissions.FLAGS.MANAGE_MESSAGES])
-		) {
+		if (!channel?.permissionsFor(executor)?.has([Permissions.FLAGS.VIEW_CHANNEL, Permissions.FLAGS.MANAGE_MESSAGES])) {
 			return interaction.reply({
 				content: BUTTON_PRESS_MISSING_PERMISSIONS_DELETE,
 				ephemeral: true,
 			});
 		}
 
-		if (channel?.isText()) {
+		if (channel.isText()) {
 			try {
 				await channel.messages.delete(targetMessageId);
 
@@ -223,7 +223,7 @@ client.on('interaction', async (interaction) => {
 	if (op === OpCodes.REVIEW) {
 		const { channel: targetChannelId } = deserializeTargets(res);
 		const channel = interaction.guild.channels.resolve(targetChannelId);
-		if (shouldCheckPermissions && !channel?.permissionsFor(interaction.member).has(Permissions.FLAGS.MANAGE_MESSAGES))
+		if (!channel?.permissionsFor(interaction.member).has(Permissions.FLAGS.MANAGE_MESSAGES))
 			return interaction.reply({
 				content: BUTTON_PRESS_MISSING_PERMISSIONS_REVIEW,
 				ephemeral: true,

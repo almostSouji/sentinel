@@ -54,6 +54,11 @@ export const NOTIF_ROLES = (guild: Snowflake) => `guild:${guild}:notifications:r
 // User IDs that should be notified
 export const NOTIF_USERS = (guild: Snowflake) => `guild:${guild}:notifications:users`;
 
+//* INT [0 (NONE), 1 (MANAGE_MESSAGES), 2 (BAN_MEMBERS), 3 (ADMINISTRATOR)]
+//* default: 0
+// Permission required to be ignored by the application
+export const IMMUNITY = (guild: Snowflake) => `guild:${guild}:immunity`;
+
 //* INT
 //* default: 0
 // Severity level required to trigger a notification
@@ -81,17 +86,6 @@ export const MESSAGES_CHECKED = (guild: Snowflake) => `guild:${guild}:messages:c
 // 🧪 INT
 // Level required for buttons to trigger
 export const EXPERIMENT_BUTTONS_LEVEL = (guild: Snowflake) => `guild:${guild}:experiment:buttons:level`;
-// 🧪 STR ["check"]
-// Button permission mode. No executor permission checks by default
-export const EXPERIMENT_BUTTONS = (guild: Snowflake) => `guild:${guild}:experiment:buttons`;
-
-// 🧪 STR
-// Ignore messages starting with character sequence
-export const EXPERIMENT_IGNORE = (guild: Snowflake) => `guild:${guild}:experiment:ignore:prefix`;
-
-// 🧪 STR
-// ID of users and roles to ignore messages for
-export const EXPERIMENT_IMMUNITY = (guild: Snowflake) => `guild:${guild}:experiment:immunity`;
 
 // 🧪 INT
 // Amount of messages to pre-fetch from the log channel

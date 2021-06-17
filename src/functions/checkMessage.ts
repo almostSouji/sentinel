@@ -3,7 +3,6 @@ import { concatEnumeration, mapZippedByScore, zSetZipper } from './util';
 import { COLOR_MILD, COLOR_ALERT, COLOR_SEVERE, COLOR_DARK, COLOR_PURPLE } from '../constants';
 import {
 	CHANNELS_WATCHING,
-	EXPERIMENT_IGNORE,
 	ATTRIBUTES,
 	ATTRIBUTES_THRESHOLD,
 	ATTRIBUTES_AMOUNT,
@@ -17,13 +16,14 @@ import {
 	CUSTOM_FLAGS_PHRASES,
 	MESSAGES_SEEN,
 	MESSAGES_CHECKED,
-	EXPERIMENT_IMMUNITY,
+	IMMUNITY,
 } from '../keys';
 import { PerspectiveAttribute, Score, Scores } from '../types/perspective';
 import { logger } from './logger';
 import { analyzeText, perspectiveAttributes } from './perspective';
 import { sendLog } from './embed';
 import { MATCH_PHRASE, VERDICT, VERDICT_NONE } from '../messages/messages';
+import { IMMUNITY_LEVEL } from './commands/config';
 
 const colors = [COLOR_MILD, COLOR_MILD, COLOR_ALERT, COLOR_SEVERE, COLOR_PURPLE] as const;
 
@@ -104,12 +104,25 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 		const isWatch = await redis.sismember(CHANNELS_WATCHING(guild.id), channel.id);
 		if (!isWatch) return;
 
-		const immunity = await redis.smembers(EXPERIMENT_IMMUNITY(guild.id));
-		// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-		if (immunity.some((id) => author.id === id || authorAsMember.roles.cache.has(id as Snowflake))) return;
+		const immunityValue = parseInt((await redis.get(IMMUNITY(guild.id))) ?? '0', 10);
 
-		const ignorePrefix = await redis.get(EXPERIMENT_IGNORE(guild.id));
-		if (ignorePrefix && content.startsWith(ignorePrefix)) return;
+		if (
+			immunityValue === IMMUNITY_LEVEL.MANAGE_MESSAGES &&
+			channel.permissionsFor(author)?.has(Permissions.FLAGS.MANAGE_MESSAGES)
+		)
+			return;
+
+		if (
+			immunityValue === IMMUNITY_LEVEL.BAN_MEMBERS &&
+			channel.permissionsFor(author)?.has(Permissions.FLAGS.BAN_MEMBERS)
+		)
+			return;
+
+		if (
+			immunityValue === IMMUNITY_LEVEL.ADMINISTRATOR &&
+			channel.permissionsFor(author)?.has(Permissions.FLAGS.ADMINISTRATOR)
+		)
+			return;
 
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
 		const logChannel = guild.channels.resolve(((await redis.get(CHANNELS_LOG(guild.id))) ?? '') as Snowflake);

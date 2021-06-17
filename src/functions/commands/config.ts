@@ -1,14 +1,23 @@
 import { GuildChannel, CommandInteraction, Permissions, Snowflake } from 'discord.js';
-import { CHANNELS_LOG } from '../../keys';
+import { CHANNELS_LOG, IMMUNITY } from '../../keys';
 import {
+	CONFIG_IMMUNITY_SET,
 	CONFIG_SHOW_CHANNEL,
 	CONFIG_SHOW_CHANNEL_MISSING,
 	CONFIG_SHOW_CHANNEL_MISSING_PERMISSIONS,
+	CONFIG_SHOW_IMMUNITY,
 	LOG_CHANNEL_SET,
 	LOG_NOT_TEXT,
 	LOG_NO_PERMS,
 	NOT_IN_DM,
 } from '../../messages/messages';
+export enum IMMUNITY_LEVEL {
+	NONE,
+	MANAGE_MESSAGES,
+	BAN_MEMBERS,
+	ADMINISTRATOR,
+}
+
 export async function configCommand(interaction: CommandInteraction) {
 	const messageParts = [];
 
@@ -43,6 +52,9 @@ export async function configCommand(interaction: CommandInteraction) {
 		} else {
 			messageParts.push(channel ? CONFIG_SHOW_CHANNEL(channel.id) : CONFIG_SHOW_CHANNEL_MISSING);
 		}
+		const immunityValue = await redis.get(IMMUNITY(guildID));
+		messageParts.push(CONFIG_SHOW_IMMUNITY(IMMUNITY_LEVEL[immunityValue ? parseInt(immunityValue, 10) : 0]));
+
 		return interaction.reply({
 			content: messageParts.join('\n'),
 			ephemeral: true,
@@ -66,6 +78,13 @@ export async function configCommand(interaction: CommandInteraction) {
 		} else {
 			messageParts.push(LOG_NOT_TEXT(logChannel.toString(), logChannel.type));
 		}
+	}
+
+	const immunityOption = options.get('immunity');
+	if (immunityOption) {
+		const level = immunityOption.value as number;
+		void redis.set(IMMUNITY(guildID), level);
+		messageParts.push(CONFIG_IMMUNITY_SET(IMMUNITY_LEVEL[level]));
 	}
 
 	void interaction.reply({
