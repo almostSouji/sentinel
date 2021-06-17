@@ -1,3 +1,6 @@
+import { Snowflake } from 'discord.js';
+import { PREFIX_ERROR, PREFIX_SUCCESS } from '../constants';
+
 export const READY_LOG = (tag: string) => `${tag} is watching!`;
 export const BAN_SUCCESS = (executor: string, target: string) =>
 	`• \`${executor}\` banned \`${target}\` and cleaned their messages`;
@@ -33,3 +36,14 @@ export const EXPLAIN_PRIVATE = `• Sentinel is a private bot. If you have any f
 
 export const NOT_IN_DM = 'You can not use commands in direct messages.' as const;
 export const CUSTOM_TAG = 'Custom tags are currently not supported in manual check mode.' as const;
+
+export const ERROR_LOGCHANNEL = `${PREFIX_ERROR} Logchannel invalid.` as const;
+export const LOG_NOT_TEXT = (name: string, type: string) =>
+	`${ERROR_LOGCHANNEL} (channel ${name} is of type \`${type}\`, needs to be text based)`;
+export const LOG_NO_PERMS = `${ERROR_LOGCHANNEL} (application needs the permissions to embed and read messages and history in the log channel)` as const;
+export const LOG_CHANNEL_SET = (channel: string) => `${PREFIX_SUCCESS} Log channel set to \`${channel}\``;
+
+export const CONFIG_SHOW_CHANNEL_MISSING = `${PREFIX_ERROR} Log channel: none (required)`;
+export const CONFIG_SHOW_CHANNEL_MISSING_PERMISSIONS = (channel: Snowflake, missing: string) =>
+	`${PREFIX_ERROR} Log channel: <#${channel}> (missing permissions: ${missing})`;
+export const CONFIG_SHOW_CHANNEL = (channel: Snowflake) => `${PREFIX_SUCCESS} Log channel: <#${channel}>`;

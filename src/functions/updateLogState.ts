@@ -1,4 +1,4 @@
-import { Guild, MessageButton, MessageActionRow, Snowflake, MessageEmbed } from 'discord.js';
+import { Guild, MessageButton, MessageActionRow, Snowflake, MessageEmbed, Permissions } from 'discord.js';
 import { OpCodes } from '..';
 import { CHANNELS_LOG } from '../keys';
 import { handleMemberAdd } from './logStateHandlers/handleMemberAdd';
@@ -38,6 +38,13 @@ export async function updateLogState(
 	// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
 	const logChannel = guild.channels.resolve(`${channelId}` as Snowflake);
 	if (!logChannel || !logChannel.isText()) return;
+
+	if (
+		!logChannel
+			.permissionsFor(client.user!)
+			?.has([Permissions.FLAGS.VIEW_CHANNEL, Permissions.FLAGS.READ_MESSAGE_HISTORY, Permissions.FLAGS.SEND_MESSAGES])
+	)
+		return;
 
 	for (const message of logChannel.messages.cache.values()) {
 		if (message.author.id !== client.user!.id) continue;
