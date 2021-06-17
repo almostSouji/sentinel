@@ -14,9 +14,10 @@ export function handleMemberRemoval(
 	isBanned?: boolean,
 ): Promise<boolean> {
 	if (isBanned && removedUser === target) {
-		row.components = row.components.filter(
-			(c) => Buffer.from(c.customID ?? '', 'binary').readUInt16LE() !== OpCodes.BAN,
-		);
+		row.components = row.components.filter((c) => {
+			const op = Buffer.from(c.customID ?? '', 'binary').readUInt16LE();
+			return ![OpCodes.BAN, OpCodes.REVIEW].includes(op);
+		});
 		return Promise.resolve(true);
 	}
 	return handleMemberBanState(guild, embed, button, row, target);
