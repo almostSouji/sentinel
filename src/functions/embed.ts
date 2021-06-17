@@ -1,4 +1,12 @@
-import { MessageEmbed, TextChannel, NewsChannel, Message, PartialMessage, MessageActionRow } from 'discord.js';
+import {
+	MessageEmbed,
+	TextChannel,
+	NewsChannel,
+	Message,
+	PartialMessage,
+	MessageActionRow,
+	Snowflake,
+} from 'discord.js';
 import { EXPERIMENT_BUTTONS_LEVEL, NOTIF_LEVEL, NOTIF_PREFIX, NOTIF_ROLES, NOTIF_USERS } from '../keys';
 import { generateButtons, listButton } from './buttons';
 import { truncate, truncateEmbed } from './util';
@@ -23,8 +31,10 @@ export async function sendLog(
 	const buttonLevelString = await redis.get(EXPERIMENT_BUTTONS_LEVEL(guild.id));
 	const buttonLevel = parseInt(buttonLevelString ?? '0', 10);
 
-	const roles = await redis.smembers(NOTIF_ROLES(guild.id));
-	const users = await redis.smembers(NOTIF_USERS(guild.id));
+	// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+	const roles = (await redis.smembers(NOTIF_ROLES(guild.id))) as Snowflake[];
+	// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+	const users = (await redis.smembers(NOTIF_USERS(guild.id))) as Snowflake[];
 	const notificationLevel = parseInt((await redis.get(NOTIF_LEVEL(guild.id))) ?? '0', 10);
 	const prefix = (await redis.get(NOTIF_PREFIX(guild.id))) ?? '';
 
@@ -65,10 +75,12 @@ export async function sendLog(
 		botPermissions,
 		targetMessage.member,
 	);
+
+	truncateEmbed(embed);
 	if (buttonLevelString && severityLevel >= buttonLevel) {
-		truncateEmbed(embed);
-		void logChannel.send(newContent, {
-			embed,
+		void logChannel.send({
+			content: newContent?.length ? newContent : undefined,
+			embeds: [embed],
 			allowedMentions: {
 				users,
 				roles,
@@ -78,9 +90,9 @@ export async function sendLog(
 		return;
 	}
 
-	truncateEmbed(embed);
-	void logChannel.send(newContent, {
-		embed,
+	void logChannel.send({
+		content: newContent?.length ? newContent : undefined,
+		embeds: [embed],
 		allowedMentions: {
 			users,
 			roles,

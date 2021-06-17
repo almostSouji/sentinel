@@ -1,4 +1,4 @@
-import { MessageEmbed } from 'discord.js';
+import { Snowflake, MessageEmbed } from 'discord.js';
 import { AttributeScoreMapEntry, perspectiveAttributes } from './perspective';
 
 export function truncate(text: string, len: number): string {
@@ -76,7 +76,7 @@ export function concatEnumeration(elements: string[]): string {
 	}`;
 }
 
-export function serializeTargets(op: number, user: string, channel: string, message: string): string {
+export function serializeTargets(op: number, user: Snowflake, channel: Snowflake, message: Snowflake): string {
 	const b = Buffer.alloc(2 + 24);
 	b.writeUInt16LE(op);
 	b.writeBigUInt64LE(BigInt(user), 2);
@@ -85,11 +85,17 @@ export function serializeTargets(op: number, user: string, channel: string, mess
 	return b.toString('binary');
 }
 
-export function deserializeTargets(buffer: Buffer) {
+export interface DeserializedTargets {
+	user: Snowflake;
+	channel: Snowflake;
+	message: Snowflake;
+}
+
+export function deserializeTargets(buffer: Buffer): DeserializedTargets {
 	return {
-		user: buffer.readBigInt64LE(2).toString(),
-		channel: buffer.readBigInt64LE(10).toString(),
-		message: buffer.readBigInt64LE(18).toString(),
+		user: `${buffer.readBigInt64LE(2)}` as const,
+		channel: `${buffer.readBigInt64LE(10)}` as const,
+		message: `${buffer.readBigInt64LE(18)}` as const,
 	};
 }
 

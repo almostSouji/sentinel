@@ -34,7 +34,9 @@ export async function updateLogState(
 	isBanned?: boolean,
 ): Promise<void> {
 	const { client } = guild;
-	const logChannel = guild.channels.resolve((await client.redis.get(CHANNELS_LOG(guild.id))) ?? '');
+	const channelId = (await client.redis.get(CHANNELS_LOG(guild.id))) ?? '';
+	// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+	const logChannel = guild.channels.resolve(`${channelId}` as Snowflake);
 	if (!logChannel || !logChannel.isText()) return;
 
 	for (const message of logChannel.messages.cache.values()) {
@@ -96,8 +98,9 @@ export async function updateLogState(
 
 		if (!changed) continue;
 		truncateEmbed(embed);
-		void message.edit(content.length ? content : null, {
-			embed,
+		void message.edit({
+			content: content.length ? content : null,
+			embeds: [embed],
 			components: row.components.length ? [new MessageActionRow().addComponents(row.components)] : [],
 		});
 	}

@@ -16,7 +16,7 @@
 		"prettier": "prettier --write **/*.{ts,js,json,yml,yaml}"
 	},
 	"dependencies": {
-		"discord.js": "github:discordjs/discord.js#9c42f571093b2565df28b756fdca4ac59cad0fe3",
+		"discord.js": "^13.0.0-dev.a3cbcca13da1af416c219bd64a0a6e84bb87a057",
 		"googleapis": "^73.0.0",
 		"ioredis": "^4.27.2",
 		"luxon": "^1.26.0",

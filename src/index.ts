@@ -98,7 +98,8 @@ client.on('ready', async () => {
 		let amount = parseInt(a, 10);
 		let last: Snowflake | null = null;
 		let b = false;
-		const channel = guild.channels.resolve(c);
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+		const channel = guild.channels.resolve(c as Snowflake);
 		if (isNaN(amount) || !channel || !channel.isText()) continue;
 		if (!guild.me?.permissions.has([Permissions.FLAGS.READ_MESSAGE_HISTORY, Permissions.FLAGS.VIEW_CHANNEL])) return;
 		while (amount > 0 && !b) {
@@ -117,6 +118,7 @@ client.on('ready', async () => {
 
 client.on('interaction', async (interaction) => {
 	if (!interaction.isMessageComponent()) return;
+	if (!(interaction.member instanceof GuildMember)) return;
 	const interactionMessage = interaction.message as Message;
 
 	const interactionEmbed = interactionMessage.embeds[0];
@@ -146,7 +148,8 @@ client.on('interaction', async (interaction) => {
 		const { user: targetUserId } = deserializeTargets(res);
 
 		if (shouldCheckPermissions && !interaction.member.permissions.has(Permissions.FLAGS.BAN_MEMBERS)) {
-			return interaction.reply(BUTTON_PRESS_MISSING_PERMISSIONS_BAN, {
+			return interaction.reply({
+				content: BUTTON_PRESS_MISSING_PERMISSIONS_BAN,
 				ephemeral: true,
 			});
 		}
@@ -184,7 +187,8 @@ client.on('interaction', async (interaction) => {
 			shouldCheckPermissions &&
 			!channel?.permissionsFor(executor)?.has([Permissions.FLAGS.VIEW_CHANNEL, Permissions.FLAGS.MANAGE_MESSAGES])
 		) {
-			return interaction.reply(BUTTON_PRESS_MISSING_PERMISSIONS_DELETE, {
+			return interaction.reply({
+				content: BUTTON_PRESS_MISSING_PERMISSIONS_DELETE,
 				ephemeral: true,
 			});
 		}
@@ -218,7 +222,8 @@ client.on('interaction', async (interaction) => {
 		const { channel: targetChannelId } = deserializeTargets(res);
 		const channel = interaction.guild.channels.resolve(targetChannelId);
 		if (shouldCheckPermissions && !channel?.permissionsFor(interaction.member).has(Permissions.FLAGS.MANAGE_MESSAGES))
-			return interaction.reply(BUTTON_PRESS_MISSING_PERMISSIONS_REVIEW, {
+			return interaction.reply({
+				content: BUTTON_PRESS_MISSING_PERMISSIONS_REVIEW,
 				ephemeral: true,
 			});
 
@@ -228,7 +233,8 @@ client.on('interaction', async (interaction) => {
 
 	if (op === OpCodes.LIST) {
 		const values = deserializeAttributes(res);
-		return interaction.reply(formatAttributes(values.filter((e) => e.value > 0)), {
+		return interaction.reply({
+			content: formatAttributes(values.filter((e) => e.value > 0)),
 			ephemeral: true,
 		});
 	}

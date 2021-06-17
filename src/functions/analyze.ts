@@ -1,4 +1,4 @@
-import { Message, PartialMessage, Permissions, MessageEmbed } from 'discord.js';
+import { Message, PartialMessage, Permissions, MessageEmbed, Snowflake } from 'discord.js';
 import { concatEnumeration, mapZippedByScore, zSetZipper } from './util';
 import { COLOR_MILD, COLOR_ALERT, COLOR_SEVERE, COLOR_DARK, COLOR_PURPLE } from '../constants';
 import {
@@ -88,7 +88,7 @@ export async function analyze(message: Message | PartialMessage, isEdit = false)
 			member: authorAsMember,
 		} = message;
 
-		void redis.incr(MESSAGES_SEEN(guild?.id ?? 'dm'));
+		void redis.incr(MESSAGES_SEEN(guild?.id ?? '0'));
 
 		if (
 			channel.type === 'dm' ||
@@ -105,12 +105,14 @@ export async function analyze(message: Message | PartialMessage, isEdit = false)
 		if (!isWatch) return;
 
 		const immunity = await redis.smembers(EXPERIMENT_IMMUNITY(guild.id));
-		if (immunity.some((id) => author.id === id || authorAsMember.roles.cache.has(id))) return;
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+		if (immunity.some((id) => author.id === id || authorAsMember.roles.cache.has(id as Snowflake))) return;
 
 		const ignorePrefix = await redis.get(EXPERIMENT_IGNORE(guild.id));
 		if (ignorePrefix && content.startsWith(ignorePrefix)) return;
 
-		const logChannel = guild.channels.resolve((await redis.get(CHANNELS_LOG(guild.id))) ?? '');
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+		const logChannel = guild.channels.resolve(((await redis.get(CHANNELS_LOG(guild.id))) ?? '') as Snowflake);
 		if (!logChannel || !logChannel.isText()) return;
 
 		const embed = new MessageEmbed();
