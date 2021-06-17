@@ -1,5 +1,5 @@
 import { Guild, MessageButton, MessageActionRow, Snowflake, MessageEmbed } from 'discord.js';
-import { BUTTON_ACTION_BAN } from '../../constants';
+import { OpCodes } from '../..';
 import { handleMemberBanState } from './handleMemberBanState';
 
 export function handleMemberRemoval(
@@ -14,7 +14,9 @@ export function handleMemberRemoval(
 	isBanned?: boolean,
 ): Promise<boolean> {
 	if (isBanned && removedUser === target) {
-		row.components = row.components.filter((c) => !c.customID?.startsWith(BUTTON_ACTION_BAN));
+		row.components = row.components.filter(
+			(c) => Buffer.from(c.customID ?? '', 'binary').readUInt16LE() !== OpCodes.BAN,
+		);
 		return Promise.resolve(true);
 	}
 	return handleMemberBanState(guild, embed, button, row, target);

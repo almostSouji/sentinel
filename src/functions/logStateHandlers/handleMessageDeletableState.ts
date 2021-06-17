@@ -1,5 +1,5 @@
 import { Guild, MessageButton, MessageActionRow, Snowflake, MessageEmbed } from 'discord.js';
-import { BUTTON_ACTION_DELETE } from '../../constants';
+import { OpCodes } from '../..';
 import { logger } from '../logger';
 
 export async function handleMessageDeletableState(
@@ -12,7 +12,9 @@ export async function handleMessageDeletableState(
 ): Promise<boolean> {
 	const channel = guild.channels.resolve(targetChannel);
 	if (!channel || !channel.isText()) {
-		row.components = row.components.filter((c) => !c.customID?.startsWith(BUTTON_ACTION_DELETE));
+		row.components = row.components.filter(
+			(c) => Buffer.from(c.customID ?? '', 'binary').readUInt16LE() !== OpCodes.DELETE,
+		);
 		return true;
 	}
 	try {
@@ -23,7 +25,9 @@ export async function handleMessageDeletableState(
 		}
 	} catch (error) {
 		logger.error(error);
-		row.components = row.components.filter((b) => !b.customID?.startsWith(BUTTON_ACTION_DELETE));
+		row.components = row.components.filter(
+			(c) => Buffer.from(c.customID ?? '', 'binary').readUInt16LE() !== OpCodes.DELETE,
+		);
 		return true;
 	}
 

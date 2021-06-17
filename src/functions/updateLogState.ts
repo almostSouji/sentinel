@@ -1,7 +1,8 @@
 import { Guild, MessageButton, MessageActionRow, Snowflake, MessageEmbed } from 'discord.js';
-import { BUTTON_ACTION_BAN, BUTTON_ACTION_DELETE } from '../constants';
+import { OpCodes } from '..';
 import { CHANNELS_LOG } from '../keys';
-import { truncateEmbed } from './util';
+import { handleMemberAdd } from './logStateHandlers/handleMemberAdd';
+import { deserializeTargets, truncateEmbed } from './util';
 
 type BanHandler = (
 	guild: Guild,
@@ -45,24 +46,49 @@ export async function updateLogState(
 		const row = message.components[0];
 		const buttons = row.components;
 
-		const banButton = buttons.find((b) => b.customID?.startsWith(BUTTON_ACTION_BAN));
-		const deleteButton = buttons.find((b) => b.customID?.startsWith(BUTTON_ACTION_DELETE));
+		const banButton = buttons.find((c) => Buffer.from(c.customID ?? '', 'binary').readUInt16LE() === OpCodes.BAN);
+		const deleteButton = buttons.find((c) => Buffer.from(c.customID ?? '', 'binary').readUInt16LE() === OpCodes.DELETE);
+		const reviewButton = buttons.find((c) => Buffer.from(c.customID ?? '', 'binary').readUInt16LE() === OpCodes.REVIEW);
 
 		let changed = false;
 		if (banButton) {
-			const [, target, secondaryTarget] = banButton.customID?.split('-') ?? [];
-			const [c, m] = secondaryTarget.split('/');
+			const banBuffer = Buffer.from(banButton.customID ?? '', 'binary');
+			const { user: targetUserId, channel: targetChannelId, message: targetMessageId } = deserializeTargets(banBuffer);
 			for (const handler of banHandlers) {
-				const res = handler(guild, embed, banButton, row, target, c, m, changedStructures[0], isBanned);
+				const res = handler(
+					guild,
+					embed,
+					banButton,
+					row,
+					targetUserId,
+					targetChannelId,
+					targetMessageId,
+					changedStructures[0],
+					isBanned,
+				);
 				const change = res instanceof Promise ? await res : res;
 				changed = change || changed;
 			}
+		} else if (reviewButton) {
+			const listBuffer = Buffer.from(reviewButton.customID ?? '', 'binary');
+			const { user: targetUserId, channel: targetChannelId, message: targetMessageId } = deserializeTargets(listBuffer);
+			const change = handleMemberAdd(
+				guild,
+				embed,
+				reviewButton,
+				row,
+				targetUserId,
+				targetChannelId,
+				targetMessageId,
+				changedStructures[0],
+			);
+			changed = change || changed;
 		}
 		if (deleteButton) {
-			const [, , secondaryTarget] = deleteButton.customID?.split('-') ?? [];
-			const [c, m] = secondaryTarget.split('/');
+			const deleteBuffer = Buffer.from(deleteButton.customID ?? '', 'binary');
+			const { channel: targetChannelID, message: targetMessageId } = deserializeTargets(deleteBuffer);
 			for (const handler of deleteHandlers) {
-				const res = handler(guild, embed, deleteButton, row, c, m, changedStructures);
+				const res = handler(guild, embed, deleteButton, row, targetChannelID, targetMessageId, changedStructures);
 				const change = res instanceof Promise ? await res : res;
 				changed = change || changed;
 			}

@@ -1,6 +1,41 @@
 import { google } from 'googleapis';
 import { PerspectiveResponseData, PerspectiveResponse, PerspectiveAttribute } from '../types/perspective';
 
+export const perspectiveAttributes = [
+	'TOXICITY',
+	'SEVERE_TOXICITY',
+	'IDENTITY_ATTACK',
+	'INSULT',
+	'PROFANITY',
+	'THREAT',
+	'SEXUALLY_EXPLICIT',
+	'FLIRTATION',
+	'ATTACK_ON_AUTHOR',
+	'ATTACK_ON_COMMENTER',
+	'INCOHERENT',
+	'INFLAMMATORY',
+	'LIKELY_TO_REJECT',
+	'OBSCENE',
+	'SPAM',
+	'UNSUBSTANTIAL',
+];
+
+export const nytAttributes = [
+	'ATTACK_ON_AUTHOR',
+	'ATTACK_ON_COMMENTER',
+	'INCOHERENT',
+	'INFLAMMATORY',
+	'LIKELY_TO_REJECT',
+	'OBSCENE',
+	'SPAM',
+	'UNSUBSTANTIAL',
+];
+
+export interface AttributeScoreMapEntry {
+	value: number;
+	key: string;
+}
+
 export async function analyzeText(text: string, attributes: PerspectiveAttribute[]): Promise<PerspectiveResponseData> {
 	const client = await google.discoverAPI('https://commentanalyzer.googleapis.com/$discovery/rest?version=v1alpha1');
 

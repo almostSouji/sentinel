@@ -1,5 +1,5 @@
 import { Guild, MessageButton, MessageActionRow, Snowflake, MessageEmbed } from 'discord.js';
-import { BUTTON_ACTION_BAN } from '../../constants';
+import { OpCodes } from '../..';
 import { banButton } from '../buttons';
 
 export function handleMemberAdd(
@@ -15,7 +15,10 @@ export function handleMemberAdd(
 	if (changedUser === target) {
 		const targetMember = guild.members.resolve(target);
 		if (!targetMember) return false;
-		const banIndex = row.components.findIndex((c) => c.customID?.startsWith(BUTTON_ACTION_BAN));
+		const banIndex = row.components.findIndex(
+			(c) => Buffer.from(c.customID ?? '', 'binary').readUInt16LE() === OpCodes.BAN,
+		);
+
 		row.components.splice(
 			Math.max(banIndex, 0),
 			banIndex >= 0 ? 1 : 0,

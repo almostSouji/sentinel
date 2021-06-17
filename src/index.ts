@@ -12,18 +12,18 @@ import {
 	TextChannel,
 	Collection,
 	Snowflake,
+	Guild,
 } from 'discord.js';
 
 import {
-	BUTTON_ACTION_BAN,
-	BUTTON_ACTION_DELETE,
-	BUTTON_ACTION_QUESTION,
-	BUTTON_ACTION_REVIEW,
+	BUTTON_LABEL_BAN,
+	BUTTON_LABEL_DELETE,
+	BUTTON_LABEL_FORCE_BAN,
+	BUTTON_LABEL_LIST,
 	ERROR_CODE_MISSING_PERMISSIONS,
 	ERROR_CODE_UNKNOWN_MESSAGE,
 	ERROR_CODE_UNKNOWN_USER,
 } from './constants';
-import { banButton, deleteButton, questionButton } from './functions/buttons';
 import Client from './structures/Client';
 import { CHANNELS_LOG, EXPERIMENT_BUTTONS, EXPERIMENT_PREFETCH } from './keys';
 import { analyze } from './functions/analyze';
@@ -39,16 +39,13 @@ import {
 	DELETE_FAIL_OTHER,
 	DELETE_FAIL_UNKNOWN,
 	DELETE_SUCCESS,
-	LOG_FOOTER_TEXT,
 	READY_LOG,
-	EXPLAIN_WORKING,
-	EXPLAIN_PERCENTAGE,
+	DELETE_FAIL_CHANNEL,
+	DELETE_FAIL_MISSING,
 	EXPLAIN_NYT,
-	EXPLAIN_UPDATING,
-	EXPLAIN_PRIVATE,
 } from './messages/messages';
 import { logger } from './functions/logger';
-import { truncateEmbed } from './functions/util';
+import { deserializeAttributes, deserializeTargets, truncateEmbed } from './functions/util';
 import { updateLogState } from './functions/updateLogState';
 import { handleMemberGuildState } from './functions/logStateHandlers/handleMemberGuildState';
 import { handleMessageDeletableState } from './functions/logStateHandlers/handleMessageDeletableState';
@@ -56,10 +53,26 @@ import { handleMemberRemoval } from './functions/logStateHandlers/handleMemberRe
 import { handleMessageDelete } from './functions/logStateHandlers/handleMessageDelete';
 import { handleChannelDelete } from './functions/logStateHandlers/handleChannelDelete';
 import { handleMemberAdd } from './functions/logStateHandlers/handleMemberAdd';
+import { AttributeScoreMapEntry, nytAttributes } from './functions/perspective';
 
 export interface ProcessEnv {
 	DISCORD_TOKEN: string;
-	PERSPECTIVE_TOKE: string;
+	PERSPECTIVE_TOKEN: string;
+}
+
+export enum OpCodes {
+	LIST = 1,
+	REVIEW,
+	BAN,
+	DELETE,
+}
+
+function formatAttributes(values: AttributeScoreMapEntry[]): string {
+	const attributes = values
+		.sort((a, b) => b.value - a.value)
+		.map((val) => `• ${val.value}% \`${val.key}\` ${nytAttributes.includes(val.key) ? '¹' : ''} `)
+		.join('\n');
+	return `${attributes}${values.some((e) => nytAttributes.includes(e.key)) ? `\n\n${EXPLAIN_NYT}` : ''}`;
 }
 
 const client = new Client({
@@ -107,14 +120,14 @@ client.on('interaction', async (interaction) => {
 	const interactionMessage = interaction.message as Message;
 
 	const interactionEmbed = interactionMessage.embeds[0];
-	if (!interactionMessage.embeds.length || !interaction.guild) return;
+	if (!interactionMessage.embeds.length || !(interaction.guild instanceof Guild)) return;
 
 	const embed = new MessageEmbed(interactionEmbed);
 
 	const executor = interaction.user;
 
 	const messageParts = [];
-	const buttons: MessageButton[] = [];
+	let buttons: MessageButton[] = [...interactionMessage.components[0]!.components];
 
 	if (
 		!interactionMessage.components.some((row) => {
@@ -125,113 +138,100 @@ client.on('interaction', async (interaction) => {
 	)
 		return;
 
-	const [op, target, secondaryTarget] = interaction.customID.split('-');
+	const res = Buffer.from(interaction.customID, 'binary');
+	const op = res.readInt16LE();
 	const shouldCheckPermissions = await redis.get(EXPERIMENT_BUTTONS(interaction.guild.id));
-	if (secondaryTarget) {
-		const [c, m] = secondaryTarget.split('/');
-		const channel = interaction.guild.channels.resolve(c);
-		const botPermissionsInButtonTargetChannel = channel?.permissionsFor(client.user!) ?? null;
-		if (op === BUTTON_ACTION_BAN) {
-			if (shouldCheckPermissions && !interaction.member.permissions.has(Permissions.FLAGS.BAN_MEMBERS))
-				return interaction.reply(BUTTON_PRESS_MISSING_PERMISSIONS_BAN, {
-					ephemeral: true,
-				});
+
+	if (op === OpCodes.BAN) {
+		const { user: targetUserId } = deserializeTargets(res);
+
+		if (shouldCheckPermissions && !interaction.member.permissions.has(Permissions.FLAGS.BAN_MEMBERS)) {
+			return interaction.reply(BUTTON_PRESS_MISSING_PERMISSIONS_BAN, {
+				ephemeral: true,
+			});
+		}
+
+		try {
+			const user = await interaction.guild.members.ban(targetUserId, {
+				days: 1,
+				reason: `Button action by ${executor.tag}`,
+			});
+
+			messageParts.push(
+				BAN_SUCCESS(executor.tag, user instanceof GuildMember ? user.user.tag : user instanceof User ? user.tag : user),
+			);
+
+			buttons = buttons.filter((b) => b.label !== BUTTON_LABEL_BAN && b.label !== BUTTON_LABEL_FORCE_BAN);
+		} catch (error) {
+			logger.error(error);
+
+			if (error.code === ERROR_CODE_MISSING_PERMISSIONS) {
+				messageParts.push(BAN_FAIL_MISSING(executor.tag, targetUserId));
+				buttons.find((b) => b.label === BUTTON_LABEL_BAN)?.setDisabled(true);
+			} else if (error.code === ERROR_CODE_UNKNOWN_USER) {
+				messageParts.push(BAN_FAIL_UNKNOWN(executor.tag, targetUserId));
+				buttons = buttons.filter((b) => b.label !== BUTTON_LABEL_BAN && b.label !== BUTTON_LABEL_FORCE_BAN);
+			} else {
+				messageParts.push(BAN_FAIL_OTHER(executor.tag, targetUserId));
+			}
+		}
+	}
+
+	if (op === OpCodes.DELETE) {
+		const { channel: targetChannelId, message: targetMessageId } = deserializeTargets(res);
+		const channel = interaction.guild.channels.resolve(targetChannelId);
+		if (
+			shouldCheckPermissions &&
+			!channel?.permissionsFor(executor)?.has([Permissions.FLAGS.VIEW_CHANNEL, Permissions.FLAGS.MANAGE_MESSAGES])
+		) {
+			return interaction.reply(BUTTON_PRESS_MISSING_PERMISSIONS_DELETE, {
+				ephemeral: true,
+			});
+		}
+
+		if (channel?.isText()) {
 			try {
-				const user = await interaction.guild.members.ban(target, {
-					days: 1,
-					reason: `Button action by ${executor.tag}`,
-				});
-				messageParts.push(
-					BAN_SUCCESS(
-						executor.tag,
-						user instanceof GuildMember ? user.user.tag : user instanceof User ? user.tag : user,
-					),
-				);
+				await channel.messages.delete(targetMessageId);
+
+				messageParts.push(DELETE_SUCCESS(executor.tag));
+				buttons = buttons.filter((b) => b.label !== BUTTON_LABEL_DELETE);
 			} catch (error) {
 				logger.error(error);
-				if (error.code === ERROR_CODE_MISSING_PERMISSIONS) {
-					const perms = botPermissionsInButtonTargetChannel?.has(Permissions.FLAGS.MANAGE_MESSAGES) ?? false;
-					messageParts.push(BAN_FAIL_MISSING(executor.tag, target));
-					buttons.push(banButton(target, c, m, interactionMessage.member?.bannable ?? true));
-					if (m !== '0' && c !== '0') {
-						buttons.push(deleteButton(target, c, m, perms));
-					}
-				} else if (error.code === ERROR_CODE_UNKNOWN_USER) {
-					messageParts.push(BAN_FAIL_UNKNOWN(executor.tag, target));
-					if (m !== '0' && c !== '0') {
-						buttons.push(
-							deleteButton(
-								'0',
-								c,
-								m,
-								botPermissionsInButtonTargetChannel?.has(Permissions.FLAGS.MANAGE_MESSAGES) ?? false,
-							),
-						);
-					}
+
+				if (error.code === ERROR_CODE_UNKNOWN_MESSAGE) {
+					messageParts.push(DELETE_FAIL_UNKNOWN(executor.tag));
+					buttons = buttons.filter((b) => b.label !== BUTTON_LABEL_DELETE);
+				} else if (error.code === ERROR_CODE_MISSING_PERMISSIONS) {
+					messageParts.push(DELETE_FAIL_MISSING(executor.tag));
+					buttons = buttons.filter((b) => b.label !== BUTTON_LABEL_DELETE);
 				} else {
-					messageParts.push(BAN_FAIL_OTHER(executor.tag, target));
-					if (m !== '0' && c !== '0') {
-						buttons.push(
-							deleteButton(
-								target,
-								c,
-								m,
-								botPermissionsInButtonTargetChannel?.has(Permissions.FLAGS.MANAGE_MESSAGES) ?? false,
-							),
-						);
-					}
+					messageParts.push(DELETE_FAIL_OTHER(executor.tag));
 				}
 			}
-		}
-
-		if (op === BUTTON_ACTION_DELETE) {
-			if (shouldCheckPermissions && !channel?.permissionsFor(executor)?.has(Permissions.FLAGS.MANAGE_MESSAGES))
-				return interaction.reply(BUTTON_PRESS_MISSING_PERMISSIONS_DELETE, {
-					ephemeral: true,
-				});
-			if (channel?.isText()) {
-				try {
-					await channel.messages.delete(m);
-					messageParts.push(DELETE_SUCCESS(executor.tag));
-					if (target !== '0') {
-						buttons.push(banButton(target, c, '0', interactionMessage.member?.bannable ?? true));
-					}
-				} catch (error) {
-					logger.error(error);
-					if (error.code === ERROR_CODE_UNKNOWN_MESSAGE) {
-						messageParts.push(DELETE_FAIL_UNKNOWN(executor.tag));
-						if (target !== '0') {
-							buttons.push(banButton(target, c, '0', interactionMessage.member?.bannable ?? true));
-						}
-					} else {
-						messageParts.push(DELETE_FAIL_OTHER(executor.tag));
-						buttons.push(banButton(target, c, m, interactionMessage.member?.bannable ?? true));
-					}
-				}
-			}
+		} else {
+			messageParts.push(DELETE_FAIL_CHANNEL(executor.tag));
+			buttons = buttons.filter((b) => b.label !== BUTTON_LABEL_DELETE);
 		}
 	}
 
-	if (buttons.length) {
-		buttons.push(questionButton);
-	}
-
-	if (op === BUTTON_ACTION_REVIEW) {
-		if (shouldCheckPermissions && !interaction.member.permissions.has(Permissions.FLAGS.MANAGE_MESSAGES))
+	if (op === OpCodes.REVIEW) {
+		const { channel: targetChannelId } = deserializeTargets(res);
+		const channel = interaction.guild.channels.resolve(targetChannelId);
+		if (shouldCheckPermissions && !channel?.permissionsFor(interaction.member).has(Permissions.FLAGS.MANAGE_MESSAGES))
 			return interaction.reply(BUTTON_PRESS_MISSING_PERMISSIONS_REVIEW, {
 				ephemeral: true,
 			});
+
 		messageParts.push(REVIEWED(executor.tag));
+		buttons = buttons.filter((b) => !b.label || b.label === BUTTON_LABEL_LIST);
 	}
 
-	if (op === BUTTON_ACTION_QUESTION) {
-		const parts = [`**${EXPLAIN_WORKING}**\n`, EXPLAIN_PERCENTAGE, EXPLAIN_NYT, EXPLAIN_UPDATING, EXPLAIN_PRIVATE];
-		return interaction.reply(parts.join('\n'), {
+	if (op === OpCodes.LIST) {
+		const values = deserializeAttributes(res);
+		return interaction.reply(formatAttributes(values.filter((e) => e.value > 0)), {
 			ephemeral: true,
 		});
 	}
-
-	embed.setFooter(LOG_FOOTER_TEXT(executor.tag, executor.id), executor.displayAvatarURL());
 
 	if (messageParts.length) {
 		const actionFieldIndex = embed.fields.findIndex((field: any) => field.name === 'Actions');

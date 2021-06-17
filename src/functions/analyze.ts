@@ -1,5 +1,5 @@
 import { Message, PartialMessage, Permissions, MessageEmbed } from 'discord.js';
-import { mapZippedByScore, zSetZipper } from './util';
+import { concatEnumeration, mapZippedByScore, zSetZipper } from './util';
 import { COLOR_MILD, COLOR_ALERT, COLOR_SEVERE, COLOR_DARK, COLOR_PURPLE } from '../constants';
 import {
 	CHANNELS_WATCHING,
@@ -21,21 +21,11 @@ import {
 } from '../keys';
 import { PerspectiveAttribute, Score, Scores } from '../types/perspective';
 import { logger } from './logger';
-import { analyzeText } from './perspective';
-import { MATCH_PHRASE } from '../messages/messages';
+import { analyzeText, perspectiveAttributes } from './perspective';
 import { sendLog } from './embed';
+import { MATCH_PHRASE, VERDICT, VERDICT_NONE } from '../messages/messages';
 
 const colors = [COLOR_MILD, COLOR_MILD, COLOR_ALERT, COLOR_SEVERE, COLOR_PURPLE] as const;
-const nytflags = [
-	'ATTACK_ON_AUTHOR',
-	'ATTACK_ON_COMMENTER',
-	'INCOHERENT',
-	'INFLAMMATORY',
-	'LIKELY_TO_REJECT',
-	'OBSCENE',
-	'SPAM',
-	'UNSUBSTANTIAL',
-];
 
 function setSeverityColor(embed: MessageEmbed, severity: number): MessageEmbed {
 	return embed.setColor(colors[severity] ?? COLOR_DARK);
@@ -44,6 +34,44 @@ function setSeverityColor(embed: MessageEmbed, severity: number): MessageEmbed {
 interface AttributeHit {
 	key: string;
 	score: Score;
+}
+
+function mapKeyToAdverb(key: string): string {
+	switch (key) {
+		case 'TOXICITY':
+			return 'toxic';
+		case 'SEVERE_TOXICITY':
+			return 'severely toxic';
+		case 'IDENTITY_ATTACK':
+			return "attacking someone's identity";
+		case 'INSULT':
+			return 'insulting';
+		case 'PROFANITY':
+			return 'profane';
+		case 'THREAT':
+			return 'threatening';
+		case 'SEXUALLY_EXPLICIT':
+			return 'sexually explicit';
+		case 'FLIRTATION':
+			return 'flirtatious';
+		case 'ATTACK_ON_AUTHOR':
+		case 'ATTACK_ON_COMMENTER':
+			return 'attacking someone';
+		case 'INCOHERENT':
+			return 'incoherent';
+		case 'INFLAMMATORY':
+			return 'inflammatory';
+		case 'LIKELY_TO_REJECT':
+			return 'rejected by New York Times moderators';
+		case 'OBSCENE':
+			return 'obscene';
+		case 'SPAM':
+			return 'spam';
+		case 'UNSUBSTANTIAL':
+			return 'unsubstantial';
+		default:
+			return `\`${key}\``;
+	}
 }
 
 export async function analyze(message: Message | PartialMessage, isEdit = false) {
@@ -117,7 +145,8 @@ export async function analyze(message: Message | PartialMessage, isEdit = false)
 				const max = Math.max(...matchLevels);
 				setSeverityColor(embed, max);
 				embed.addField('Custom Filter', matchParts.join('\n'));
-				void sendLog(logChannel, message, max, embed, isEdit);
+				// TODO: custom attribute does not have
+				void sendLog(logChannel, message, max, embed, isEdit, []);
 				return;
 			}
 		}
@@ -145,22 +174,19 @@ export async function analyze(message: Message | PartialMessage, isEdit = false)
 
 		for (const [key, s] of Object.entries(res.attributeScores)) {
 			const scores = s as Scores;
-			const pair = zSetZipper(checkAttributes).find(([k]) => key === k);
-			if (pair) {
-				const scorePercent = scores.summaryScore.value * 100;
-				if (scorePercent >= pair[1]) {
-					tags.push({ key, score: scores.summaryScore });
-					void redis.incr(ATTRIBUTE_SEEN(guild.id, key));
-				}
-				if (scorePercent >= highThreshold) {
-					high.push({ key, score: scores.summaryScore });
-				}
-				if (severeAttributes.some(([k, threshold]) => k === key && scorePercent >= threshold)) {
-					severe.push({ key, score: scores.summaryScore });
-				}
-				if (scorePercent >= logThreshold) {
-					tripped++;
-				}
+			const scorePercent = scores.summaryScore.value * 100;
+
+			tags.push({ key, score: scores.summaryScore });
+			void redis.incr(ATTRIBUTE_SEEN(guild.id, key));
+
+			if (scorePercent >= highThreshold) {
+				high.push({ key, score: scores.summaryScore });
+			}
+			if (severeAttributes.some(([k, threshold]) => k === key && scorePercent >= threshold)) {
+				severe.push({ key, score: scores.summaryScore });
+			}
+			if (scorePercent >= logThreshold) {
+				tripped++;
 			}
 		}
 
@@ -181,19 +207,28 @@ export async function analyze(message: Message | PartialMessage, isEdit = false)
 		const severityLevel = severe.length >= severeAmount ? 3 : high.length >= highAmount ? 2 : 1;
 
 		setSeverityColor(embed, severityLevel);
+
 		embed.addField(
-			'Attribute Flags',
-			tags
-				.sort((a, b) => b.score.value - a.score.value)
-				.map((tag) => {
-					const percent = tag.score.value * 100;
-					return `• ${percent.toFixed(2)}% \`${tag.key}\`${nytflags.includes(tag.key) ? ' ¹' : ''}`;
-				})
-				.join('\n'),
+			'Verdict',
+			`${
+				high.length
+					? VERDICT(
+							concatEnumeration(high.sort((a, b) => b.score.value - a.score.value).map((e) => mapKeyToAdverb(e.key))),
+							highThreshold.toFixed(2),
+					  )
+					: `${VERDICT_NONE}`
+			}`,
 			true,
 		);
 
-		void sendLog(logChannel, message, severityLevel, embed, isEdit);
+		void sendLog(
+			logChannel,
+			message,
+			severityLevel,
+			embed,
+			isEdit,
+			perspectiveAttributes.map((a) => Math.round((tags.find((t) => t.key === a)?.score.value ?? 0) * 10000)),
+		);
 	} catch (err) {
 		logger.error(err);
 	}

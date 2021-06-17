@@ -1,4 +1,5 @@
 import { MessageEmbed } from 'discord.js';
+import { AttributeScoreMapEntry, perspectiveAttributes } from './perspective';
 
 export function truncate(text: string, len: number): string {
 	if (text.length <= len) return text;
@@ -66,4 +67,48 @@ export function truncateEmbed(embed: MessageEmbed): MessageEmbed {
 
 export function escapeRegex(str: string): string {
 	return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+export function concatEnumeration(elements: string[]): string {
+	if (elements.length < 2) return elements.join(' ');
+	return `${elements.slice(0, elements.length - 1).join(', ')}${elements.length < 3 ? '' : ','} and ${
+		elements[elements.length - 1]
+	}`;
+}
+
+export function serializeTargets(op: number, user: string, channel: string, message: string): string {
+	const b = Buffer.alloc(2 + 24);
+	b.writeUInt16LE(op);
+	b.writeBigUInt64LE(BigInt(user), 2);
+	b.writeBigUInt64LE(BigInt(channel), 10);
+	b.writeBigUInt64LE(BigInt(message), 18);
+	return b.toString('binary');
+}
+
+export function deserializeTargets(buffer: Buffer) {
+	return {
+		user: buffer.readBigInt64LE(2).toString(),
+		channel: buffer.readBigInt64LE(10).toString(),
+		message: buffer.readBigInt64LE(18).toString(),
+	};
+}
+
+export function serializeAttributes(op: number, attributes: number[]): string {
+	const b = Buffer.alloc(perspectiveAttributes.length * 2 + 2);
+	b.writeUInt16LE(op);
+	for (let i = 0; i < attributes.length; i++) {
+		b.writeUInt16LE(attributes[i], 2 + i * 2);
+	}
+	return b.toString('binary');
+}
+
+export function deserializeAttributes(buffer: Buffer): AttributeScoreMapEntry[] {
+	const res = perspectiveAttributes.reduce((a, c, i) => {
+		a.push({
+			key: c,
+			value: buffer.readUInt16LE(2 + i * 2) / 100,
+		});
+		return a;
+	}, [] as AttributeScoreMapEntry[]);
+	return res;
 }

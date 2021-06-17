@@ -1,17 +1,16 @@
 import { MessageButton, Snowflake, Permissions, GuildMember } from 'discord.js';
+import { OpCodes } from '..';
 import {
-	BUTTON_ID_BAN,
-	BUTTON_ID_DELETE,
-	BUTTON_ID_QUESTION,
-	BUTTON_ID_REVIEW,
 	BUTTON_LABEL_BAN,
 	BUTTON_LABEL_DELETE,
-	BUTTON_LABEL_QUESTION,
+	BUTTON_LABEL_LIST,
 	BUTTON_LABEL_REVIEW,
 	EMOJI_ID_BAN_WHITE,
 	EMOJI_ID_DELETE_WHITE,
+	EMOJI_ID_LIST_WHITE,
 	EMOJI_ID_REVIEW_WHITE,
 } from '../constants';
+import { serializeAttributes, serializeTargets } from './util';
 
 export interface ResponseData {
 	data: {
@@ -43,7 +42,7 @@ export function banButton(
 	return new MessageButton({
 		type: 2,
 		style: 4,
-		customID: BUTTON_ID_BAN(targetUser, targetChannel, targetMessage),
+		customID: serializeTargets(OpCodes.BAN, targetUser, targetChannel, targetMessage),
 		label: BUTTON_LABEL_BAN,
 		emoji: {
 			id: EMOJI_ID_BAN_WHITE,
@@ -61,7 +60,7 @@ export function deleteButton(
 	return new MessageButton({
 		type: 2,
 		style: 4,
-		customID: BUTTON_ID_DELETE(targetUser, targetChannel, targetMessage),
+		customID: serializeTargets(OpCodes.DELETE, targetUser, targetChannel, targetMessage),
 		label: BUTTON_LABEL_DELETE,
 		emoji: {
 			id: EMOJI_ID_DELETE_WHITE,
@@ -73,8 +72,8 @@ export function deleteButton(
 export function reviewButton(targetUser: Snowflake, targetChannel: Snowflake, targetMessage: Snowflake): MessageButton {
 	return new MessageButton({
 		type: 2,
-		style: 3,
-		customID: BUTTON_ID_REVIEW(targetUser, targetChannel, targetMessage),
+		style: 1,
+		customID: serializeTargets(OpCodes.REVIEW, targetUser, targetChannel, targetMessage),
 		label: BUTTON_LABEL_REVIEW,
 		emoji: {
 			id: EMOJI_ID_REVIEW_WHITE,
@@ -82,20 +81,23 @@ export function reviewButton(targetUser: Snowflake, targetChannel: Snowflake, ta
 	});
 }
 
-export const questionButton = new MessageButton({
-	type: 2,
-	style: 2,
-	customID: BUTTON_ID_QUESTION,
-	label: BUTTON_LABEL_QUESTION,
-	emoji: {
-		name: '❔',
-	},
-});
+export const listButton = (values: number[]) => {
+	return new MessageButton({
+		type: 2,
+		style: 2,
+		customID: serializeAttributes(OpCodes.LIST, values),
+		label: BUTTON_LABEL_LIST,
+		emoji: {
+			id: EMOJI_ID_LIST_WHITE,
+		},
+	});
+};
 
 export function generateButtons(
 	targetChannel: Snowflake,
 	targetUser: Snowflake,
 	targetMessage: Snowflake,
+	values: number[],
 	permissions: Readonly<Permissions> | null,
 	targetMember: GuildMember | null,
 ): MessageButton[] {
@@ -110,6 +112,6 @@ export function generateButtons(
 	}
 
 	res.push(reviewButton(targetUser, targetChannel, targetMessage));
-	res.push(questionButton);
+	res.push(listButton(values));
 	return res;
 }
