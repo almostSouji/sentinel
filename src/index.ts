@@ -26,7 +26,7 @@ import {
 } from './constants';
 import Client from './structures/Client';
 import { CHANNELS_LOG, EXPERIMENT_BUTTONS, EXPERIMENT_PREFETCH } from './keys';
-import { analyze } from './functions/analyze';
+import { checkMessage } from './functions/checkMessage';
 import {
 	REVIEWED,
 	BAN_FAIL_MISSING,
@@ -54,6 +54,7 @@ import { handleMessageDelete } from './functions/logStateHandlers/handleMessageD
 import { handleChannelDelete } from './functions/logStateHandlers/handleChannelDelete';
 import { handleMemberAdd } from './functions/logStateHandlers/handleMemberAdd';
 import { AttributeScoreMapEntry, nytAttributes } from './functions/perspective';
+import { handleCommands } from './functions/handleCommands';
 
 export interface ProcessEnv {
 	DISCORD_TOKEN: string;
@@ -67,7 +68,7 @@ export enum OpCodes {
 	DELETE,
 }
 
-function formatAttributes(values: AttributeScoreMapEntry[]): string {
+export function formatAttributes(values: AttributeScoreMapEntry[]): string {
 	const attributes = values
 		.sort((a, b) => b.value - a.value)
 		.map((val) => `• ${val.value}% \`${val.key}\` ${nytAttributes.includes(val.key) ? '¹' : ''} `)
@@ -82,12 +83,12 @@ const { redis } = client;
 
 client.on('message', (message) => {
 	if (message.author.bot || !message.content.length || message.channel.type !== 'text') return;
-	void analyze(message);
+	void checkMessage(message);
 });
 
 client.on('messageUpdate', (oldMessage, newMessage) => {
 	if (oldMessage.content === newMessage.content || newMessage.author?.bot || newMessage.channel.type !== 'text') return;
-	void analyze(newMessage, true);
+	void checkMessage(newMessage, true);
 });
 
 client.on('ready', async () => {
@@ -117,6 +118,7 @@ client.on('ready', async () => {
 });
 
 client.on('interaction', async (interaction) => {
+	handleCommands(interaction);
 	if (!interaction.isMessageComponent()) return;
 	if (!(interaction.member instanceof GuildMember)) return;
 	const interactionMessage = interaction.message as Message;

@@ -31,7 +31,7 @@ function setSeverityColor(embed: MessageEmbed, severity: number): MessageEmbed {
 	return embed.setColor(colors[severity] ?? COLOR_DARK);
 }
 
-interface AttributeHit {
+export interface AttributeHit {
 	key: string;
 	score: Score;
 }
@@ -74,7 +74,7 @@ function mapKeyToAdverb(key: string): string {
 	}
 }
 
-export async function analyze(message: Message | PartialMessage, isEdit = false) {
+export async function checkMessage(message: Message | PartialMessage, isEdit = false) {
 	try {
 		const {
 			client,

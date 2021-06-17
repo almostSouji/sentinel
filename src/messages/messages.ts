@@ -30,3 +30,6 @@ export const EXPLAIN_PERCENTAGE = `• The data reflects how probable each attri
 export const EXPLAIN_NYT = `¹ trained on a single data source (New York Times comments tagged by their moderation team)` as const;
 export const EXPLAIN_UPDATING = `• Buttons update based on permissions and member/message status (check for permission and hierarchy conflicts if buttons are greyed out)` as const;
 export const EXPLAIN_PRIVATE = `• Sentinel is a private bot. If you have any feedback let me know! (\`Souji#0001\`).` as const;
+
+export const NOT_IN_DM = 'You can not use commands in direct messages.' as const;
+export const CUSTOM_TAG = 'Custom tags are currently not supported in manual check mode.' as const;

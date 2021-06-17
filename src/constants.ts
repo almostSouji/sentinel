@@ -16,3 +16,7 @@ export const BUTTON_LABEL_LIST = '' as const;
 export const ERROR_CODE_UNKNOWN_MESSAGE = 10008 as const;
 export const ERROR_CODE_UNKNOWN_USER = 10013 as const;
 export const ERROR_CODE_MISSING_PERMISSIONS = 50013 as const;
+
+export const MAX_MESSAGE_LEN = 2000 as const;
+
+export const COMMAND_NAME_TEST = 'test';
