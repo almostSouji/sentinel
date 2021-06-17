@@ -214,7 +214,6 @@ export async function analyze(message: Message | PartialMessage, isEdit = false)
 				high.length
 					? VERDICT(
 							concatEnumeration(high.sort((a, b) => b.score.value - a.score.value).map((e) => mapKeyToAdverb(e.key))),
-							highThreshold.toFixed(2),
 					  )
 					: `${VERDICT_NONE}`
 			}`,
