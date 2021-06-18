@@ -18,9 +18,13 @@ export const ATTRIBUTES_HIGH_THRESHOLD = (guild: Snowflake) => `guild:${guild}:a
 // Amount of high attributes required to flag the message as severity level 2
 export const ATTRIBUTES_HIGH_AMOUNT = (guild: Snowflake) => `guild:${guild}:attributes:high:amount`;
 
-//* ZSET<percentage, attribute>
-// Attributes and thresholds for them to be shown
+//* SET
+// Attributes to be shown
 export const ATTRIBUTES = (guild: Snowflake) => `guild:${guild}:attributes`;
+
+//* SET
+// Attributes to be shown
+export const ATTRIBUTES_NYT = (guild: Snowflake) => `guild:${guild}:attributes:nyt`;
 
 //* INT
 //* default: 0

@@ -4,6 +4,7 @@ import { COLOR_MILD, COLOR_ALERT, COLOR_SEVERE, COLOR_DARK, COLOR_PURPLE } from 
 import {
 	CHANNELS_WATCHING,
 	ATTRIBUTES,
+	ATTRIBUTES_NYT,
 	ATTRIBUTES_THRESHOLD,
 	ATTRIBUTES_AMOUNT,
 	ATTRIBUTE_SEEN,
@@ -166,14 +167,14 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 			}
 		}
 
-		const checkAttributes = await redis.zrange(ATTRIBUTES(guild.id), 0, -1, 'WITHSCORES');
-		if (!checkAttributes.length) return;
+		const checkAttributes = await redis.smembers(ATTRIBUTES(guild.id));
+		const checkNYTAttributes = await redis.smembers(ATTRIBUTES_NYT(guild.id));
+		const attributes = [...checkAttributes, ...checkNYTAttributes];
+
+		if (!attributes.length) return;
 
 		void redis.incr(MESSAGES_CHECKED(guild.id));
-		const res = await analyzeText(
-			content,
-			checkAttributes.filter((a) => isNaN(parseInt(a, 10))) as PerspectiveAttribute[],
-		);
+		const res = await analyzeText(content, attributes as PerspectiveAttribute[]);
 
 		const tags: AttributeHit[] = [];
 		const high: AttributeHit[] = [];

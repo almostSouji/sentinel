@@ -1,8 +1,10 @@
 import { GuildChannel, CommandInteraction, Permissions, Snowflake } from 'discord.js';
-import { CHANNELS_LOG, IMMUNITY, PREFETCH } from '../../keys';
+import { ATTRIBUTES, ATTRIBUTES_NYT, CHANNELS_LOG, IMMUNITY, PREFETCH } from '../../keys';
 import {
 	CONFIG_IMMUNITY_SET,
 	CONFIG_PREFETCH_SET,
+	CONFIG_SHOW_ATTRIBUTES,
+	CONFIG_SHOW_ATTRIBUTES_NONE,
 	CONFIG_SHOW_CHANNEL,
 	CONFIG_SHOW_CHANNEL_MISSING,
 	CONFIG_SHOW_CHANNEL_MISSING_PERMISSIONS,
@@ -59,6 +61,17 @@ export async function configCommand(interaction: CommandInteraction) {
 
 		const prefetchValue = await redis.get(PREFETCH(guildID));
 		messageParts.push(CONFIG_SHOW_PREFETCH(parseInt(prefetchValue ?? '0', 10)));
+
+		const attributeValue = await redis.smembers(ATTRIBUTES(guildID));
+		const attributeNytValue = await redis.smembers(ATTRIBUTES_NYT(guildID));
+		const attributes = [...attributeValue, ...attributeNytValue];
+
+		const flags = attributes.map((a) => `\`${a}\``);
+		if (flags.length) {
+			messageParts.push(CONFIG_SHOW_ATTRIBUTES(flags.join(', ')));
+		} else {
+			messageParts.push(CONFIG_SHOW_ATTRIBUTES_NONE);
+		}
 
 		return interaction.reply({
 			content: messageParts.join('\n'),

@@ -49,6 +49,11 @@ export const CONFIG_SHOW_CHANNEL_MISSING_PERMISSIONS = (channel: Snowflake, miss
 export const CONFIG_IMMUNITY_SET = (permission: string) =>
 	`${PREFIX_SUCCESS} Immunity permission set to: \`${permission}\``;
 export const CONFIG_PREFETCH_SET = (amount: number) => `${PREFIX_SUCCESS} Prefetch messages on restart: \`${amount}\``;
+export const CONFIG_ATTRIBUTES_ENABLED = (flags: string) => `${PREFIX_SUCCESS} Enabled flags: ${flags}`;
+export const CONFIG_ATTRIBUTES_DISABLED = (flags: string) => `${PREFIX_SUCCESS} Disabled flags: ${flags}`;
+
 export const CONFIG_SHOW_CHANNEL = (channel: Snowflake) => `${PREFIX_SUCCESS} Log channel: <#${channel}>`;
 export const CONFIG_SHOW_IMMUNITY = (permission: string) => `${PREFIX_SUCCESS} Immunity permission: \`${permission}\``;
 export const CONFIG_SHOW_PREFETCH = (amount: number) => `${PREFIX_SUCCESS} Prefetch messages on restart: \`${amount}\``;
+export const CONFIG_SHOW_ATTRIBUTES = (flags: string) => `${PREFIX_SUCCESS} Tracking attributes: ${flags}`;
+export const CONFIG_SHOW_ATTRIBUTES_NONE = `${PREFIX_ERROR} Not tracking any attributes (required)` as const;
