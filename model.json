@@ -21,6 +21,25 @@
 			},
 			{
 				"type": 4,
+				"name": "strictness",
+				"description": "How strict you want the application to be",
+				"choices": [
+					{
+						"name": "Forgiving",
+						"value": 1
+					},
+					{
+						"name": "Medium",
+						"value": 2
+					},
+					{
+						"name": "Very strict",
+						"value": 3
+					}
+				]
+			},
+			{
+				"type": 4,
 				"name": "prefetch",
 				"description": "Amount of messages in the log channel to cache after a restart",
 				"choices": [

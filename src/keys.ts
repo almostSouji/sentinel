@@ -1,5 +1,10 @@
 import { Snowflake } from 'discord.js';
 
+//* INT [1 (LOW), 2 (MEDIUM), 3 (HIGH)]
+//* default: 1
+// Level of strictness to apply to the guild
+export const STRICTNESS = (guild: Snowflake) => `guild:${guild}:strictness`;
+
 //* STR
 // Log channel ID
 export const CHANNELS_LOG = (guild: Snowflake) => `guild:${guild}:channels:log`;
@@ -8,38 +13,9 @@ export const CHANNELS_LOG = (guild: Snowflake) => `guild:${guild}:channels:log`;
 // Channel IDs of watched channels
 export const CHANNELS_WATCHING = (guild: Snowflake) => `guild:${guild}:channels:watching`;
 
-//* INT
-//* default: 0
-// Probability required to flag an attribute as high
-export const ATTRIBUTES_HIGH_THRESHOLD = (guild: Snowflake) => `guild:${guild}:attributes:high:threshold`;
-
-//* INT
-//* default: 1
-// Amount of high attributes required to flag the message as severity level 2
-export const ATTRIBUTES_HIGH_AMOUNT = (guild: Snowflake) => `guild:${guild}:attributes:high:amount`;
-
 //* SET
 // Attributes to be shown
 export const ATTRIBUTES = (guild: Snowflake) => `guild:${guild}:attributes`;
-
-//* INT
-//* default: 0
-// Amount of attributes above threshold required for the message to be logged
-export const ATTRIBUTES_AMOUNT = (guild: Snowflake) => `guild:${guild}:attributes:amount`;
-
-//* INT
-//* default: 0
-// Probability required to contribute to the attribute amount
-export const ATTRIBUTES_THRESHOLD = (guild: Snowflake) => `guild:${guild}:attributes:threshold`;
-
-//* ZSET<percentage, attribute>
-// Attributes and thresholds for them to count as severe
-export const ATTRIBUTES_SEVERE = (guild: Snowflake) => `guild:${guild}:attributes:severe`;
-
-//* INT
-//* default: 1
-// Amount of severe attributes required to flag the message as severity level 3
-export const ATTRIBUTES_SEVERE_AMOUNT = (guild: Snowflake) => `guild:${guild}:attributes:severe:amount`;
 
 //* INT
 // Counting how many times each attribute has been seen above the threshold at that time
@@ -87,10 +63,6 @@ export const MESSAGES_SEEN = (guild: Snowflake) => `guild:${guild}:messages:seen
 // Counting total messages checked per guild (edits also count)
 export const MESSAGES_CHECKED = (guild: Snowflake) => `guild:${guild}:messages:checked`;
 
-// 🧪 INT
-// Level required for buttons to trigger
-export const EXPERIMENT_BUTTONS_LEVEL = (guild: Snowflake) => `guild:${guild}:experiment:buttons:level`;
-
-// 🧪 STR ["always"]
-// Explain button mode. Only with other buttons by default
-export const EXPERIMENT_EXPLAIN = (guild: Snowflake) => `guild:${guild}:experiment:buttons:explain`;
+// 🧪 SET
+// Guilds with debug mode enabled
+export const DEBUG_GUILDS = 'debug:guilds';

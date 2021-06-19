@@ -1,5 +1,5 @@
 import { GuildChannel, CommandInteraction, Permissions, Snowflake } from 'discord.js';
-import { ATTRIBUTES, CHANNELS_LOG, CHANNELS_WATCHING, IMMUNITY, PREFETCH } from '../../keys';
+import { ATTRIBUTES, CHANNELS_LOG, CHANNELS_WATCHING, IMMUNITY, PREFETCH, STRICTNESS } from '../../keys';
 import {
 	CONFIG_IMMUNITY_SET,
 	CONFIG_PREFETCH_SET,
@@ -10,13 +10,16 @@ import {
 	CONFIG_SHOW_CHANNEL_MISSING_PERMISSIONS,
 	CONFIG_SHOW_IMMUNITY,
 	CONFIG_SHOW_PREFETCH,
+	CONFIG_SHOW_STRICTNESS,
 	CONFIG_SHOW_WATCHING,
 	CONFIG_SHOW_WATCHING_NONE,
+	CONFIG_STRICTNESS_SET,
 	LOG_CHANNEL_SET,
 	LOG_NOT_TEXT,
 	LOG_NO_PERMS,
 	NOT_IN_DM,
 } from '../../messages/messages';
+import { STRICTNESS_LEVELS } from '../checkMessage';
 import { formatChannelMentions } from './watch';
 
 export enum IMMUNITY_LEVEL {
@@ -60,6 +63,17 @@ export async function configCommand(interaction: CommandInteraction) {
 		} else {
 			messageParts.push(channel ? CONFIG_SHOW_CHANNEL(channel.id) : CONFIG_SHOW_CHANNEL_MISSING);
 		}
+
+		const channels = await redis.smembers(CHANNELS_WATCHING(guildID));
+		if (channels.length) {
+			messageParts.push(CONFIG_SHOW_WATCHING(channels.map((c) => formatChannelMentions(c)).join(', ')));
+		} else {
+			messageParts.push(CONFIG_SHOW_WATCHING_NONE);
+		}
+
+		const strictness = parseInt((await redis.get(STRICTNESS(guild.id))) ?? '1', 10);
+		messageParts.push(CONFIG_SHOW_STRICTNESS(STRICTNESS_LEVELS[strictness]));
+
 		const immunityValue = await redis.get(IMMUNITY(guildID));
 		messageParts.push(CONFIG_SHOW_IMMUNITY(IMMUNITY_LEVEL[immunityValue ? parseInt(immunityValue, 10) : 0]));
 
@@ -73,13 +87,6 @@ export async function configCommand(interaction: CommandInteraction) {
 			messageParts.push(CONFIG_SHOW_ATTRIBUTES(flags.join(', ')));
 		} else {
 			messageParts.push(CONFIG_SHOW_ATTRIBUTES_NONE);
-		}
-
-		const channels = await redis.smembers(CHANNELS_WATCHING(guildID));
-		if (channels.length) {
-			messageParts.push(CONFIG_SHOW_WATCHING(channels.map((c) => formatChannelMentions(c)).join(', ')));
-		} else {
-			messageParts.push(CONFIG_SHOW_WATCHING_NONE);
 		}
 
 		return interaction.reply({
@@ -105,6 +112,13 @@ export async function configCommand(interaction: CommandInteraction) {
 		} else {
 			messageParts.push(LOG_NOT_TEXT(logChannel.toString(), logChannel.type));
 		}
+	}
+
+	const strictnessOption = options.get('strictness');
+	if (strictnessOption) {
+		const level = strictnessOption.value as number;
+		void redis.set(STRICTNESS(guildID), level);
+		messageParts.push(CONFIG_STRICTNESS_SET(STRICTNESS_LEVELS[level]));
 	}
 
 	const immunityOption = options.get('immunity');

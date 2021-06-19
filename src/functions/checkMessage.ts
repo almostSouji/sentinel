@@ -4,19 +4,15 @@ import { COLOR_MILD, COLOR_ALERT, COLOR_SEVERE, COLOR_DARK, COLOR_PURPLE } from 
 import {
 	CHANNELS_WATCHING,
 	ATTRIBUTES,
-	ATTRIBUTES_THRESHOLD,
-	ATTRIBUTES_AMOUNT,
 	ATTRIBUTE_SEEN,
 	CHANNELS_LOG,
-	ATTRIBUTES_SEVERE,
-	ATTRIBUTES_SEVERE_AMOUNT,
-	ATTRIBUTES_HIGH_THRESHOLD,
-	ATTRIBUTES_HIGH_AMOUNT,
 	CUSTOM_FLAGS_WORDS,
 	CUSTOM_FLAGS_PHRASES,
 	MESSAGES_SEEN,
 	MESSAGES_CHECKED,
 	IMMUNITY,
+	STRICTNESS,
+	DEBUG_GUILDS,
 } from '../keys';
 import { PerspectiveAttribute, Score, Scores } from '../types/perspective';
 import { logger } from './logger';
@@ -34,6 +30,12 @@ function setSeverityColor(embed: MessageEmbed, severity: number): MessageEmbed {
 export interface AttributeHit {
 	key: string;
 	score: Score;
+}
+
+export enum STRICTNESS_LEVELS {
+	LOW = 1,
+	MEDIUM,
+	HIGH,
 }
 
 function mapKeyToAdverb(key: string): string {
@@ -72,6 +74,10 @@ function mapKeyToAdverb(key: string): string {
 		default:
 			return `\`${key}\``;
 	}
+}
+
+export function strictnessPick(level: number, highValue: number, mediumValue: number, lowValue: number) {
+	return level === STRICTNESS_LEVELS.HIGH ? highValue : level === STRICTNESS_LEVELS.MEDIUM ? mediumValue : lowValue;
 }
 
 export async function checkMessage(message: Message | PartialMessage, isEdit = false) {
@@ -128,6 +134,7 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 		const logChannel = guild.channels.resolve(((await redis.get(CHANNELS_LOG(guild.id))) ?? '') as Snowflake);
 		if (!logChannel || !logChannel.isText()) return;
 
+		const strictness = parseInt((await redis.get(STRICTNESS(guild.id))) ?? '1', 10);
 		const embed = new MessageEmbed();
 
 		const words = zSetZipper(await redis.zrange(CUSTOM_FLAGS_WORDS(guild.id), 0, -1, 'WITHSCORES'), true);
@@ -177,12 +184,15 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 		const severe: AttributeHit[] = [];
 		let tripped = 0;
 
-		const logThreshold = parseInt((await redis.get(ATTRIBUTES_THRESHOLD(guild.id))) ?? '0', 10);
-		const severeSet = await redis.zrange(ATTRIBUTES_SEVERE(guild.id), 0, -1, 'WITHSCORES');
-		const severeAmount = parseInt((await redis.get(ATTRIBUTES_SEVERE_AMOUNT(guild.id))) ?? '1', 10);
-		const highThreshold = parseInt((await redis.get(ATTRIBUTES_HIGH_THRESHOLD(guild.id))) ?? '0', 10);
-		const highAmount = parseInt((await redis.get(ATTRIBUTES_HIGH_AMOUNT(guild.id))) ?? '1', 10);
-		const severeAttributes = zSetZipper(severeSet);
+		const debug = await redis.sismember(DEBUG_GUILDS, guild.id);
+
+		const attributeThreshold = debug ? 0 : strictnessPick(strictness, 80, 90, 95);
+		const highThreshold = debug ? 0 : strictnessPick(strictness, 80, 93, 95);
+		const severeThreshold = debug ? 0 : strictnessPick(strictness, 80, 85, 90);
+		const attributeAmount = debug ? 0 : strictnessPick(strictness, 1, 2, 3);
+		const highAmount = debug ? 0 : strictnessPick(strictness, 1, 2, 3);
+		const severeAmount = debug ? 0 : 1;
+		const severeAttributes = ['SEVERE_TOXICITY', 'IDENTITY_ATTACK'];
 
 		for (const [key, s] of Object.entries(res.attributeScores)) {
 			const scores = s as Scores;
@@ -194,15 +204,14 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 			if (scorePercent >= highThreshold) {
 				high.push({ key, score: scores.summaryScore });
 			}
-			if (severeAttributes.some(([k, threshold]) => k === key && scorePercent >= threshold)) {
+			if (severeAttributes.some((attribute) => attribute === key) && scorePercent >= severeThreshold) {
 				severe.push({ key, score: scores.summaryScore });
 			}
-			if (scorePercent >= logThreshold) {
+			if (scorePercent >= attributeThreshold) {
 				tripped++;
 			}
 		}
 
-		const attributeAmount = parseInt((await redis.get(ATTRIBUTES_AMOUNT(guild.id))) ?? '1', 10);
 		if (tripped < attributeAmount && !severe.length) return;
 
 		const hasPerms =

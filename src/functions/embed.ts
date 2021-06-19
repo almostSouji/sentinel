@@ -7,8 +7,9 @@ import {
 	MessageActionRow,
 	Snowflake,
 } from 'discord.js';
-import { EXPERIMENT_BUTTONS_LEVEL, NOTIF_LEVEL, NOTIF_PREFIX, NOTIF_ROLES, NOTIF_USERS } from '../keys';
+import { DEBUG_GUILDS, NOTIF_LEVEL, NOTIF_PREFIX, NOTIF_ROLES, NOTIF_USERS, STRICTNESS } from '../keys';
 import { generateButtons, listButton } from './buttons';
+import { strictnessPick } from './checkMessage';
 import { truncate, truncateEmbed } from './util';
 
 export async function sendLog(
@@ -27,9 +28,10 @@ export async function sendLog(
 		content: targetContent,
 	} = targetMessage;
 	const { guild } = targetChannel;
+	const debug = await redis.sismember(DEBUG_GUILDS, guild.id);
 	const botPermissions = targetChannel.permissionsFor(clientUser!);
-	const buttonLevelString = await redis.get(EXPERIMENT_BUTTONS_LEVEL(guild.id));
-	const buttonLevel = parseInt(buttonLevelString ?? '0', 10);
+	const strictness = parseInt((await redis.get(STRICTNESS(guild.id))) ?? '1', 10);
+	const buttonLevel = debug ? 0 : strictnessPick(strictness, 1, 2, 3);
 
 	// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
 	const roles = (await redis.smembers(NOTIF_ROLES(guild.id))) as Snowflake[];
@@ -77,7 +79,7 @@ export async function sendLog(
 	);
 
 	truncateEmbed(embed);
-	if (buttonLevelString && severityLevel >= buttonLevel) {
+	if (severityLevel >= buttonLevel) {
 		void logChannel.send({
 			content: newContent?.length ? newContent : undefined,
 			embeds: [embed],

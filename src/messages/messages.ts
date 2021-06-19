@@ -51,6 +51,7 @@ export const CONFIG_IMMUNITY_SET = (permission: string) =>
 export const CONFIG_PREFETCH_SET = (amount: number) => `${PREFIX_SUCCESS} Prefetch messages on restart: \`${amount}\``;
 export const CONFIG_ATTRIBUTES_ENABLED = (flags: string) => `${PREFIX_SUCCESS} Enabled flags: ${flags}`;
 export const CONFIG_ATTRIBUTES_DISABLED = (flags: string) => `${PREFIX_SUCCESS} Disabled flags: ${flags}`;
+export const CONFIG_STRICTNESS_SET = (level: string) => `${PREFIX_SUCCESS} Strictness level set to: \`${level}\``;
 
 export const CONFIG_SHOW_CHANNEL = (channel: Snowflake) => `${PREFIX_SUCCESS} Log channel: <#${channel}>`;
 export const CONFIG_SHOW_IMMUNITY = (permission: string) => `${PREFIX_SUCCESS} Immunity permission: \`${permission}\``;
@@ -59,6 +60,7 @@ export const CONFIG_SHOW_ATTRIBUTES = (flags: string) => `${PREFIX_SUCCESS} Trac
 export const CONFIG_SHOW_ATTRIBUTES_NONE = `${PREFIX_ERROR} Not tracking any attributes (required)` as const;
 export const CONFIG_SHOW_WATCHING_NONE = `${PREFIX_ERROR} Not watching any channels (required)` as const;
 export const CONFIG_SHOW_WATCHING = (channels: string) => `${PREFIX_SUCCESS} Watching channels: ${channels}`;
+export const CONFIG_SHOW_STRICTNESS = (level: string) => `${PREFIX_SUCCESS} Strictness level: \`${level}\``;
 
 export const CONFIG_CHANNELS_ADD_INVALID = `${PREFIX_ERROR} Can not add channels` as const;
 export const CONFIG_CHANNELS_ADD_MISSING_PERMISSIONS = (channels: string) =>
