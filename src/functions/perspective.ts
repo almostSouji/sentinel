@@ -38,7 +38,6 @@ export interface AttributeScoreMapEntry {
 
 export async function analyzeText(text: string, attributes: PerspectiveAttribute[]): Promise<PerspectiveResponseData> {
 	const client = await google.discoverAPI('https://commentanalyzer.googleapis.com/$discovery/rest?version=v1alpha1');
-
 	const requestedAttributes = Object.fromEntries(attributes.map((a) => [a, {}]));
 
 	const analyzeRequest = {

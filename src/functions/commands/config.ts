@@ -1,5 +1,5 @@
 import { GuildChannel, CommandInteraction, Permissions, Snowflake } from 'discord.js';
-import { ATTRIBUTES, ATTRIBUTES_NYT, CHANNELS_LOG, IMMUNITY, PREFETCH } from '../../keys';
+import { ATTRIBUTES, CHANNELS_LOG, CHANNELS_WATCHING, IMMUNITY, PREFETCH } from '../../keys';
 import {
 	CONFIG_IMMUNITY_SET,
 	CONFIG_PREFETCH_SET,
@@ -10,11 +10,15 @@ import {
 	CONFIG_SHOW_CHANNEL_MISSING_PERMISSIONS,
 	CONFIG_SHOW_IMMUNITY,
 	CONFIG_SHOW_PREFETCH,
+	CONFIG_SHOW_WATCHING,
+	CONFIG_SHOW_WATCHING_NONE,
 	LOG_CHANNEL_SET,
 	LOG_NOT_TEXT,
 	LOG_NO_PERMS,
 	NOT_IN_DM,
 } from '../../messages/messages';
+import { formatChannelMentions } from './watch';
+
 export enum IMMUNITY_LEVEL {
 	NONE,
 	MANAGE_MESSAGES,
@@ -62,15 +66,20 @@ export async function configCommand(interaction: CommandInteraction) {
 		const prefetchValue = await redis.get(PREFETCH(guildID));
 		messageParts.push(CONFIG_SHOW_PREFETCH(parseInt(prefetchValue ?? '0', 10)));
 
-		const attributeValue = await redis.smembers(ATTRIBUTES(guildID));
-		const attributeNytValue = await redis.smembers(ATTRIBUTES_NYT(guildID));
-		const attributes = [...attributeValue, ...attributeNytValue];
+		const attributes = await redis.smembers(ATTRIBUTES(guildID));
 
 		const flags = attributes.map((a) => `\`${a}\``);
 		if (flags.length) {
 			messageParts.push(CONFIG_SHOW_ATTRIBUTES(flags.join(', ')));
 		} else {
 			messageParts.push(CONFIG_SHOW_ATTRIBUTES_NONE);
+		}
+
+		const channels = await redis.smembers(CHANNELS_WATCHING(guildID));
+		if (channels.length) {
+			messageParts.push(CONFIG_SHOW_WATCHING(channels.map((c) => formatChannelMentions(c)).join(', ')));
+		} else {
+			messageParts.push(CONFIG_SHOW_WATCHING_NONE);
 		}
 
 		return interaction.reply({

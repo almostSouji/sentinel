@@ -4,7 +4,6 @@ import { COLOR_MILD, COLOR_ALERT, COLOR_SEVERE, COLOR_DARK, COLOR_PURPLE } from 
 import {
 	CHANNELS_WATCHING,
 	ATTRIBUTES,
-	ATTRIBUTES_NYT,
 	ATTRIBUTES_THRESHOLD,
 	ATTRIBUTES_AMOUNT,
 	ATTRIBUTE_SEEN,
@@ -167,10 +166,7 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 			}
 		}
 
-		const checkAttributes = await redis.smembers(ATTRIBUTES(guild.id));
-		const checkNYTAttributes = await redis.smembers(ATTRIBUTES_NYT(guild.id));
-		const attributes = [...checkAttributes, ...checkNYTAttributes];
-
+		const attributes = await redis.smembers(ATTRIBUTES(guild.id));
 		if (!attributes.length) return;
 
 		void redis.incr(MESSAGES_CHECKED(guild.id));

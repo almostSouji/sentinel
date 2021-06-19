@@ -35,7 +35,7 @@ export const EXPLAIN_UPDATING = `• Buttons update based on permissions and mem
 export const EXPLAIN_PRIVATE = `• Sentinel is a private bot. If you have any feedback let me know! (\`Souji#0001\`).` as const;
 
 export const NOT_IN_DM = 'You can not use commands in direct messages.' as const;
-export const CUSTOM_TAG = 'Custom tags are currently not supported in manual check mode.' as const;
+export const CUSTOM_TAG = 'Check if you watch any attributes! (custom tags are currently not supported in manual check mode.)' as const;
 
 export const ERROR_LOGCHANNEL = `${PREFIX_ERROR} Logchannel invalid.` as const;
 export const LOG_NOT_TEXT = (name: string, type: string) =>

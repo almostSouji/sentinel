@@ -21,6 +21,7 @@ export async function testCommand(interaction: CommandInteraction) {
 
 	const res = await dryCheck(queryValue, client, guildID);
 	if (!res) {
+		// TODO: support custom tags
 		return interaction.reply({
 			content: CUSTOM_TAG,
 			ephemeral: true,

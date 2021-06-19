@@ -22,10 +22,6 @@ export const ATTRIBUTES_HIGH_AMOUNT = (guild: Snowflake) => `guild:${guild}:attr
 // Attributes to be shown
 export const ATTRIBUTES = (guild: Snowflake) => `guild:${guild}:attributes`;
 
-//* SET
-// Attributes to be shown
-export const ATTRIBUTES_NYT = (guild: Snowflake) => `guild:${guild}:attributes:nyt`;
-
 //* INT
 //* default: 0
 // Amount of attributes above threshold required for the message to be logged
