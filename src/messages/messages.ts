@@ -57,3 +57,19 @@ export const CONFIG_SHOW_IMMUNITY = (permission: string) => `${PREFIX_SUCCESS} I
 export const CONFIG_SHOW_PREFETCH = (amount: number) => `${PREFIX_SUCCESS} Prefetch messages on restart: \`${amount}\``;
 export const CONFIG_SHOW_ATTRIBUTES = (flags: string) => `${PREFIX_SUCCESS} Tracking attributes: ${flags}`;
 export const CONFIG_SHOW_ATTRIBUTES_NONE = `${PREFIX_ERROR} Not tracking any attributes (required)` as const;
+export const CONFIG_SHOW_WATCHING_NONE = `${PREFIX_ERROR} Not watching any channels (required)` as const;
+export const CONFIG_SHOW_WATCHING = (channels: string) => `${PREFIX_SUCCESS} Watching channels: ${channels}`;
+
+export const CONFIG_CHANNELS_ADD_INVALID = `${PREFIX_ERROR} Can not add channels` as const;
+export const CONFIG_CHANNELS_ADD_MISSING_PERMISSIONS = (channels: string) =>
+	`${CONFIG_CHANNELS_ADD_INVALID}: ${channels} (missing permissions to view or read message history)`;
+export const CONFIG_CHANNELS_ADD_WRONG_TYPE = (channels: string) =>
+	`${CONFIG_CHANNELS_ADD_INVALID}: ${channels} (channels need to be text based)`;
+export const CONFIG_CHANNEL_ADD = (channels: string) =>
+	`${PREFIX_SUCCESS} Added channels to the watch list: ${channels}`;
+export const CONFIG_CHANNELS_ADD_NONE = `${PREFIX_ERROR} No channels could be added.` as const;
+export const CONFIG_CHANNELS_REMOVE_WRONG_TYPE = (channels: string) =>
+	`${PREFIX_ERROR} Can not remove non-text channels: ${channels}`;
+export const CONFIG_CHANNELS_REMOVE = (channels: string) =>
+	`${PREFIX_SUCCESS} Removed channels from the watch list: ${channels}`;
+export const CONFIG_CHANNELS_REMOVE_NONE = `${PREFIX_ERROR} No channels could be removed.` as const;

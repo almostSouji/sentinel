@@ -25,3 +25,4 @@ export const COMMAND_NAME_TEST = 'test';
 export const COMMAND_NAME_CONFIG = 'config';
 export const COMMAND_NAME_ATTRIBUTES = 'attributes';
 export const COMMAND_NAME_ATTRIBUTES_NYT = 'attributes-nyt';
+export const COMMAND_NAME_WATCH = 'watch';

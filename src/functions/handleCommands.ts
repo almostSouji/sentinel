@@ -4,10 +4,12 @@ import {
 	COMMAND_NAME_CONFIG,
 	COMMAND_NAME_ATTRIBUTES,
 	COMMAND_NAME_ATTRIBUTES_NYT,
+	COMMAND_NAME_WATCH,
 } from '../constants';
 import { attributes } from './commands/attributes';
 import { configCommand } from './commands/config';
 import { testCommand } from './commands/test';
+import { watchCommand } from './commands/watch';
 
 export function handleCommands(interaction: Interaction) {
 	if (!interaction.isCommand()) return;
@@ -22,5 +24,9 @@ export function handleCommands(interaction: Interaction) {
 
 	if ([COMMAND_NAME_ATTRIBUTES, COMMAND_NAME_ATTRIBUTES_NYT].includes(commandName)) {
 		void attributes(interaction);
+	}
+
+	if (commandName === COMMAND_NAME_WATCH) {
+		void watchCommand(interaction);
 	}
 }
