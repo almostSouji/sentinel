@@ -9,7 +9,6 @@ import {
 	MessageActionRow,
 	Intents,
 	DMChannel,
-	TextChannel,
 	Collection,
 	Snowflake,
 	Guild,
@@ -122,7 +121,7 @@ client.on('ready', async () => {
 });
 
 client.on('interaction', async (interaction) => {
-	handleCommands(interaction);
+	void handleCommands(interaction);
 	if (!interaction.isMessageComponent()) return;
 	if (!(interaction.member instanceof GuildMember)) return;
 	const interactionMessage = interaction.message as Message;
@@ -272,8 +271,7 @@ client.on('channelDelete', (channel) => {
 
 client.on('channelUpdate', (_, channel) => {
 	if (channel instanceof DMChannel || !channel.isText()) return;
-	// ? guard should work but doesn't due to upstream #5716
-	void updateLogState((channel as TextChannel).guild, [handleMemberGuildState], [handleMessageDeletableState]);
+	void updateLogState(channel.guild, [handleMemberGuildState], [handleMessageDeletableState]);
 });
 
 client.on('roleUpdate', (oldRole) => {
