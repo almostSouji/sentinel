@@ -22,31 +22,22 @@ export const ATTRIBUTES = (guild: Snowflake) => `guild:${guild}:attributes`;
 export const ATTRIBUTE_SEEN = (guild: Snowflake, attribute: string) =>
 	`guild:${guild}:attributes:seen:attribute:${attribute}`;
 
-//* SET
-// Role IDs that should be notified
+//* ZSET<level, RoleId>
+// At what minimum level the role should be notified
 export const NOTIF_ROLES = (guild: Snowflake) => `guild:${guild}:notifications:roles`;
+
+//* ZSET<level, UserId>
+// At what minimum level the user should be notified
+export const NOTIF_USERS = (guild: Snowflake) => `guild:${guild}:notifications:users`;
 
 //* INT [0, 100, 200]
 // Amount of messages to pre-fetch from the log channel
 export const PREFETCH = (guild: Snowflake) => `guild:${guild}:prefetch`;
 
-//* SET
-// User IDs that should be notified
-export const NOTIF_USERS = (guild: Snowflake) => `guild:${guild}:notifications:users`;
-
 //* INT [0 (NONE), 1 (MANAGE_MESSAGES), 2 (BAN_MEMBERS), 3 (ADMINISTRATOR)]
 //* default: 0
 // Permission required to be ignored by the application
 export const IMMUNITY = (guild: Snowflake) => `guild:${guild}:immunity`;
-
-//* INT
-//* default: 0
-// Severity level required to trigger a notification
-export const NOTIF_LEVEL = (guild: Snowflake) => `guild:${guild}:notifications:level`;
-
-//* STR
-// Prefix notifications with text
-export const NOTIF_PREFIX = (guild: Snowflake) => `guild:${guild}:notifications:prefix`;
 
 //* ZSET<level, word>
 // Flag words at provided level. Words are delimited by word boundaries, case insensitive

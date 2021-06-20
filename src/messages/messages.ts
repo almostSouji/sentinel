@@ -75,3 +75,13 @@ export const CONFIG_CHANNELS_REMOVE_WRONG_TYPE = (channels: string) =>
 export const CONFIG_CHANNELS_REMOVE = (channels: string) =>
 	`${PREFIX_SUCCESS} Removed channels from the watch list: ${channels}`;
 export const CONFIG_CHANNELS_REMOVE_NONE = `${PREFIX_ERROR} No channels could be removed.` as const;
+
+export const NOTIFY_ROLE_ADD = (role: string, level: string) =>
+	`Added a notification for <@&${role}> at level ${level}.`;
+export const NOTIFY_ROLE_REMOVE = (role: string) => `Removed the notification for <@&${role}>.`;
+export const NOTIFY_USER_ADD = (role: string, level: string) =>
+	`Added a notification for <@${role}> at level ${level}.`;
+export const NOTIFY_USER_REMOVE = (user: string) => `Removed the notification for <@${user}>.`;
+export const NOTIFY_USER_SHOW = (user: string, level: string) => `• <@${user}> at level ${level}`;
+export const NOTIFY_ROLE_SHOW = (role: string, level: string) => `• <@&${role}> at level ${level}`;
+export const NOTIFY_NONE = `${PREFIX_ERROR} No notifications set.` as const;

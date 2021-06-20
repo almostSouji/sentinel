@@ -27,3 +27,4 @@ export const COMMAND_NAME_ATTRIBUTES = 'attributes';
 export const COMMAND_NAME_ATTRIBUTES_NYT = 'attributes-nyt';
 export const COMMAND_NAME_WATCH = 'watch';
 export const COMMAND_NAME_REDIS = 'redis';
+export const COMMAND_NAME_NOTIFY = 'notify';

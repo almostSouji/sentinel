@@ -6,9 +6,11 @@ import {
 	COMMAND_NAME_ATTRIBUTES_NYT,
 	COMMAND_NAME_WATCH,
 	COMMAND_NAME_REDIS,
+	COMMAND_NAME_NOTIFY,
 } from '../constants';
 import { attributes } from './commands/attributes';
 import { configCommand } from './commands/config';
+import { notifyCommand } from './commands/notify';
 import { redisCommand } from './commands/redis';
 import { testCommand } from './commands/test';
 import { watchCommand } from './commands/watch';
@@ -34,5 +36,9 @@ export function handleCommands(interaction: Interaction) {
 
 	if (commandName === COMMAND_NAME_REDIS) {
 		void redisCommand(interaction);
+	}
+
+	if (commandName === COMMAND_NAME_NOTIFY) {
+		void notifyCommand(interaction);
 	}
 }

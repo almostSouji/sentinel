@@ -7,10 +7,10 @@ import {
 	MessageActionRow,
 	Snowflake,
 } from 'discord.js';
-import { DEBUG_GUILDS, NOTIF_LEVEL, NOTIF_PREFIX, NOTIF_ROLES, NOTIF_USERS, STRICTNESS } from '../keys';
+import { DEBUG_GUILDS, NOTIF_ROLES, NOTIF_USERS, STRICTNESS } from '../keys';
 import { generateButtons, listButton } from './buttons';
 import { strictnessPick } from './checkMessage';
-import { truncate, truncateEmbed } from './util';
+import { truncate, truncateEmbed, zSetZipper } from './util';
 
 export async function sendLog(
 	logChannel: TextChannel | NewsChannel,
@@ -32,13 +32,6 @@ export async function sendLog(
 	const botPermissions = targetChannel.permissionsFor(clientUser!);
 	const strictness = parseInt((await redis.get(STRICTNESS(guild.id))) ?? '1', 10);
 	const buttonLevel = debug ? 0 : strictnessPick(strictness, 1, 2, 3);
-
-	// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-	const roles = (await redis.smembers(NOTIF_ROLES(guild.id))) as Snowflake[];
-	// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-	const users = (await redis.smembers(NOTIF_USERS(guild.id))) as Snowflake[];
-	const notificationLevel = parseInt((await redis.get(NOTIF_LEVEL(guild.id))) ?? '0', 10);
-	const prefix = (await redis.get(NOTIF_PREFIX(guild.id))) ?? '';
 
 	const metaDataParts: string[] = [];
 
@@ -67,8 +60,33 @@ export async function sendLog(
 
 	embed.addField('Metadata', metaDataParts.join('\n'), true);
 
-	const notificationParts = [...roles.map((role) => `<@&${role}>`), ...users.map((user) => `<@${user}>`)];
-	const newContent = severityLevel >= notificationLevel ? `${prefix}${notificationParts.join(', ')}` : null;
+	const notificationParts = [];
+	const roles = [];
+	const users = [];
+
+	const notifUsers = await redis.zrange(NOTIF_USERS(guild.id), 0, -1, 'WITHSCORES');
+	const notifRoles = await redis.zrange(NOTIF_ROLES(guild.id), 0, -1, 'WITHSCORES');
+
+	if (notifUsers.length || notifRoles.length) {
+		const userMap = zSetZipper(notifUsers);
+		const roleMap = zSetZipper(notifRoles);
+
+		for (const [id, level] of userMap) {
+			if (severityLevel >= level) {
+				notificationParts.push(`<@${id}>`);
+				users.push(id as Snowflake);
+			}
+		}
+
+		for (const [id, level] of roleMap) {
+			if (severityLevel >= level) {
+				notificationParts.push(`<@&${id}>`);
+				roles.push(id as Snowflake);
+			}
+		}
+	}
+
+	const newContent = notificationParts.join(', ');
 	const buttons = generateButtons(
 		targetMessage.channel.id,
 		targetMessage.author.id,
@@ -81,7 +99,7 @@ export async function sendLog(
 	truncateEmbed(embed);
 	if (severityLevel >= buttonLevel) {
 		void logChannel.send({
-			content: newContent?.length ? newContent : undefined,
+			content: newContent.length ? newContent : undefined,
 			embeds: [embed],
 			allowedMentions: {
 				users,
@@ -93,7 +111,7 @@ export async function sendLog(
 	}
 
 	void logChannel.send({
-		content: newContent?.length ? newContent : undefined,
+		content: newContent.length ? newContent : undefined,
 		embeds: [embed],
 		allowedMentions: {
 			users,
