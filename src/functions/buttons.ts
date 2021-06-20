@@ -104,6 +104,8 @@ export function generateButtons(
 	}
 
 	res.push(reviewButton(targetUser, targetChannel, targetMessage));
-	res.push(listButton(values));
+	if (values.length) {
+		res.push(listButton(values));
+	}
 	return res;
 }

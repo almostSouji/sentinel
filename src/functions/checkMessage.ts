@@ -167,7 +167,6 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 				const max = Math.max(...matchLevels);
 				setSeverityColor(embed, max);
 				embed.addField('Custom Filter', matchParts.join('\n'));
-				// TODO: custom attribute does not have
 				void sendLog(logChannel, message, max, embed, isEdit, []);
 				return;
 			}
