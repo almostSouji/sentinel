@@ -28,6 +28,9 @@ export const BUTTON_PRESS_MISSING_PERMISSIONS_BAN = `To use the ban button you n
 export const BUTTON_PRESS_MISSING_PERMISSIONS_DELETE = `To use the delete button you need permissions to delete messages in the channel this was flagged in!`;
 export const BUTTON_PRESS_MISSING_PERMISSIONS_REVIEW = `To use the review button you need permissions to manage messages in the channel this was flagged in!`;
 
+export const INTERACTION_NO_HANDLER = (cmd: string, id: string) =>
+	`\`🐞\` No handler found for interaction command \`${cmd}\` \`${id}\`.`;
+
 export const EXPLAIN_WORKING = `The bot watches configured channels, evaluates their contents against *perspective AI* and flags problematic messages in log channels.` as const;
 export const EXPLAIN_PERCENTAGE = `• The data reflects how probable each attribute is reflected in the target message (90% likely to be toxic).` as const;
 export const EXPLAIN_NYT = `¹ trained on a single data source (New York Times comments tagged by their moderation team)` as const;

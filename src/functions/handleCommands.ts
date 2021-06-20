@@ -8,6 +8,7 @@ import {
 	COMMAND_NAME_REDIS,
 	COMMAND_NAME_NOTIFY,
 } from '../constants';
+import { INTERACTION_NO_HANDLER } from '../messages/messages';
 import { attributes } from './commands/attributes';
 import { configCommand } from './commands/config';
 import { notifyCommand } from './commands/notify';
@@ -19,26 +20,30 @@ export function handleCommands(interaction: Interaction) {
 	if (!interaction.isCommand()) return;
 	const { commandName } = interaction;
 	if (commandName === COMMAND_NAME_TEST) {
-		void testCommand(interaction);
+		return testCommand(interaction);
 	}
 
 	if (commandName === COMMAND_NAME_CONFIG) {
-		void configCommand(interaction);
+		return configCommand(interaction);
 	}
 
 	if ([COMMAND_NAME_ATTRIBUTES, COMMAND_NAME_ATTRIBUTES_NYT].includes(commandName)) {
-		void attributes(interaction);
+		return attributes(interaction);
 	}
 
 	if (commandName === COMMAND_NAME_WATCH) {
-		void watchCommand(interaction);
+		return void watchCommand(interaction);
 	}
 
 	if (commandName === COMMAND_NAME_REDIS) {
-		void redisCommand(interaction);
+		return void redisCommand(interaction);
 	}
 
 	if (commandName === COMMAND_NAME_NOTIFY) {
-		void notifyCommand(interaction);
+		return void notifyCommand(interaction);
 	}
+	void interaction.reply({
+		content: INTERACTION_NO_HANDLER(interaction.commandName, interaction.id),
+		ephemeral: true,
+	});
 }
