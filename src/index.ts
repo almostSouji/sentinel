@@ -12,6 +12,7 @@ import {
 	Collection,
 	Snowflake,
 	Guild,
+	MessageFlags,
 } from 'discord.js';
 
 import {
@@ -19,12 +20,14 @@ import {
 	BUTTON_LABEL_DELETE,
 	BUTTON_LABEL_FORCE_BAN,
 	BUTTON_LABEL_LIST,
+	EMOJI_ID_CHEVRON_LEFT,
+	EMOJI_ID_CHEVRON_RIGHT,
 	ERROR_CODE_MISSING_PERMISSIONS,
 	ERROR_CODE_UNKNOWN_MESSAGE,
 	ERROR_CODE_UNKNOWN_USER,
 } from './constants';
 import Client from './structures/Client';
-import { CHANNELS_LOG, PREFETCH } from './keys';
+import { CHANNELS_LOG, CUSTOM_FLAGS_PHRASES, CUSTOM_FLAGS_WORDS, PREFETCH } from './keys';
 import { checkMessage } from './functions/checkMessage';
 import {
 	REVIEWED,
@@ -42,9 +45,17 @@ import {
 	DELETE_FAIL_CHANNEL,
 	DELETE_FAIL_MISSING,
 	EXPLAIN_NYT,
+	CUSTOM_SHOW,
 } from './messages/messages';
 import { logger } from './functions/logger';
-import { deserializeAttributes, deserializeTargets, truncateEmbed } from './functions/util';
+import {
+	derserializePage,
+	deserializeAttributes,
+	deserializeTargets,
+	serializePage,
+	truncateEmbed,
+	zSetZipper,
+} from './functions/util';
 import { updateLogState } from './functions/updateLogState';
 import { handleMemberGuildState } from './functions/logStateHandlers/handleMemberGuildState';
 import { handleMessageDeletableState } from './functions/logStateHandlers/handleMessageDeletableState';
@@ -54,6 +65,7 @@ import { handleChannelDelete } from './functions/logStateHandlers/handleChannelD
 import { handleMemberAdd } from './functions/logStateHandlers/handleMemberAdd';
 import { AttributeScoreMapEntry, nytAttributes } from './functions/perspective';
 import { handleCommands } from './functions/handleCommands';
+import { levelIdentifier } from './functions/commands/notify';
 
 export interface ProcessEnv {
 	DISCORD_TOKEN: string;
@@ -61,10 +73,12 @@ export interface ProcessEnv {
 }
 
 export enum OpCodes {
-	LIST = 1,
+	NOOP,
+	LIST,
 	REVIEW,
 	BAN,
 	DELETE,
+	PAGE_TRIGGER,
 }
 
 export function formatAttributes(values: AttributeScoreMapEntry[]): string {
@@ -127,16 +141,18 @@ client.on('interaction', async (interaction) => {
 	const interactionMessage = interaction.message as Message;
 
 	const interactionEmbed = interactionMessage.embeds[0];
-	if (!interactionMessage.embeds.length || !(interaction.guild instanceof Guild)) return;
+	if (!(interaction.guild instanceof Guild)) return;
 
 	const embed = new MessageEmbed(interactionEmbed);
 
 	const executor = interaction.user;
 
 	const messageParts = [];
-	let buttons: MessageButton[] = [...interactionMessage.components[0]!.components];
+	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+	let buttons: MessageButton[] = [...(interactionMessage.components?.[0]?.components ?? [])];
 
 	if (
+		!interactionMessage.flags.has(MessageFlags.FLAGS.EPHEMERAL) &&
 		!interactionMessage.components.some((row) => {
 			return row.components.some((button) => {
 				return button.customID === interaction.customID;
@@ -147,6 +163,75 @@ client.on('interaction', async (interaction) => {
 
 	const res = Buffer.from(interaction.customID, 'binary');
 	const op = res.readInt16LE();
+
+	if (op === OpCodes.PAGE_TRIGGER) {
+		buttons = [];
+		const messageParts = [];
+		const page = derserializePage(res);
+		const fromPhrase = page * 10;
+		const toPhrase = (page + 1) * 10;
+
+		const phraseCount = await client.redis.zcard(CUSTOM_FLAGS_PHRASES(interaction.guild.id));
+		const wordCount = await client.redis.zcard(CUSTOM_FLAGS_WORDS(interaction.guild.id));
+		const triggerCount = phraseCount + wordCount;
+
+		const phrases = await client.redis.zrange(
+			CUSTOM_FLAGS_PHRASES(interaction.guild.id),
+			fromPhrase,
+			toPhrase,
+			'WITHSCORES',
+		);
+		const phraseMap = zSetZipper(phrases);
+		for (const [phrase, level] of phraseMap) {
+			const levelId = levelIdentifier(level);
+			messageParts.push(CUSTOM_SHOW('(p)', phrase, levelId));
+		}
+
+		if (phraseMap.length < 10) {
+			const fromWord = Math.max(fromPhrase - phraseCount, 0);
+			const toWord = toPhrase - phraseCount;
+
+			const words = await client.redis.zrange(CUSTOM_FLAGS_WORDS(interaction.guild.id), fromWord, toWord, 'WITHSCORES');
+			const wordMap = zSetZipper(words).slice(0, 10);
+
+			for (const [word, level] of wordMap) {
+				const levelId = levelIdentifier(level);
+				messageParts.push(CUSTOM_SHOW('(w)', word, levelId));
+			}
+		}
+
+		buttons.push(
+			new MessageButton({
+				style: 2,
+				customID: serializePage(OpCodes.PAGE_TRIGGER, Math.max(page - 1, 0)),
+				emoji: EMOJI_ID_CHEVRON_LEFT,
+				disabled: page === 0,
+			}),
+		);
+
+		buttons.push(
+			new MessageButton({
+				style: 2,
+				disabled: true,
+				customID: 'noop',
+				label: `${page}`,
+			}),
+		);
+
+		buttons.push(
+			new MessageButton({
+				style: 2,
+				customID: serializePage(OpCodes.PAGE_TRIGGER, page + 1),
+				emoji: EMOJI_ID_CHEVRON_RIGHT,
+				disabled: (page + 1) * 10 >= triggerCount,
+			}),
+		);
+
+		return void interaction.update({
+			content: messageParts.join('\n'),
+			components: buttons.length ? [buttons] : [],
+		});
+	}
 
 	if (op === OpCodes.BAN) {
 		const { user: targetUserId } = deserializeTargets(res);

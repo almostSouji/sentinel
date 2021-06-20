@@ -1,5 +1,5 @@
 import { Snowflake } from 'discord.js';
-import { PREFIX_ERROR, PREFIX_SUCCESS } from '../constants';
+import { MAX_TRIGGER_COUNT, MAX_TRIGGER_LENGTH, PREFIX_ERROR, PREFIX_SUCCESS } from '../constants';
 
 export const READY_LOG = (tag: string) => `${tag} is watching!`;
 export const BAN_SUCCESS = (executor: string, target: string) =>
@@ -97,4 +97,5 @@ export const CUSTOM_REMOVE = (prefix: string, phrase: string) =>
 	`${PREFIX_SUCCESS} Removed ${prefix} trigger on \`${phrase}\`.`;
 export const CUSTOM_NOT = (prefix: string, phrase: string) =>
 	`${PREFIX_ERROR} Could not remove ${prefix} trigger on \`${phrase}\`.`;
-export const CUSTOM_LIMIT = `${PREFIX_ERROR} max amount of custom triggers reached.`;
+export const CUSTOM_LIMIT = `${PREFIX_ERROR} max amount of custom triggers reached (${MAX_TRIGGER_COUNT}).`;
+export const CUSTOM_LENGTH = `${PREFIX_ERROR} custom trigger max length (${MAX_TRIGGER_LENGTH}) exceeded. Try to flag relevant subphrases instead of using wordy triggers.` as const;

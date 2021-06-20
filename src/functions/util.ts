@@ -114,3 +114,20 @@ export function deserializeAttributes(buffer: Buffer): AttributeScoreMapEntry[] 
 		value: buffer.readUInt16LE(2 + index * 2) / 100,
 	}));
 }
+
+export function serializePage(op: number, page: number): string {
+	const b = Buffer.alloc(4);
+	b.writeUInt16LE(op);
+	b.writeUInt16LE(page, 2);
+	return b.toString('binary');
+}
+
+export function derserializePage(buffer: Buffer): number {
+	return buffer.readUInt16LE(2);
+}
+
+export function serializeOpCode(op: number): string {
+	const b = Buffer.alloc(2);
+	b.writeUInt16LE(op);
+	return b.toString('binary');
+}
