@@ -28,3 +28,7 @@ export const COMMAND_NAME_ATTRIBUTES_NYT = 'attributes-nyt';
 export const COMMAND_NAME_WATCH = 'watch';
 export const COMMAND_NAME_REDIS = 'redis';
 export const COMMAND_NAME_NOTIFY = 'notify';
+export const COMMAND_NAME_CUSTOM = 'custom';
+
+export const MAX_TRIGGER_LENGTH = 10 as const;
+export const MAX_TRIGGER_COUNT = 18 as const;

@@ -12,9 +12,9 @@ import {
 } from '../../messages/messages';
 import { zSetZipper } from '../util';
 
-function notificationIdentifier(level: number): string {
-	return `\`${level === 3 ? 'SEVERE' : level === 2 ? 'HIGH' : 'LOW'} ${
-		level === 3 ? '🔴' : level === 2 ? '🟡' : '🟢'
+export function levelIdentifier(level: number): string {
+	return `\`${level === 3 ? 'SEVERE' : level === 2 ? 'HIGH' : level === 1 ? 'LOW' : 'CUSTOM'} ${
+		level === 3 ? '🔴' : level === 2 ? '🟡' : level === 1 ? '🟢' : '🔵'
 	}\``;
 }
 
@@ -41,7 +41,7 @@ export async function notifyCommand(interaction: CommandInteraction) {
 	if (addOption) {
 		const entity = addOption.options!.get('entity')!;
 		const level = addOption.options!.get('level')!.value as number;
-		const levelId = notificationIdentifier(level);
+		const levelId = levelIdentifier(level);
 		if (entity.member) {
 			const member = entity.member as GuildMember;
 			void redis.zadd(NOTIF_USERS(guildID), level, member.id);
@@ -71,12 +71,12 @@ export async function notifyCommand(interaction: CommandInteraction) {
 			const roleMap = zSetZipper(notifRoles);
 
 			for (const [id, level] of userMap) {
-				const levelId = notificationIdentifier(level);
+				const levelId = levelIdentifier(level);
 				messageParts.push(NOTIFY_USER_SHOW(id, levelId));
 			}
 
 			for (const [id, level] of roleMap) {
-				const levelId = notificationIdentifier(level);
+				const levelId = levelIdentifier(level);
 				messageParts.push(NOTIFY_ROLE_SHOW(id, levelId));
 			}
 		} else {

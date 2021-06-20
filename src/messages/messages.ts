@@ -88,3 +88,13 @@ export const NOTIFY_USER_REMOVE = (user: string) => `Removed the notification fo
 export const NOTIFY_USER_SHOW = (user: string, level: string) => `• <@${user}> at level ${level}`;
 export const NOTIFY_ROLE_SHOW = (role: string, level: string) => `• <@&${role}> at level ${level}`;
 export const NOTIFY_NONE = `${PREFIX_ERROR} No notifications set.` as const;
+
+export const CUSTOM_SHOW = (prefix: string, phrase: string, level: string) => `• ${prefix} \`${phrase}\` ${level}`;
+export const CUSTOM_NONE = `${PREFIX_ERROR} no custom triggers set up.` as const;
+export const CUSTOM_SET = (prefix: string, phrase: string, level: string) =>
+	`${PREFIX_SUCCESS} Set ${prefix} \`${phrase}\` to trigger level ${level}.`;
+export const CUSTOM_REMOVE = (prefix: string, phrase: string) =>
+	`${PREFIX_SUCCESS} Removed ${prefix} trigger on \`${phrase}\`.`;
+export const CUSTOM_NOT = (prefix: string, phrase: string) =>
+	`${PREFIX_ERROR} Could not remove ${prefix} trigger on \`${phrase}\`.`;
+export const CUSTOM_LIMIT = `${PREFIX_ERROR} max amount of custom triggers reached.`;
