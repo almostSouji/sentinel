@@ -186,11 +186,15 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 
 		const debug = await redis.sismember(DEBUG_GUILDS, guild.id);
 
-		const attributeThreshold = debug ? 0 : strictnessPick(strictness, 80, 90, 95);
-		const highThreshold = debug ? 0 : strictnessPick(strictness, 80, 93, 95);
-		const severeThreshold = debug ? 0 : strictnessPick(strictness, 80, 85, 90);
-		const attributeAmount = debug ? 0 : strictnessPick(strictness, 1, 2, 3);
-		const highAmount = debug ? 0 : strictnessPick(strictness, 1, 2, 3);
+		const attributeThreshold = debug ? 0 : strictnessPick(strictness, 90, 93, 95);
+		const highThreshold = debug ? 0 : strictnessPick(strictness, 93, 95, 98);
+		const severeThreshold = debug ? 0 : strictnessPick(strictness, 85, 88, 90);
+		const attributeAmount = debug
+			? 0
+			: strictnessPick(strictness, attributes.length * 0.0625, attributes.length * 0.125, attributes.length * 0.1875);
+		const highAmount = debug
+			? 0
+			: strictnessPick(strictness, attributes.length * 0.125, attributes.length * 0.1875, attributes.length * 0.25);
 		const severeAmount = debug ? 0 : 1;
 		const severeAttributes = ['SEVERE_TOXICITY', 'IDENTITY_ATTACK'];
 
