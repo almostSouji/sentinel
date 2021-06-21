@@ -17,7 +17,7 @@ import {
 import { PerspectiveAttribute, Score, Scores } from '../types/perspective';
 import { logger } from './logger';
 import { analyzeText, forcedAttributes, perspectiveAttributes } from './perspective';
-import { sendLog } from './embed';
+import { sendLog } from './sendLog';
 import { MATCH_PHRASE, VERDICT, VERDICT_NONE } from '../messages/messages';
 import { IMMUNITY_LEVEL } from './commands/config';
 
