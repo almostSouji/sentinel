@@ -1,5 +1,5 @@
 import { Snowflake, Client } from 'discord.js';
-import { ATTRIBUTES } from '../keys';
+import { ATTRIBUTES, DEBUG_GUILDS_LOGALL } from '../keys';
 import { PerspectiveAttribute, Scores } from '../types/perspective';
 import { AttributeHit } from './checkMessage';
 import { analyzeText, forcedAttributes, perspectiveAttributes } from './perspective';
@@ -10,7 +10,8 @@ export async function dryCheck(content: string, client: Client, guildId: Snowfla
 
 	const attributes = [...new Set([...(await redis.smembers(ATTRIBUTES(guildId))), ...forcedAttributes])];
 
-	const res = await analyzeText(content, attributes as PerspectiveAttribute[]);
+	const logOverride = await redis.sismember(DEBUG_GUILDS_LOGALL, guildId);
+	const res = await analyzeText(content, (logOverride ? perspectiveAttributes : attributes) as PerspectiveAttribute[]);
 	for (const [key, s] of Object.entries(res.attributeScores)) {
 		const scores = s as Scores;
 		if (scores.summaryScore.value > 0) {

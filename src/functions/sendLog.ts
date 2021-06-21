@@ -7,7 +7,7 @@ import {
 	MessageActionRow,
 	Snowflake,
 } from 'discord.js';
-import { DEBUG_GUILDS, NOTIF_ROLES, NOTIF_USERS, STRICTNESS } from '../keys';
+import { DEBUG_GUILDS_LOGALL, NOTIF_ROLES, NOTIF_USERS, STRICTNESS } from '../keys';
 import { generateButtons, listButton } from './buttons';
 import { strictnessPick } from './checkMessage';
 import { truncate, truncateEmbed, zSetZipper } from './util';
@@ -28,10 +28,10 @@ export async function sendLog(
 		content: targetContent,
 	} = targetMessage;
 	const { guild } = targetChannel;
-	const debug = await redis.sismember(DEBUG_GUILDS, guild.id);
+	const logOverride = await redis.sismember(DEBUG_GUILDS_LOGALL, guild.id);
 	const botPermissions = targetChannel.permissionsFor(clientUser!);
 	const strictness = parseInt((await redis.get(STRICTNESS(guild.id))) ?? '1', 10);
-	const buttonLevel = debug ? 0 : strictnessPick(strictness, 1, 2, 3);
+	const buttonLevel = logOverride ? 0 : strictnessPick(strictness, 1, 2, 3);
 
 	const metaDataParts: string[] = [];
 
@@ -44,7 +44,7 @@ export async function sendLog(
 	metaDataParts.push(`• Message link: [jump ➔](${targetMessage.url})`);
 
 	if (isEdit) {
-		metaDataParts.push(`• Caused by message edit`);
+		metaDataParts.push(`• Message edit`);
 	}
 
 	const attachments = targetMessage.attachments;

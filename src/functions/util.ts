@@ -69,13 +69,6 @@ export function escapeRegex(str: string): string {
 	return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-export function concatEnumeration(elements: string[]): string {
-	if (elements.length < 2) return elements.join(' ');
-	return `${elements.slice(0, elements.length - 1).join(', ')}${elements.length < 3 ? '' : ','} and ${
-		elements[elements.length - 1]
-	}`;
-}
-
 export function serializeTargets(op: number, user: Snowflake, channel: Snowflake, message: Snowflake): string {
 	const b = Buffer.alloc(2 + 24);
 	b.writeUInt16LE(op);

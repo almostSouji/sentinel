@@ -57,3 +57,6 @@ export const MESSAGES_CHECKED = (guild: Snowflake) => `guild:${guild}:messages:c
 // 🧪 SET
 // Guilds with debug mode enabled
 export const DEBUG_GUILDS = 'debug:guilds';
+// 🧪 SET
+// Guilds with log override enabled (check all attributes, not just configured)
+export const DEBUG_GUILDS_LOGALL = 'debug:guilds:logall';

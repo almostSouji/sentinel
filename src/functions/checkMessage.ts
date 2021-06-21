@@ -1,5 +1,5 @@
 import { Message, PartialMessage, Permissions, MessageEmbed, Snowflake } from 'discord.js';
-import { concatEnumeration, mapZippedByScore, zSetZipper } from './util';
+import { mapZippedByScore, zSetZipper } from './util';
 import { COLOR_MILD, COLOR_ALERT, COLOR_SEVERE, COLOR_DARK, COLOR_PURPLE } from '../constants';
 import {
 	CHANNELS_WATCHING,
@@ -13,12 +13,13 @@ import {
 	IMMUNITY,
 	STRICTNESS,
 	DEBUG_GUILDS,
+	DEBUG_GUILDS_LOGALL,
 } from '../keys';
 import { PerspectiveAttribute, Score, Scores } from '../types/perspective';
 import { logger } from './logger';
 import { analyzeText, forcedAttributes, perspectiveAttributes } from './perspective';
 import { sendLog } from './sendLog';
-import { MATCH_PHRASE, VERDICT, VERDICT_NONE } from '../messages/messages';
+import { FLAGS_NONE, MATCH_PHRASE } from '../messages/messages';
 import { IMMUNITY_LEVEL } from './commands/config';
 
 const colors = [COLOR_MILD, COLOR_MILD, COLOR_ALERT, COLOR_SEVERE, COLOR_PURPLE] as const;
@@ -172,29 +173,37 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 			}
 		}
 
+		const debug = await redis.sismember(DEBUG_GUILDS, guild.id);
+		const logOverride = await redis.sismember(DEBUG_GUILDS_LOGALL, guild.id);
 		const attributes = [...new Set([...(await redis.smembers(ATTRIBUTES(guild.id))), ...forcedAttributes])];
 
 		void redis.incr(MESSAGES_CHECKED(guild.id));
-		const res = await analyzeText(content, attributes as PerspectiveAttribute[]);
+		const res = await analyzeText(
+			content,
+			(logOverride ? perspectiveAttributes : attributes) as PerspectiveAttribute[],
+		);
 
 		const tags: AttributeHit[] = [];
 		const high: AttributeHit[] = [];
 		const severe: AttributeHit[] = [];
 		let tripped = 0;
 
-		const debug = await redis.sismember(DEBUG_GUILDS, guild.id);
-
-		const attributeThreshold = debug ? 0 : strictnessPick(strictness, 90, 93, 95);
-		const highThreshold = debug ? 0 : strictnessPick(strictness, 93, 95, 98);
-		const severeThreshold = debug ? 0 : strictnessPick(strictness, 85, 88, 90);
-		const attributeAmount = debug
-			? 0
-			: strictnessPick(strictness, attributes.length * 0.0625, attributes.length * 0.125, attributes.length * 0.1875);
-		const highAmount = debug
-			? 0
-			: strictnessPick(strictness, attributes.length * 0.125, attributes.length * 0.1875, attributes.length * 0.25);
-		const severeAmount = debug ? 0 : 1;
-		const severeAttributes = ['SEVERE_TOXICITY', 'IDENTITY_ATTACK'];
+		const attributeThreshold = strictnessPick(strictness, 90, 93, 95);
+		const highThreshold = strictnessPick(strictness, 93, 95, 98);
+		const severeThreshold = strictnessPick(strictness, 85, 88, 90);
+		const attributeAmount = strictnessPick(
+			strictness,
+			attributes.length * 0.0625,
+			attributes.length * 0.125,
+			attributes.length * 0.1875,
+		);
+		const highAmount = strictnessPick(
+			strictness,
+			attributes.length * 0.125,
+			attributes.length * 0.1875,
+			attributes.length * 0.25,
+		);
+		const severeAmount = 1;
 
 		for (const [key, s] of Object.entries(res.attributeScores)) {
 			const scores = s as Scores;
@@ -203,13 +212,15 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 			tags.push({ key, score: scores.summaryScore });
 			void redis.incr(ATTRIBUTE_SEEN(guild.id, key));
 
-			if (scorePercent >= highThreshold) {
+			const isSevere = forcedAttributes.some((attribute) => attribute === key) && scorePercent >= severeThreshold;
+
+			if (scorePercent >= highThreshold || isSevere) {
 				high.push({ key, score: scores.summaryScore });
 			}
-			if (severeAttributes.some((attribute) => attribute === key) && scorePercent >= severeThreshold) {
+			if (isSevere) {
 				severe.push({ key, score: scores.summaryScore });
 			}
-			if (scorePercent >= attributeThreshold) {
+			if (scorePercent >= attributeThreshold || isSevere) {
 				tripped++;
 			}
 		}
@@ -232,16 +243,36 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 		setSeverityColor(embed, severityLevel);
 
 		embed.addField(
-			'Verdict',
-			`${
-				high.length
-					? VERDICT(
-							concatEnumeration(high.sort((a, b) => b.score.value - a.score.value).map((e) => mapKeyToAdverb(e.key))),
-					  )
-					: `${VERDICT_NONE}`
-			}`,
+			'Flags',
+			high.length
+				? high
+						.sort((a, b) => b.score.value - a.score.value)
+						.map((e) => `• ${mapKeyToAdverb(e.key)}`)
+						.join('\n')
+				: FLAGS_NONE,
 			true,
 		);
+
+		if (debug) {
+			embed.setFooter(
+				[
+					`IV${immunityValue}`,
+					`ST${strictness}`,
+					`SL${severityLevel}`,
+					`AT${attributeThreshold}`,
+					`HT${highThreshold}`,
+					`ST${severeThreshold}`,
+					`AA${attributeAmount}`,
+					`HA${highAmount}`,
+					`SA${severeAmount}`,
+					`TL${tags.length}`,
+					`HL${high.length}`,
+					`SL${severe.length}`,
+					`TR${tripped}`,
+				].join(''),
+				client.user?.displayAvatarURL(),
+			);
+		}
 
 		void sendLog(
 			logChannel,

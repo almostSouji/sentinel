@@ -22,8 +22,7 @@ export const BAN_FAIL_UNKNOWN = (executor: string, target: string) =>
 	`• \`${executor}\` could not ban \`${target}\` (unknown user)`;
 export const BAN_FAIL_OTHER = (executor: string, target: string) => `• \`${executor}\` could not ban \`${target}\``;
 
-export const VERDICT = (flags: string) => `Likely ${flags}.`;
-export const VERDICT_NONE = `Not flagged with any significant attributes.`;
+export const FLAGS_NONE = `Not flagged with any significant attributes.`;
 
 export const BUTTON_PRESS_MISSING_PERMISSIONS_BAN = `To use the ban button you need permissions to ban members!`;
 export const BUTTON_PRESS_MISSING_PERMISSIONS_DELETE = `To use the delete button you need permissions to delete messages in the channel this was flagged in!`;
