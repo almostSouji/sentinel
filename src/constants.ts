@@ -22,6 +22,7 @@ export const ERROR_CODE_MISSING_PERMISSIONS = 50013 as const;
 export const MAX_MESSAGE_LEN = 2000 as const;
 export const PREFIX_ERROR = '`❌`' as const;
 export const PREFIX_SUCCESS = '`✅`' as const;
+export const PREFIX_LOCKED = '`🔒`' as const;
 
 export const COMMAND_NAME_TEST = 'test';
 export const COMMAND_NAME_CONFIG = 'config';

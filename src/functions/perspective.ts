@@ -2,9 +2,9 @@ import { google } from 'googleapis';
 import { PerspectiveResponseData, PerspectiveResponse, PerspectiveAttribute } from '../types/perspective';
 
 export const perspectiveAttributes = [
-	'TOXICITY',
 	'SEVERE_TOXICITY',
 	'IDENTITY_ATTACK',
+	'TOXICITY',
 	'INSULT',
 	'PROFANITY',
 	'THREAT',
@@ -30,6 +30,8 @@ export const nytAttributes = [
 	'SPAM',
 	'UNSUBSTANTIAL',
 ];
+
+export const forcedAttributes = ['SEVERE_TOXICITY', 'IDENTITY_ATTACK'];
 
 export interface AttributeScoreMapEntry {
 	value: number;

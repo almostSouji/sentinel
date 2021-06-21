@@ -1,5 +1,6 @@
 import { Snowflake } from 'discord.js';
-import { MAX_TRIGGER_COUNT, MAX_TRIGGER_LENGTH, PREFIX_ERROR, PREFIX_SUCCESS } from '../constants';
+import { MAX_TRIGGER_COUNT, MAX_TRIGGER_LENGTH, PREFIX_ERROR, PREFIX_LOCKED, PREFIX_SUCCESS } from '../constants';
+import { forcedAttributes } from '../functions/perspective';
 
 export const READY_LOG = (tag: string) => `${tag} is watching!`;
 export const BAN_SUCCESS = (executor: string, target: string) =>
@@ -54,14 +55,17 @@ export const CONFIG_IMMUNITY_SET = (permission: string) =>
 export const CONFIG_PREFETCH_SET = (amount: number) => `${PREFIX_SUCCESS} Prefetch messages on restart: \`${amount}\``;
 export const CONFIG_ATTRIBUTES_ENABLED = (flags: string) => `${PREFIX_SUCCESS} Enabled flags: ${flags}`;
 export const CONFIG_ATTRIBUTES_DISABLED = (flags: string) => `${PREFIX_SUCCESS} Disabled flags: ${flags}`;
+export const CONFIG_ATTRIBUTES_NONE = `${PREFIX_ERROR} No attributes provided, aborting.` as const;
 export const CONFIG_STRICTNESS_SET = (level: string) => `${PREFIX_SUCCESS} Strictness level set to: \`${level}\``;
 
 export const CONFIG_SHOW_CHANNEL = (channel: Snowflake) => `${PREFIX_SUCCESS} Log channel: <#${channel}>`;
 export const CONFIG_SHOW_IMMUNITY = (permission: string) => `${PREFIX_SUCCESS} Immunity permission: \`${permission}\``;
 export const CONFIG_SHOW_PREFETCH = (amount: number) => `${PREFIX_SUCCESS} Prefetch messages on restart: \`${amount}\``;
 export const CONFIG_SHOW_ATTRIBUTES = (flags: string) => `${PREFIX_SUCCESS} Tracking attributes: ${flags}`;
-export const CONFIG_SHOW_ATTRIBUTES_NONE = `${PREFIX_ERROR} Not tracking any attributes (required)` as const;
 export const CONFIG_SHOW_WATCHING_NONE = `${PREFIX_ERROR} Not watching any channels (required)` as const;
+export const CONFIG_SHOW_WATCHING_FORCED = `${PREFIX_LOCKED} Tracking attributes: ${forcedAttributes
+	.map((a) => `\`${a}\``)
+	.join(', ')} (can not be unwatched)`;
 export const CONFIG_SHOW_WATCHING = (channels: string) => `${PREFIX_SUCCESS} Watching channels: ${channels}`;
 export const CONFIG_SHOW_STRICTNESS = (level: string) => `${PREFIX_SUCCESS} Strictness level: \`${level}\``;
 

@@ -28,10 +28,12 @@ export async function testCommand(interaction: CommandInteraction) {
 		});
 	}
 	const attributes = formatAttributes(
-		perspectiveAttributes.map((key, index) => ({
-			key,
-			value: res[index] / 100,
-		})),
+		perspectiveAttributes
+			.map((key, index) => ({
+				key,
+				value: res[index] / 100,
+			}))
+			.filter((e) => e.value > 0),
 	);
 
 	return interaction.reply({

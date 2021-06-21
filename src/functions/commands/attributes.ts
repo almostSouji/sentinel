@@ -4,8 +4,7 @@ import {
 	CONFIG_ATTRIBUTES_ENABLED,
 	CONFIG_ATTRIBUTES_DISABLED,
 	NOT_IN_DM,
-	CONFIG_SHOW_ATTRIBUTES,
-	CONFIG_SHOW_ATTRIBUTES_NONE,
+	CONFIG_ATTRIBUTES_NONE,
 } from '../../messages/messages';
 
 function formatFlag(flag: string): string {
@@ -39,14 +38,7 @@ export async function attributes(interaction: CommandInteraction) {
 		void redis.sadd(ATTRIBUTES(guildID), ...disabledFlags);
 		messageParts.push(CONFIG_ATTRIBUTES_DISABLED(disabledFlags.map((f) => `\`${f}\``).join(', ')));
 	} else {
-		const attributes = await redis.smembers(ATTRIBUTES(guildID));
-
-		const flags = attributes.map((a) => `\`${a}\``);
-		if (flags.length) {
-			messageParts.push(CONFIG_SHOW_ATTRIBUTES(flags.join(', ')));
-		} else {
-			messageParts.push(CONFIG_SHOW_ATTRIBUTES_NONE);
-		}
+		messageParts.push(CONFIG_ATTRIBUTES_NONE);
 	}
 
 	void interaction.reply({

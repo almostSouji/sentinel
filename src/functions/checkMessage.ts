@@ -16,7 +16,7 @@ import {
 } from '../keys';
 import { PerspectiveAttribute, Score, Scores } from '../types/perspective';
 import { logger } from './logger';
-import { analyzeText, perspectiveAttributes } from './perspective';
+import { analyzeText, forcedAttributes, perspectiveAttributes } from './perspective';
 import { sendLog } from './embed';
 import { MATCH_PHRASE, VERDICT, VERDICT_NONE } from '../messages/messages';
 import { IMMUNITY_LEVEL } from './commands/config';
@@ -172,8 +172,7 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 			}
 		}
 
-		const attributes = await redis.smembers(ATTRIBUTES(guild.id));
-		if (!attributes.length) return;
+		const attributes = [...new Set([...(await redis.smembers(ATTRIBUTES(guild.id))), ...forcedAttributes])];
 
 		void redis.incr(MESSAGES_CHECKED(guild.id));
 		const res = await analyzeText(content, attributes as PerspectiveAttribute[]);

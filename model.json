@@ -169,16 +169,6 @@
 				"type": 5
 			},
 			{
-				"name": "severe-toxicity",
-				"description": "SEVERE_TOXICITY",
-				"type": 5
-			},
-			{
-				"name": "identity-attack",
-				"description": "IDENTITY_ATTACK",
-				"type": 5
-			},
-			{
 				"name": "insult",
 				"description": "INSULT",
 				"type": 5

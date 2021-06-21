@@ -4,7 +4,6 @@ import {
 	CONFIG_IMMUNITY_SET,
 	CONFIG_PREFETCH_SET,
 	CONFIG_SHOW_ATTRIBUTES,
-	CONFIG_SHOW_ATTRIBUTES_NONE,
 	CONFIG_SHOW_CHANNEL,
 	CONFIG_SHOW_CHANNEL_MISSING,
 	CONFIG_SHOW_CHANNEL_MISSING_PERMISSIONS,
@@ -12,6 +11,7 @@ import {
 	CONFIG_SHOW_PREFETCH,
 	CONFIG_SHOW_STRICTNESS,
 	CONFIG_SHOW_WATCHING,
+	CONFIG_SHOW_WATCHING_FORCED,
 	CONFIG_SHOW_WATCHING_NONE,
 	CONFIG_STRICTNESS_SET,
 	LOG_CHANNEL_SET,
@@ -83,10 +83,10 @@ export async function configCommand(interaction: CommandInteraction) {
 		const attributes = await redis.smembers(ATTRIBUTES(guildID));
 
 		const flags = attributes.map((a) => `\`${a}\``);
+
+		messageParts.push(CONFIG_SHOW_WATCHING_FORCED);
 		if (flags.length) {
 			messageParts.push(CONFIG_SHOW_ATTRIBUTES(flags.join(', ')));
-		} else {
-			messageParts.push(CONFIG_SHOW_ATTRIBUTES_NONE);
 		}
 
 		return interaction.reply({
