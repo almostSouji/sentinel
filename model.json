@@ -1,13 +1,13 @@
 [
 	{
 		"name": "test",
-		"description": "Check a string for toxicity",
+		"description": "Check a string for toxicity and custom triggers",
 		"default_permission": false,
 		"options": [
 			{
 				"type": 3,
 				"name": "query",
-				"description": "Message to test",
+				"description": "Phrase to test",
 				"required": true
 			}
 		]
@@ -28,7 +28,7 @@
 				"description": "How strict you want the application to be",
 				"choices": [
 					{
-						"name": "Forgiving",
+						"name": "Forgiving (default)",
 						"value": 1
 					},
 					{
@@ -47,7 +47,7 @@
 				"description": "Amount of messages in the log channel to cache after a restart",
 				"choices": [
 					{
-						"name": "0",
+						"name": "0 (default)",
 						"value": 0
 					},
 					{
@@ -98,28 +98,28 @@
 					{
 						"type": 7,
 						"name": "channel-1",
-						"description": "channel to add to the watch list",
+						"description": "Channel to add to the watch list",
 						"required": true
 					},
 					{
 						"type": 7,
 						"name": "channel-2",
-						"description": "channel to add to the watch list"
+						"description": "Channel to add to the watch list"
 					},
 					{
 						"type": 7,
 						"name": "channel-3",
-						"description": "channel to add to the watch list"
+						"description": "Channel to add to the watch list"
 					},
 					{
 						"type": 7,
 						"name": "channel-4",
-						"description": "channel to add to the watch list"
+						"description": "Channel to add to the watch list"
 					},
 					{
 						"type": 7,
 						"name": "channel-5",
-						"description": "channel to add to the watch list"
+						"description": "Channel to add to the watch list"
 					}
 				]
 			},
@@ -131,28 +131,28 @@
 					{
 						"type": 7,
 						"name": "channel-1",
-						"description": "channel to remove from watch list",
+						"description": "Channel to remove from the watch list",
 						"required": true
 					},
 					{
 						"type": 7,
 						"name": "channel-2",
-						"description": "channel to remove from watch list"
+						"description": "Channel to remove from the watch list"
 					},
 					{
 						"type": 7,
 						"name": "channel-3",
-						"description": "channel to remove from watch list"
+						"description": "Channel to remove from the watch list"
 					},
 					{
 						"type": 7,
 						"name": "channel-4",
-						"description": "channel to remove from watch list"
+						"description": "Channel to remove from the watch list"
 					},
 					{
 						"type": 7,
 						"name": "channel-5",
-						"description": "channel to remove from watch list"
+						"description": "Channel to remove from the watch list"
 					}
 				]
 			}
@@ -165,32 +165,32 @@
 		"options": [
 			{
 				"name": "toxicity",
-				"description": "TOXICITY",
+				"description": "Check for toxicity",
 				"type": 5
 			},
 			{
 				"name": "insult",
-				"description": "INSULT",
+				"description": "Check for insults",
 				"type": 5
 			},
 			{
 				"name": "profanity",
-				"description": "PROFANITY",
+				"description": "Check for profanity",
 				"type": 5
 			},
 			{
 				"name": "threat",
-				"description": "THREAT",
+				"description": "Check for threats",
 				"type": 5
 			},
 			{
 				"name": "sexually-explicit",
-				"description": "SEXUALLY_EXPLICIT",
+				"description": "Check for sexually explicitness",
 				"type": 5
 			},
 			{
 				"name": "flirtation",
-				"description": "FLIRTATION",
+				"description": "Check for flirtation",
 				"type": 5
 			}
 		]
@@ -202,42 +202,42 @@
 		"options": [
 			{
 				"name": "attack-on-author",
-				"description": "ATTACK_ON_AUTHOR",
+				"description": "Check for an attack on the author",
 				"type": 5
 			},
 			{
 				"name": "attack-on-commenter",
-				"description": "ATTACK_ON_COMMENTER",
+				"description": "Check for an attack on a commenter",
 				"type": 5
 			},
 			{
 				"name": "incoherent",
-				"description": "INCOHERENT",
+				"description": "Check for incoherent messages",
 				"type": 5
 			},
 			{
 				"name": "inflammatory",
-				"description": "INFLAMMATORY",
+				"description": "Check for inflammatory messages",
 				"type": 5
 			},
 			{
 				"name": "likely-to-reject",
-				"description": "LIKELY_TO_REJECT",
+				"description": "Check for messages that are likely to be rejected",
 				"type": 5
 			},
 			{
 				"name": "obscene",
-				"description": "OBSCENE",
+				"description": "Check for obscenity",
 				"type": 5
 			},
 			{
 				"name": "spam",
-				"description": "SPAM",
+				"description": "Check for spam",
 				"type": 5
 			},
 			{
 				"name": "unsubstantial",
-				"description": "UNSUBSTANTIAL",
+				"description": "Check for unsubstantial messages",
 				"type": 5
 			}
 		]
@@ -265,16 +265,20 @@
 						"required": true,
 						"choices": [
 							{
-								"name": "LOW (green)",
+								"name": "Low (green)",
 								"value": 1
 							},
 							{
-								"name": "HIGH (yellow)",
+								"name": "High (yellow)",
 								"value": 2
 							},
 							{
-								"name": "SEVERE (red)",
+								"name": "Severe (red)",
 								"value": 3
+							},
+							{
+								"name": "Custom (purple)",
+								"value": 4
 							}
 						]
 					}
@@ -339,19 +343,19 @@
 						"required": true,
 						"choices": [
 							{
-								"name": "LOW (green)",
+								"name": "Low (green)",
 								"value": 1
 							},
 							{
-								"name": "HIGH (yellow)",
+								"name": "High (yellow)",
 								"value": 2
 							},
 							{
-								"name": "SEVERE (red)",
+								"name": "Severe (red)",
 								"value": 3
 							},
 							{
-								"name": "CUSTOM (purple)",
+								"name": "Custom (purple)",
 								"value": 4
 							}
 						]
