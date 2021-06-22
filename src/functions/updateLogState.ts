@@ -47,7 +47,8 @@ export async function updateLogState(
 		return;
 
 	for (const message of logChannel.messages.cache.values()) {
-		if (message.author.id !== client.user!.id) continue;
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+		if (message.author?.id !== client.user!.id) continue;
 		if (!message.embeds.length) continue;
 		const embed = message.embeds[0];
 		const content = message.content;

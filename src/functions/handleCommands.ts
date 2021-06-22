@@ -8,15 +8,17 @@ import {
 	COMMAND_NAME_REDIS,
 	COMMAND_NAME_NOTIFY,
 	COMMAND_NAME_CUSTOM,
+	COMMAND_NAME_FETCHLOG,
 } from '../constants';
 import { INTERACTION_NO_HANDLER } from '../messages/messages';
 import { attributes } from './commands/attributes';
 import { configCommand } from './commands/config';
 import { customTriggerCommand } from './commands/customTrigger';
 import { notifyCommand } from './commands/notify';
-import { redisCommand } from './commands/redis';
+import { redisCommand } from './devcommands/redis';
 import { testCommand } from './commands/test';
 import { watchCommand } from './commands/watch';
+import { fetchLog } from './devcommands/fetchLog';
 
 export function handleCommands(interaction: Interaction) {
 	if (!interaction.isCommand()) return;
@@ -47,6 +49,10 @@ export function handleCommands(interaction: Interaction) {
 
 	if (commandName === COMMAND_NAME_CUSTOM) {
 		return void customTriggerCommand(interaction);
+	}
+
+	if (commandName === COMMAND_NAME_FETCHLOG) {
+		return void fetchLog(interaction);
 	}
 
 	void interaction.reply({

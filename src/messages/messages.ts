@@ -102,3 +102,8 @@ export const CUSTOM_NOT = (prefix: string, phrase: string) =>
 	`${PREFIX_ERROR} Could not remove ${prefix} trigger on \`${phrase}\`.`;
 export const CUSTOM_LIMIT = `${PREFIX_ERROR} max amount of custom triggers reached (${MAX_TRIGGER_COUNT}).`;
 export const CUSTOM_LENGTH = `${PREFIX_ERROR} custom trigger max length (${MAX_TRIGGER_LENGTH}) exceeded. Try to flag relevant subphrases instead of using wordy triggers.` as const;
+
+export const FETCHLOG_CHANNELTYPE = `${PREFIX_ERROR} channel type invalid`;
+export const FETCHLOG_GUILD = (should: Snowflake, actual: Snowflake) =>
+	`${PREFIX_ERROR} guild id forged. Is: \`${actual}\` should be \`${should}\`.`;
+export const FETCHLOG_NOTLOG = `${PREFIX_ERROR} provided message does not resolve to a log message.`;

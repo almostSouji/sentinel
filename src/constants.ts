@@ -29,9 +29,10 @@ export const COMMAND_NAME_CONFIG = 'config';
 export const COMMAND_NAME_ATTRIBUTES = 'attributes';
 export const COMMAND_NAME_ATTRIBUTES_NYT = 'attributes-nyt';
 export const COMMAND_NAME_WATCH = 'watch';
-export const COMMAND_NAME_REDIS = 'redis';
 export const COMMAND_NAME_NOTIFY = 'notify';
 export const COMMAND_NAME_CUSTOM = 'custom';
+export const COMMAND_NAME_REDIS = 'redis';
+export const COMMAND_NAME_FETCHLOG = 'fetchlog';
 
 export const MAX_TRIGGER_LENGTH = 20 as const;
 export const MAX_TRIGGER_COUNT = 400 as const;

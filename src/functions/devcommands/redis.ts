@@ -1,4 +1,5 @@
 import { CommandInteraction } from 'discord.js';
+import { NOT_IN_DM } from '../../messages/messages';
 import { logger } from '../logger';
 import { truncate } from '../util';
 
@@ -6,7 +7,14 @@ export async function redisCommand(interaction: CommandInteraction) {
 	const {
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		client: { redis },
+		guildID,
 	} = interaction;
+	if (!guildID) {
+		return interaction.reply({
+			content: NOT_IN_DM,
+			ephemeral: true,
+		});
+	}
 	try {
 		const query = interaction.options.get('query')!.value as string;
 		const args = query.split(' ');
