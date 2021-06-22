@@ -44,7 +44,6 @@ import {
 	READY_LOG,
 	DELETE_FAIL_CHANNEL,
 	DELETE_FAIL_MISSING,
-	EXPLAIN_NYT,
 	CUSTOM_SHOW,
 } from './messages/messages';
 import { logger } from './functions/logger';
@@ -63,9 +62,9 @@ import { handleMemberRemoval } from './functions/logStateHandlers/handleMemberRe
 import { handleMessageDelete } from './functions/logStateHandlers/handleMessageDelete';
 import { handleChannelDelete } from './functions/logStateHandlers/handleChannelDelete';
 import { handleMemberAdd } from './functions/logStateHandlers/handleMemberAdd';
-import { AttributeScoreMapEntry, nytAttributes } from './functions/perspective';
 import { handleCommands } from './functions/handleCommands';
 import { levelIdentifier } from './functions/commands/notify';
+import { formatPerspectiveDetails } from './functions/formatting/formatPerspective';
 
 export interface ProcessEnv {
 	DISCORD_TOKEN: string;
@@ -79,14 +78,6 @@ export enum OpCodes {
 	BAN,
 	DELETE,
 	PAGE_TRIGGER,
-}
-
-export function formatAttributes(values: AttributeScoreMapEntry[]): string {
-	const attributes = values
-		.sort((a, b) => b.value - a.value)
-		.map((val) => `• ${val.value}% \`${val.key}\` ${nytAttributes.includes(val.key) ? '¹' : ''} `)
-		.join('\n');
-	return `${attributes}${values.some((e) => nytAttributes.includes(e.key)) ? `\n\n${EXPLAIN_NYT}` : ''}`;
 }
 
 const client = new Client({
@@ -320,7 +311,7 @@ client.on('interaction', async (interaction) => {
 	if (op === OpCodes.LIST) {
 		const values = deserializeAttributes(res);
 		return interaction.reply({
-			content: formatAttributes(values.filter((e) => e.value > 0)),
+			content: formatPerspectiveDetails(values),
 			ephemeral: true,
 		});
 	}

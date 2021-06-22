@@ -76,11 +76,12 @@ export async function customTriggerCommand(interaction: CommandInteraction) {
 		const phraseMap = zSetZipper(phrases);
 		const wordMap = zSetZipper(words);
 		let counter = 0;
+		const replacer = /\\(.)/gi;
 
 		for (const [phrase, level] of phraseMap) {
 			if (counter < 10) {
 				const levelId = levelIdentifier(level);
-				messageParts.push(CUSTOM_SHOW('(p)', phrase, levelId));
+				messageParts.push(CUSTOM_SHOW('(p)', phrase.replace(replacer, '$1'), levelId));
 				counter++;
 			}
 		}
@@ -88,7 +89,7 @@ export async function customTriggerCommand(interaction: CommandInteraction) {
 		for (const [word, level] of wordMap) {
 			if (counter < 10) {
 				const levelId = levelIdentifier(level);
-				messageParts.push(CUSTOM_SHOW('(w)', word, levelId));
+				messageParts.push(CUSTOM_SHOW('(w)', word.replace(replacer, '$1'), levelId));
 				counter++;
 			}
 		}

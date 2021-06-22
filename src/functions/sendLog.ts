@@ -6,6 +6,7 @@ import {
 	PartialMessage,
 	MessageActionRow,
 	Snowflake,
+	Permissions,
 } from 'discord.js';
 import { DEBUG_GUILDS_LOGALL, NOTIF_ROLES, NOTIF_USERS, STRICTNESS } from '../keys';
 import { generateButtons, listButton } from './buttons';
@@ -28,6 +29,17 @@ export async function sendLog(
 		content: targetContent,
 	} = targetMessage;
 	const { guild } = targetChannel;
+
+	const hasPerms = logChannel
+		.permissionsFor(clientUser!)
+		?.has([
+			Permissions.FLAGS.VIEW_CHANNEL,
+			Permissions.FLAGS.SEND_MESSAGES,
+			Permissions.FLAGS.EMBED_LINKS,
+			Permissions.FLAGS.READ_MESSAGE_HISTORY,
+		]);
+	if (!hasPerms) return;
+
 	const logOverride = await redis.sismember(DEBUG_GUILDS_LOGALL, guild.id);
 	const botPermissions = targetChannel.permissionsFor(clientUser!);
 	const strictness = parseInt((await redis.get(STRICTNESS(guild.id))) ?? '1', 10);

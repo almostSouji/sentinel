@@ -1,26 +1,23 @@
 import { Message, PartialMessage, Permissions, MessageEmbed, Snowflake } from 'discord.js';
-import { mapZippedByScore, zSetZipper } from './util';
 import { COLOR_MILD, COLOR_ALERT, COLOR_SEVERE, COLOR_DARK, COLOR_PURPLE } from '../constants';
 import {
 	CHANNELS_WATCHING,
 	ATTRIBUTES,
-	ATTRIBUTE_SEEN,
 	CHANNELS_LOG,
-	CUSTOM_FLAGS_WORDS,
-	CUSTOM_FLAGS_PHRASES,
 	MESSAGES_SEEN,
 	MESSAGES_CHECKED,
 	IMMUNITY,
 	STRICTNESS,
 	DEBUG_GUILDS,
-	DEBUG_GUILDS_LOGALL,
 } from '../keys';
-import { PerspectiveAttribute, Score, Scores } from '../types/perspective';
+import { Score } from '../types/perspective';
 import { logger } from './logger';
-import { analyzeText, forcedAttributes, perspectiveAttributes } from './perspective';
+import { forcedAttributes, perspectiveAttributes } from './perspective';
 import { sendLog } from './sendLog';
-import { FLAGS_NONE, MATCH_PHRASE } from '../messages/messages';
 import { IMMUNITY_LEVEL } from './commands/config';
+import { checkContent } from './inspection/checkContent';
+import { formatPerspectiveShort } from './formatting/formatPerspective';
+import { MATCH_PHRASE } from '../messages/messages';
 
 const colors = [COLOR_MILD, COLOR_MILD, COLOR_ALERT, COLOR_SEVERE, COLOR_PURPLE] as const;
 
@@ -37,44 +34,6 @@ export enum STRICTNESS_LEVELS {
 	LOW = 1,
 	MEDIUM,
 	HIGH,
-}
-
-function mapKeyToAdverb(key: string): string {
-	switch (key) {
-		case 'TOXICITY':
-			return 'toxic';
-		case 'SEVERE_TOXICITY':
-			return 'severely toxic';
-		case 'IDENTITY_ATTACK':
-			return "attacking someone's identity";
-		case 'INSULT':
-			return 'insulting';
-		case 'PROFANITY':
-			return 'profane';
-		case 'THREAT':
-			return 'threatening';
-		case 'SEXUALLY_EXPLICIT':
-			return 'sexually explicit';
-		case 'FLIRTATION':
-			return 'flirtatious';
-		case 'ATTACK_ON_AUTHOR':
-		case 'ATTACK_ON_COMMENTER':
-			return 'attacking someone';
-		case 'INCOHERENT':
-			return 'incoherent';
-		case 'INFLAMMATORY':
-			return 'inflammatory';
-		case 'LIKELY_TO_REJECT':
-			return 'rejected by New York Times moderators';
-		case 'OBSCENE':
-			return 'obscene';
-		case 'SPAM':
-			return 'spam';
-		case 'UNSUBSTANTIAL':
-			return 'unsubstantial';
-		default:
-			return `\`${key}\``;
-	}
 }
 
 export function strictnessPick(level: number, highValue: number, mediumValue: number, lowValue: number) {
@@ -138,55 +97,9 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 		const strictness = parseInt((await redis.get(STRICTNESS(guild.id))) ?? '1', 10);
 		const embed = new MessageEmbed();
 
-		const words = zSetZipper(await redis.zrange(CUSTOM_FLAGS_WORDS(guild.id), 0, -1, 'WITHSCORES'), true);
-		const phrases = zSetZipper(await redis.zrange(CUSTOM_FLAGS_PHRASES(guild.id), 0, -1, 'WITHSCORES'));
-		const mapByScore = mapZippedByScore([...words, ...phrases]);
-		const mapKeys = [...mapByScore.keys()].sort((a, b) => b - a);
-
-		if (mapByScore.size) {
-			const matchParts = [];
-			const matchLevels = [];
-			for (const score of mapKeys) {
-				const reg = RegExp(`(?<s${score}>${(mapByScore.get(score) ?? []).join('|')})`, 'gi');
-				const match = reg.exec(content);
-				if (match) {
-					for (const [key, value] of Object.entries(match.groups ?? {})) {
-						const level = parseInt(key.slice(1), 10);
-						matchLevels.push(level);
-						matchParts.push(
-							MATCH_PHRASE(
-								value,
-								level,
-								words.some(([key]) => key.toLowerCase() === `\\b${value.toLowerCase()}\\b`),
-							),
-						);
-					}
-				}
-			}
-
-			if (matchLevels.length) {
-				const max = Math.max(...matchLevels);
-				setSeverityColor(embed, max);
-				embed.addField('Custom Filter', matchParts.join('\n'));
-				void sendLog(logChannel, message, max, embed, isEdit, []);
-				return;
-			}
-		}
-
 		const debug = await redis.sismember(DEBUG_GUILDS, guild.id);
-		const logOverride = await redis.sismember(DEBUG_GUILDS_LOGALL, guild.id);
-		const attributes = [...new Set([...(await redis.smembers(ATTRIBUTES(guild.id))), ...forcedAttributes])];
-
 		void redis.incr(MESSAGES_CHECKED(guild.id));
-		const res = await analyzeText(
-			content,
-			(logOverride ? perspectiveAttributes : attributes) as PerspectiveAttribute[],
-		);
-
-		const tags: AttributeHit[] = [];
-		const high: AttributeHit[] = [];
-		const severe: AttributeHit[] = [];
-		let tripped = 0;
+		const attributes = [...new Set([...(await redis.smembers(ATTRIBUTES(guild.id))), ...forcedAttributes])];
 
 		const attributeThreshold = strictnessPick(strictness, 90, 93, 95);
 		const highThreshold = strictnessPick(strictness, 93, 95, 98);
@@ -205,60 +118,36 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 		);
 		const severeAmount = 1;
 
-		for (const [key, s] of Object.entries(res.attributeScores)) {
-			const scores = s as Scores;
-			const scorePercent = scores.summaryScore.value * 100;
+		const { customTrigger, perspective } = await checkContent(content, guild);
+		const { tripped, severe, high, tags } = perspective;
 
-			tags.push({ key, score: scores.summaryScore });
-			void redis.incr(ATTRIBUTE_SEEN(guild.id, key));
-
-			const isSevere = forcedAttributes.some((attribute) => attribute === key) && scorePercent >= severeThreshold;
-
-			if (scorePercent >= highThreshold || isSevere) {
-				high.push({ key, score: scores.summaryScore });
-			}
-			if (isSevere) {
-				severe.push({ key, score: scores.summaryScore });
-			}
-			if (scorePercent >= attributeThreshold || isSevere) {
-				tripped++;
-			}
+		if (customTrigger.length) {
+			embed.addField(
+				'Custom Filter',
+				customTrigger
+					.map((trigger) => MATCH_PHRASE(trigger.word ?? trigger.phrase ?? '', trigger.severity, Boolean(trigger.word)))
+					.join('\n'),
+			);
 		}
 
-		if (tripped < attributeAmount && !severe.length) return;
+		if (tripped < attributeAmount && !severe.length && !customTrigger.length) return;
 
-		const hasPerms =
-			logChannel
-				.permissionsFor(client.user!)
-				?.has([
-					Permissions.FLAGS.VIEW_CHANNEL,
-					Permissions.FLAGS.SEND_MESSAGES,
-					Permissions.FLAGS.EMBED_LINKS,
-					Permissions.FLAGS.READ_MESSAGE_HISTORY,
-				]) ?? false;
-		if (!hasPerms) return;
-
-		const severityLevel = severe.length >= severeAmount ? 3 : high.length >= highAmount ? 2 : 1;
+		const perspectiveSeverity = severe.length >= severeAmount ? 3 : high.length >= highAmount ? 2 : 1;
+		const customSeverity = Math.max(...customTrigger.map((e) => e.severity), -1);
+		const severityLevel = Math.max(perspectiveSeverity, customSeverity);
 
 		setSeverityColor(embed, severityLevel);
 
-		embed.addField(
-			'Flags',
-			high.length
-				? high
-						.sort((a, b) => b.score.value - a.score.value)
-						.map((e) => `• ${mapKeyToAdverb(e.key)}`)
-						.join('\n')
-				: FLAGS_NONE,
-			true,
-		);
+		embed.addField('Flags', formatPerspectiveShort(perspective));
 
 		if (debug) {
 			embed.setFooter(
 				[
 					`IV${immunityValue}`,
 					`ST${strictness}`,
-					`SL${severityLevel}`,
+					`PL${perspectiveSeverity}`,
+					`CL${customSeverity}`,
+					`SE${severityLevel}`,
 					`AT${attributeThreshold}`,
 					`HT${highThreshold}`,
 					`ST${severeThreshold}`,
