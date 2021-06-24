@@ -12,7 +12,6 @@ export interface PerspectiveResult {
 	tags: AttributeHit[];
 	high: AttributeHit[];
 	severe: AttributeHit[];
-	tripped: number;
 }
 
 export async function checkPerspective(content: string, guild: Guild): Promise<PerspectiveResult> {
@@ -26,9 +25,7 @@ export async function checkPerspective(content: string, guild: Guild): Promise<P
 	const tags: AttributeHit[] = [];
 	const high: AttributeHit[] = [];
 	const severe: AttributeHit[] = [];
-	let tripped = 0;
 
-	const attributeThreshold = strictnessPick(strictness, 90, 93, 95);
 	const highThreshold = strictnessPick(strictness, 93, 95, 98);
 	const severeThreshold = strictnessPick(strictness, 85, 88, 90);
 
@@ -47,15 +44,11 @@ export async function checkPerspective(content: string, guild: Guild): Promise<P
 		if (isSevere) {
 			severe.push({ key, score: scores.summaryScore });
 		}
-		if (scorePercent >= attributeThreshold || isSevere) {
-			tripped++;
-		}
 	}
 
 	return {
 		tags,
 		high,
 		severe,
-		tripped,
 	};
 }
