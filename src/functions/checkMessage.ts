@@ -119,7 +119,13 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 			embed.addField(
 				'Custom Trigger',
 				customTrigger
-					.map((trigger) => MATCH_PHRASE(trigger.word ?? trigger.phrase ?? '', trigger.severity, Boolean(trigger.word)))
+					.map((trigger) =>
+						MATCH_PHRASE(
+							trigger.word ?? trigger.phrase ?? '',
+							levelIdentifier(trigger.severity),
+							Boolean(trigger.word),
+						),
+					)
 					.join('\n'),
 			);
 		}

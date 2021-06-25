@@ -14,8 +14,8 @@ export const DELETE_FAIL_UNKNOWN = (executor: string) =>
 	`• \`${executor}\` could not delete the message (unknown message)`;
 export const DELETE_FAIL_OTHER = (executor: string) => `• \`${executor}\` could not delete the message`;
 export const REVIEWED = (executor: string) => `• \`${executor}\` reviewed this message`;
-export const MATCH_PHRASE = (phrase: string, value: number, isWord: boolean) =>
-	`• Severity level \`${value}\` matched on ${isWord ? 'word' : 'phrase'} \`${phrase}\``;
+export const MATCH_PHRASE = (phrase: string, level: string, isWord: boolean) =>
+	`• Severity level ${level} matched on ${isWord ? 'word' : 'phrase'} \`${phrase}\``;
 export const BAN_FAIL_MISSING = (executor: string, target: string) =>
 	`• \`${executor}\` could not ban \`${target}\` (missing permissions)`;
 export const BAN_FAIL_UNKNOWN = (executor: string, target: string) =>
