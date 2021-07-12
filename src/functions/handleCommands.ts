@@ -18,8 +18,8 @@ import { handleCustomTriggerCommand } from '../commands/customTrigger';
 import { handleNotifyCommand } from '../commands/notify';
 import { handleTestCommand } from '../commands/test';
 import { handleWatchCommand } from '../commands/watch';
-import { handleFetchLogCommand } from '../devcommands/fetchLog';
-import { handleRedisCommand } from '../devcommands/redis';
+import { handleFetchLogCommand } from '../commands/fetchLog';
+import { handleRedisCommand } from '../commands/redis';
 
 export function handleCommands(interaction: Interaction) {
 	if (!interaction.isCommand()) return;

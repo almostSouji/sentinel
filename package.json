@@ -13,10 +13,12 @@
 		"deploy": "node --unhandled-rejections=strict dist/index.js",
 		"lint": "eslint src --ext .ts",
 		"lint:fix": "eslint src --ext .ts --fix",
-		"prettier": "prettier --write **/*.{ts,js,json,yml,yaml}"
+		"prettier": "prettier --write **/*.{ts,js,json,yml,yaml}",
+		"deploy-commands": "npm run build && node dist/deployFunctions/deployCommands.js"
 	},
 	"dependencies": {
 		"discord.js": "^13.0.0-dev.edf6f0ca7012b6b678367a1b5d716d0b85e23ba3",
+		"dotenv": "^10.0.0",
 		"googleapis": "^73.0.0",
 		"ioredis": "^4.27.2",
 		"luxon": "^1.26.0",

@@ -69,6 +69,8 @@ import { formatPerspectiveDetails } from './functions/formatting/formatPerspecti
 export interface ProcessEnv {
 	DISCORD_TOKEN: string;
 	PERSPECTIVE_TOKEN: string;
+	DISCORD_CLIENT_ID: string;
+	DEPLOY_GUILD_ID?: string;
 }
 
 export enum OpCodes {
