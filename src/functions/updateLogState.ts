@@ -62,13 +62,14 @@ export async function updateLogState(
 
 		let changed = false;
 		if (banButton) {
+			const banB = banButton as MessageButton;
 			const banBuffer = Buffer.from(banButton.customID ?? '', 'binary');
 			const { user: targetUserId, channel: targetChannelId, message: targetMessageId } = deserializeTargets(banBuffer);
 			for (const handler of banHandlers) {
 				const res = handler(
 					guild,
 					embed,
-					banButton,
+					banB,
 					row,
 					targetUserId,
 					targetChannelId,
@@ -80,12 +81,13 @@ export async function updateLogState(
 				changed = change || changed;
 			}
 		} else if (reviewButton) {
+			const reviewB = reviewButton as MessageButton;
 			const listBuffer = Buffer.from(reviewButton.customID ?? '', 'binary');
 			const { user: targetUserId, channel: targetChannelId, message: targetMessageId } = deserializeTargets(listBuffer);
 			const change = handleMemberAdd(
 				guild,
 				embed,
-				reviewButton,
+				reviewB,
 				row,
 				targetUserId,
 				targetChannelId,
@@ -95,10 +97,11 @@ export async function updateLogState(
 			changed = change || changed;
 		}
 		if (deleteButton) {
+			const dButton = deleteButton as MessageButton;
 			const deleteBuffer = Buffer.from(deleteButton.customID ?? '', 'binary');
 			const { channel: targetChannelID, message: targetMessageId } = deserializeTargets(deleteBuffer);
 			for (const handler of deleteHandlers) {
-				const res = handler(guild, embed, deleteButton, row, targetChannelID, targetMessageId, changedStructures);
+				const res = handler(guild, embed, dButton, row, targetChannelID, targetMessageId, changedStructures);
 				const change = res instanceof Promise ? await res : res;
 				changed = change || changed;
 			}

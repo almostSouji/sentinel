@@ -1,9 +1,11 @@
 import { CommandInteraction } from 'discord.js';
-import { NOT_IN_DM } from '../../messages/messages';
-import { logger } from '../logger';
-import { truncate } from '../util';
+import { NOT_IN_DM } from '../messages/messages';
+import { logger } from '../functions/logger';
+import { truncate } from '../functions/util';
+import { RedisCommand } from '../interactions/redis';
+import { ArgumentsOf } from '../types/ArgumentsOf';
 
-export async function redisCommand(interaction: CommandInteraction) {
+export async function handleRedisCommand(interaction: CommandInteraction, args: ArgumentsOf<typeof RedisCommand>) {
 	const {
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		client: { redis },
@@ -16,12 +18,12 @@ export async function redisCommand(interaction: CommandInteraction) {
 		});
 	}
 	try {
-		const query = interaction.options.get('query')!.value as string;
-		const args = query.split(' ');
+		const query = args.query;
+		const redisArgs = query.split(' ');
 		let splitChar = ' ';
 		// eslint-disable-next-line no-eval
 		let res = await eval(
-			`redis['${args[0].toLowerCase()}'](...[${args
+			`redis['${redisArgs[0].toLowerCase()}'](...[${redisArgs
 				.slice(1)
 				.map((a) => `'${a}'`)
 				.join(',')}])`,

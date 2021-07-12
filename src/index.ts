@@ -63,7 +63,7 @@ import { handleMessageDelete } from './functions/logStateHandlers/handleMessageD
 import { handleChannelDelete } from './functions/logStateHandlers/handleChannelDelete';
 import { handleMemberAdd } from './functions/logStateHandlers/handleMemberAdd';
 import { handleCommands } from './functions/handleCommands';
-import { levelIdentifier } from './functions/commands/notify';
+import { levelIdentifier } from './commands/notify';
 import { formatPerspectiveDetails } from './functions/formatting/formatPerspective';
 
 export interface ProcessEnv {
@@ -139,8 +139,10 @@ client.on('interaction', async (interaction) => {
 	const executor = interaction.user;
 
 	const messageParts = [];
-	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-	let buttons: MessageButton[] = [...(interactionMessage.components?.[0]?.components ?? [])];
+	let buttons: MessageButton[] = [
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+		...(interactionMessage.components?.[0]?.components.filter((c) => c instanceof MessageButton) ?? []),
+	] as MessageButton[];
 
 	if (
 		!interactionMessage.flags.has(MessageFlags.FLAGS.EPHEMERAL) &&

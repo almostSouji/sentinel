@@ -7,6 +7,7 @@ import {
 	MessageActionRow,
 	Snowflake,
 	Permissions,
+	ThreadChannel,
 } from 'discord.js';
 import { DEBUG_GUILDS_LOGALL, NOTIF_ROLES, NOTIF_USERS, STRICTNESS } from '../keys';
 import { generateButtons, listButton } from './buttons';
@@ -14,7 +15,7 @@ import { strictnessPick } from './checkMessage';
 import { truncate, truncateEmbed, zSetZipper } from './util';
 
 export async function sendLog(
-	logChannel: TextChannel | NewsChannel,
+	logChannel: TextChannel | NewsChannel | ThreadChannel,
 	targetMessage: Message | PartialMessage,
 	severityLevel: number,
 	embed: MessageEmbed,

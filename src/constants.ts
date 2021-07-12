@@ -1,5 +1,5 @@
 export const COLOR_SEVERE = '#ed4245' as const;
-export const COLOR_ALERT = 'faa61a' as const;
+export const COLOR_ALERT = '#faa61a' as const;
 export const COLOR_MILD = '#3ba55c' as const;
 export const COLOR_DARK = '#2f3136' as const;
 export const COLOR_PURPLE = '#5865F2' as const;
@@ -23,16 +23,6 @@ export const MAX_MESSAGE_LEN = 2000 as const;
 export const PREFIX_ERROR = '`❌`' as const;
 export const PREFIX_SUCCESS = '`✅`' as const;
 export const PREFIX_LOCKED = '`🔒`' as const;
-
-export const COMMAND_NAME_TEST = 'test';
-export const COMMAND_NAME_CONFIG = 'config';
-export const COMMAND_NAME_ATTRIBUTES = 'attributes';
-export const COMMAND_NAME_ATTRIBUTES_NYT = 'attributes-nyt';
-export const COMMAND_NAME_WATCH = 'watch';
-export const COMMAND_NAME_NOTIFY = 'notify';
-export const COMMAND_NAME_CUSTOM = 'custom';
-export const COMMAND_NAME_REDIS = 'redis';
-export const COMMAND_NAME_FETCHLOG = 'fetchlog';
 
 export const MAX_TRIGGER_LENGTH = 20 as const;
 export const MAX_TRIGGER_COUNT = 400 as const;

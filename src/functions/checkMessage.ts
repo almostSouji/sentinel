@@ -14,11 +14,12 @@ import { Score } from '../types/perspective';
 import { logger } from './logger';
 import { forcedAttributes, perspectiveAttributes } from './perspective';
 import { sendLog } from './sendLog';
-import { IMMUNITY_LEVEL } from './commands/config';
+
 import { checkContent } from './inspection/checkContent';
 import { formatPerspectiveShort } from './formatting/formatPerspective';
 import { MATCH_PHRASE } from '../messages/messages';
-import { levelIdentifier } from './commands/notify';
+import { levelIdentifier } from '../commands/notify';
+import { IMMUNITY_LEVEL } from '../commands/config';
 
 const colors = [COLOR_MILD, COLOR_MILD, COLOR_ALERT, COLOR_SEVERE, COLOR_PURPLE] as const;
 

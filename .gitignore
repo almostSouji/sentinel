@@ -27,6 +27,7 @@ typings/
 .tmp/
 coverage/
 data/
+*-model.*
 
 # Testing
 testing*.*

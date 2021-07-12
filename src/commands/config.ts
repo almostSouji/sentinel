@@ -1,5 +1,7 @@
-import { GuildChannel, CommandInteraction, Permissions, Snowflake } from 'discord.js';
-import { ATTRIBUTES, CHANNELS_LOG, CHANNELS_WATCHING, IMMUNITY, PREFETCH, STRICTNESS } from '../../keys';
+import { ConfigCommand } from '../interactions/config';
+
+import { CommandInteraction, Permissions, Snowflake } from 'discord.js';
+import { ATTRIBUTES, CHANNELS_LOG, CHANNELS_WATCHING, IMMUNITY, PREFETCH, STRICTNESS } from '../keys';
 import {
 	CONFIG_IMMUNITY_SET,
 	CONFIG_PREFETCH_SET,
@@ -18,9 +20,10 @@ import {
 	LOG_NOT_TEXT,
 	LOG_NO_PERMS,
 	NOT_IN_DM,
-} from '../../messages/messages';
-import { STRICTNESS_LEVELS } from '../checkMessage';
+} from '../messages/messages';
+import { STRICTNESS_LEVELS } from '../functions/checkMessage';
 import { formatChannelMentions } from './watch';
+import { ArgumentsOf } from '../types/ArgumentsOf';
 
 export enum IMMUNITY_LEVEL {
 	NONE,
@@ -29,11 +32,10 @@ export enum IMMUNITY_LEVEL {
 	ADMINISTRATOR,
 }
 
-export async function configCommand(interaction: CommandInteraction) {
+export async function handleConfigCommand(interaction: CommandInteraction, args: ArgumentsOf<typeof ConfigCommand>) {
 	const messageParts = [];
 
 	const {
-		options,
 		client,
 		client: { redis },
 		guildID,
@@ -46,7 +48,41 @@ export async function configCommand(interaction: CommandInteraction) {
 		});
 	}
 
-	if (!options.size) {
+	const actions = [...Object.keys(args)] as (keyof ArgumentsOf<typeof ConfigCommand>)[];
+	if (actions.includes('immunity')) {
+		const level = args.immunity!;
+		await redis.set(IMMUNITY(guildID), level);
+		messageParts.push(CONFIG_IMMUNITY_SET(IMMUNITY_LEVEL[level]));
+	}
+	if (actions.includes('logchannel')) {
+		const channel = args.logchannel!;
+		if (channel.isText()) {
+			if (
+				channel
+					.permissionsFor(client.user!)
+					?.has([Permissions.FLAGS.EMBED_LINKS, Permissions.FLAGS.VIEW_CHANNEL, Permissions.FLAGS.READ_MESSAGE_HISTORY])
+			) {
+				await redis.set(CHANNELS_LOG(guildID), channel.id);
+				messageParts.push(LOG_CHANNEL_SET(channel.name));
+			} else {
+				messageParts.push(LOG_NO_PERMS);
+			}
+		} else {
+			messageParts.push(LOG_NOT_TEXT(channel.toString(), channel.type));
+		}
+	}
+	if (actions.includes('prefetch')) {
+		const amount = args.prefetch!;
+		await redis.set(PREFETCH(guildID), amount);
+		messageParts.push(CONFIG_PREFETCH_SET(amount));
+	}
+	if (actions.includes('strictness')) {
+		const level = args.strictness!;
+		await redis.set(STRICTNESS(guildID), level);
+		messageParts.push(CONFIG_STRICTNESS_SET(STRICTNESS_LEVELS[level]));
+	}
+
+	if (!actions.length) {
 		const channelValue = await redis.get(CHANNELS_LOG(guildID));
 		const channel = guild.channels.resolve((channelValue ?? '0') as Snowflake);
 		const missing = channel
@@ -95,47 +131,7 @@ export async function configCommand(interaction: CommandInteraction) {
 		});
 	}
 
-	const logOption = options.get('logchannel');
-	if (logOption) {
-		const logChannel = logOption.channel! as GuildChannel;
-		if (logChannel.isText()) {
-			if (
-				logChannel
-					.permissionsFor(client.user!)
-					?.has([Permissions.FLAGS.EMBED_LINKS, Permissions.FLAGS.VIEW_CHANNEL, Permissions.FLAGS.READ_MESSAGE_HISTORY])
-			) {
-				void redis.set(CHANNELS_LOG(guildID), logChannel.id);
-				messageParts.push(LOG_CHANNEL_SET(logChannel.name));
-			} else {
-				messageParts.push(LOG_NO_PERMS);
-			}
-		} else {
-			messageParts.push(LOG_NOT_TEXT(logChannel.toString(), logChannel.type));
-		}
-	}
-
-	const strictnessOption = options.get('strictness');
-	if (strictnessOption) {
-		const level = strictnessOption.value as number;
-		void redis.set(STRICTNESS(guildID), level);
-		messageParts.push(CONFIG_STRICTNESS_SET(STRICTNESS_LEVELS[level]));
-	}
-
-	const immunityOption = options.get('immunity');
-	if (immunityOption) {
-		const level = immunityOption.value as number;
-		void redis.set(IMMUNITY(guildID), level);
-		messageParts.push(CONFIG_IMMUNITY_SET(IMMUNITY_LEVEL[level]));
-	}
-
-	const prefetchOption = options.get('prefetch');
-	if (prefetchOption) {
-		const amount = prefetchOption.value as number;
-		void redis.set(PREFETCH(guildID), amount);
-		messageParts.push(CONFIG_PREFETCH_SET(amount));
-	}
-
-	void interaction.reply({
+	return interaction.reply({
 		content: messageParts.join('\n'),
 		ephemeral: true,
 	});

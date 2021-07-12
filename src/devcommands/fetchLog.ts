@@ -1,8 +1,13 @@
 import { Snowflake, CommandInteraction, DMChannel } from 'discord.js';
-import { truncate } from '../../functions/util';
-import { FETCHLOG_CHANNELTYPE, FETCHLOG_GUILD, FETCHLOG_NOTLOG, NOT_IN_DM } from '../../messages/messages';
+import { ArgumentsOf } from '../types/ArgumentsOf';
+import { truncate } from '../functions/util';
+import { FetchLogCommand } from '../interactions/fetchLog';
+import { FETCHLOG_CHANNELTYPE, FETCHLOG_GUILD, FETCHLOG_NOTLOG, NOT_IN_DM } from '../messages/messages';
 
-export async function fetchLog(interaction: CommandInteraction) {
+export async function handleFetchLogCommand(
+	interaction: CommandInteraction,
+	args: ArgumentsOf<typeof FetchLogCommand>,
+) {
 	const { guildID, client } = interaction;
 	if (!guildID) {
 		return interaction.reply({
@@ -11,7 +16,7 @@ export async function fetchLog(interaction: CommandInteraction) {
 		});
 	}
 	const regex = /https?:\/\/(?:canary\.|ptb\.)?discord(?:app)?\.com\/channels\/(\d{17,19})\/(\d{17,19})\/(\d{17,19})/gi;
-	const link = interaction.options.get('link')!.value as string;
+	const link = args.link;
 	const match = regex.exec(link);
 	if (match) {
 		const [, guildId, channelId, messageId] = match;

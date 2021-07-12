@@ -1,62 +1,63 @@
 import { Interaction } from 'discord.js';
-import {
-	COMMAND_NAME_TEST,
-	COMMAND_NAME_CONFIG,
-	COMMAND_NAME_ATTRIBUTES,
-	COMMAND_NAME_ATTRIBUTES_NYT,
-	COMMAND_NAME_WATCH,
-	COMMAND_NAME_REDIS,
-	COMMAND_NAME_NOTIFY,
-	COMMAND_NAME_CUSTOM,
-	COMMAND_NAME_FETCHLOG,
-} from '../constants';
 import { INTERACTION_NO_HANDLER } from '../messages/messages';
-import { attributes } from './commands/attributes';
-import { configCommand } from './commands/config';
-import { customTriggerCommand } from './commands/customTrigger';
-import { notifyCommand } from './commands/notify';
-import { redisCommand } from './devcommands/redis';
-import { testCommand } from './commands/test';
-import { watchCommand } from './commands/watch';
-import { fetchLog } from './devcommands/fetchLog';
+import { transformInteraction } from './commandParsing/transformInteraction';
+
+import { AttributesCommand } from '../interactions/attributes';
+import { ConfigCommand } from '../interactions/config';
+import { CustomTriggerCommand } from '../interactions/customTrigger';
+import { NotifyCommand } from '../interactions/notify';
+import { NYTAttributesCommand } from '../interactions/nytAttributes';
+import { TestCommand } from '../interactions/test';
+import { WatchCommand } from '../interactions/watch';
+import { FetchLogCommand } from '../interactions/fetchLog';
+import { RedisCommand } from '../interactions/redis';
+import { handleAttributesCommand } from '../commands/attributes';
+import { handleNYTAttributesCommand } from '../commands/nytAttributes';
+import { handleConfigCommand } from '../commands/config';
+import { handleCustomTriggerCommand } from '../commands/customTrigger';
+import { handleNotifyCommand } from '../commands/notify';
+import { handleTestCommand } from '../commands/test';
+import { handleWatchCommand } from '../commands/watch';
+import { handleFetchLogCommand } from '../devcommands/fetchLog';
+import { handleRedisCommand } from '../devcommands/redis';
 
 export function handleCommands(interaction: Interaction) {
 	if (!interaction.isCommand()) return;
-	const { commandName } = interaction;
-	if (commandName === COMMAND_NAME_TEST) {
-		return testCommand(interaction);
-	}
+	const { commandName, options } = interaction;
+	const args = [...options.values()];
 
-	if (commandName === COMMAND_NAME_CONFIG) {
-		return configCommand(interaction);
-	}
+	switch (commandName) {
+		case AttributesCommand.name:
+			return handleAttributesCommand(interaction, transformInteraction<typeof AttributesCommand>(args));
 
-	if ([COMMAND_NAME_ATTRIBUTES, COMMAND_NAME_ATTRIBUTES_NYT].includes(commandName)) {
-		return attributes(interaction);
-	}
+		case ConfigCommand.name:
+			return handleConfigCommand(interaction, transformInteraction<typeof ConfigCommand>(args));
 
-	if (commandName === COMMAND_NAME_WATCH) {
-		return void watchCommand(interaction);
-	}
+		case CustomTriggerCommand.name:
+			return handleCustomTriggerCommand(interaction, transformInteraction<typeof CustomTriggerCommand>(args));
 
-	if (commandName === COMMAND_NAME_REDIS) {
-		return void redisCommand(interaction);
-	}
+		case NotifyCommand.name:
+			return handleNotifyCommand(interaction, transformInteraction<typeof NotifyCommand>(args));
 
-	if (commandName === COMMAND_NAME_NOTIFY) {
-		return void notifyCommand(interaction);
-	}
+		case NYTAttributesCommand.name:
+			return handleNYTAttributesCommand(interaction, transformInteraction<typeof NYTAttributesCommand>(args));
 
-	if (commandName === COMMAND_NAME_CUSTOM) {
-		return void customTriggerCommand(interaction);
-	}
+		case TestCommand.name:
+			return handleTestCommand(interaction, transformInteraction<typeof TestCommand>(args));
 
-	if (commandName === COMMAND_NAME_FETCHLOG) {
-		return void fetchLog(interaction);
-	}
+		case WatchCommand.name:
+			return handleWatchCommand(interaction, transformInteraction<typeof WatchCommand>(args));
 
-	void interaction.reply({
-		content: INTERACTION_NO_HANDLER(interaction.commandName, interaction.id),
-		ephemeral: true,
-	});
+		case FetchLogCommand.name:
+			return handleFetchLogCommand(interaction, transformInteraction<typeof FetchLogCommand>(args));
+
+		case RedisCommand.name:
+			return handleRedisCommand(interaction, transformInteraction<typeof RedisCommand>(args));
+
+		default:
+			return interaction.reply({
+				content: INTERACTION_NO_HANDLER(interaction.commandName, interaction.id),
+				ephemeral: true,
+			});
+	}
 }

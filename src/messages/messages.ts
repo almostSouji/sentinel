@@ -31,19 +31,26 @@ export const BUTTON_PRESS_MISSING_PERMISSIONS_REVIEW = `To use the review button
 export const INTERACTION_NO_HANDLER = (cmd: string, id: string) =>
 	`\`🐞\` No handler found for interaction command \`${cmd}\` \`${id}\`.`;
 
-export const EXPLAIN_WORKING = `The bot watches configured channels, evaluates their contents against *perspective AI* and flags problematic messages in log channels.` as const;
-export const EXPLAIN_PERCENTAGE = `• The data reflects how probable each attribute is reflected in the target message (90% likely to be toxic).` as const;
-export const EXPLAIN_NYT = `¹ trained on a single data source (New York Times comments tagged by their moderation team)` as const;
-export const EXPLAIN_UPDATING = `• Buttons update based on permissions and member/message status (check for permission and hierarchy conflicts if buttons are greyed out)` as const;
-export const EXPLAIN_PRIVATE = `• Sentinel is a private bot. If you have any feedback let me know! (\`Souji#0001\`).` as const;
+export const EXPLAIN_WORKING =
+	`The bot watches configured channels, evaluates their contents against *perspective AI* and flags problematic messages in log channels.` as const;
+export const EXPLAIN_PERCENTAGE =
+	`• The data reflects how probable each attribute is reflected in the target message (90% likely to be toxic).` as const;
+export const EXPLAIN_NYT =
+	`¹ trained on a single data source (New York Times comments tagged by their moderation team)` as const;
+export const EXPLAIN_UPDATING =
+	`• Buttons update based on permissions and member/message status (check for permission and hierarchy conflicts if buttons are greyed out)` as const;
+export const EXPLAIN_PRIVATE =
+	`• Sentinel is a private bot. If you have any feedback let me know! (\`Souji#0001\`).` as const;
 
 export const NOT_IN_DM = 'You can not use commands in direct messages.' as const;
-export const CUSTOM_TAG = 'Check if you watch any attributes! (custom tags are currently not supported in manual check mode.)' as const;
+export const CUSTOM_TAG =
+	'Check if you watch any attributes! (custom tags are currently not supported in manual check mode.)' as const;
 
 export const ERROR_LOGCHANNEL = `${PREFIX_ERROR} Logchannel invalid.` as const;
 export const LOG_NOT_TEXT = (name: string, type: string) =>
 	`${ERROR_LOGCHANNEL} (channel ${name} is of type \`${type}\`, needs to be text based)`;
-export const LOG_NO_PERMS = `${ERROR_LOGCHANNEL} (application needs the permissions to embed and read messages and history in the log channel)` as const;
+export const LOG_NO_PERMS =
+	`${ERROR_LOGCHANNEL} (application needs the permissions to embed and read messages and history in the log channel)` as const;
 export const LOG_CHANNEL_SET = (channel: string) => `${PREFIX_SUCCESS} Log channel set to \`${channel}\``;
 
 export const CONFIG_SHOW_CHANNEL_MISSING = `${PREFIX_ERROR} Log channel: none (required)`;
@@ -68,19 +75,13 @@ export const CONFIG_SHOW_WATCHING_FORCED = `${PREFIX_LOCKED} Tracking attributes
 export const CONFIG_SHOW_WATCHING = (channels: string) => `${PREFIX_SUCCESS} Watching channels: ${channels}`;
 export const CONFIG_SHOW_STRICTNESS = (level: string) => `${PREFIX_SUCCESS} Strictness level: \`${level}\``;
 
-export const CONFIG_CHANNELS_ADD_INVALID = `${PREFIX_ERROR} Can not add channels` as const;
 export const CONFIG_CHANNELS_ADD_MISSING_PERMISSIONS = (channels: string) =>
-	`${CONFIG_CHANNELS_ADD_INVALID}: ${channels} (missing permissions to view or read message history)`;
-export const CONFIG_CHANNELS_ADD_WRONG_TYPE = (channels: string) =>
-	`${CONFIG_CHANNELS_ADD_INVALID}: ${channels} (channels need to be text based)`;
-export const CONFIG_CHANNEL_ADD = (channels: string) =>
-	`${PREFIX_SUCCESS} Added channels to the watch list: ${channels}`;
-export const CONFIG_CHANNELS_ADD_NONE = `${PREFIX_ERROR} No channels could be added.` as const;
-export const CONFIG_CHANNELS_REMOVE_WRONG_TYPE = (channels: string) =>
-	`${PREFIX_ERROR} Can not remove non-text channels: ${channels}`;
-export const CONFIG_CHANNELS_REMOVE = (channels: string) =>
-	`${PREFIX_SUCCESS} Removed channels from the watch list: ${channels}`;
-export const CONFIG_CHANNELS_REMOVE_NONE = `${PREFIX_ERROR} No channels could be removed.` as const;
+	`${PREFIX_ERROR} Can not add channels: ${channels} (missing permissions to view or read message history)`;
+export const CONFIG_CHANNELS_WRONG_TYPE = (action: string, channels: string) =>
+	`${PREFIX_ERROR} Can not ${action} channels: ${channels} (channels need to be text based).`;
+export const CONFIG_CHANNELS_NONE = (action: string) => `${PREFIX_ERROR} can not ${action} any channels.`;
+export const CONFIG_CHANNELS_CHANGED = (action: string, channels: string) =>
+	`${PREFIX_SUCCESS} Channel watch list edited. Sucessfully ${action}ed channels: ${channels}`;
 
 export const NOTIFY_ROLE_ADD = (role: string, level: string) =>
 	`Added a notification for <@&${role}> at level ${level}.`;
@@ -101,7 +102,8 @@ export const CUSTOM_REMOVE = (prefix: string, phrase: string) =>
 export const CUSTOM_NOT = (prefix: string, phrase: string) =>
 	`${PREFIX_ERROR} Could not remove ${prefix} trigger on \`${phrase}\`.`;
 export const CUSTOM_LIMIT = `${PREFIX_ERROR} max amount of custom triggers reached (${MAX_TRIGGER_COUNT}).`;
-export const CUSTOM_LENGTH = `${PREFIX_ERROR} custom trigger max length (${MAX_TRIGGER_LENGTH}) exceeded. Try to flag relevant subphrases instead of using wordy triggers.` as const;
+export const CUSTOM_LENGTH =
+	`${PREFIX_ERROR} custom trigger max length (${MAX_TRIGGER_LENGTH}) exceeded. Try to flag relevant subphrases instead of using wordy triggers.` as const;
 
 export const FETCHLOG_CHANNELTYPE = `${PREFIX_ERROR} channel type invalid`;
 export const FETCHLOG_GUILD = (should: Snowflake, actual: Snowflake) =>

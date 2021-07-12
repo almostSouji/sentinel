@@ -1,5 +1,5 @@
 import { MATCH_PHRASE } from '../../messages/messages';
-import { levelIdentifier } from '../commands/notify';
+import { levelIdentifier } from '../../commands/notify';
 import { CustomTriggerResult } from '../inspection/checkCustomTriggers';
 
 export function formatCustom(data: CustomTriggerResult[]): string {
