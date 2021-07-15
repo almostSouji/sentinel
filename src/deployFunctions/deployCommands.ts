@@ -20,16 +20,16 @@ import { KarmaCommand } from '../interactions/karma';
 import { logger } from '../functions/logger';
 
 const commands = [
-	AttributesCommand,
-	ConfigCommand,
-	CustomTriggerCommand,
-	FetchLogCommand, // ! devcommand
-	NotifyCommand,
-	NYTAttributesCommand,
-	RedisCommand, // ! devcommand
 	TestCommand,
+	KarmaCommand,
+	ConfigCommand,
 	WatchCommand,
-	KarmaCommand, // 🔧 in-dev
+	AttributesCommand,
+	NYTAttributesCommand,
+	CustomTriggerCommand,
+	NotifyCommand,
+	FetchLogCommand, // ! devcommand
+	RedisCommand, // ! devcommand
 ];
 
 async function main() {
