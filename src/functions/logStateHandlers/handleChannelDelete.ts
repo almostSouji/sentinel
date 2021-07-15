@@ -12,7 +12,7 @@ export function handleChannelDelete(
 ): boolean {
 	if (deletedStructures.includes(targetChannel)) {
 		row.components = row.components.filter(
-			(b) => Buffer.from(b.customID ?? '', 'binary').readUInt16LE() !== OpCodes.DELETE,
+			(b) => Buffer.from(b.customId ?? '', 'binary').readUInt16LE() !== OpCodes.DELETE,
 		);
 		return true;
 	}

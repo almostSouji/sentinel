@@ -22,7 +22,7 @@ export async function sendLog(
 	isEdit: boolean,
 	values: number[],
 ) {
-	if (targetMessage.channel.type === 'dm' || targetMessage.partial) return;
+	if (targetMessage.channel.type === 'DM' || targetMessage.partial) return;
 	const {
 		client: { redis, user: clientUser },
 		channel: targetChannel,

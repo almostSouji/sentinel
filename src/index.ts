@@ -87,12 +87,13 @@ const client = new Client({
 });
 
 client.on('message', (message) => {
-	if (message.author.bot || !message.content.length || message.channel.type !== 'text') return;
+	if (message.author.bot || !message.content.length || message.channel.type !== 'GUILD_TEXT') return;
 	void checkMessage(message);
 });
 
 client.on('messageUpdate', (oldMessage, newMessage) => {
-	if (oldMessage.content === newMessage.content || newMessage.author?.bot || newMessage.channel.type !== 'text') return;
+	if (oldMessage.content === newMessage.content || newMessage.author?.bot || newMessage.channel.type !== 'GUILD_TEXT')
+		return;
 	void checkMessage(newMessage, true);
 });
 
@@ -150,13 +151,13 @@ client.on('interaction', async (interaction) => {
 		!interactionMessage.flags.has(MessageFlags.FLAGS.EPHEMERAL) &&
 		!interactionMessage.components.some((row) => {
 			return row.components.some((button) => {
-				return button.customID === interaction.customID;
+				return button.customId === interaction.customId;
 			});
 		})
 	)
 		return;
 
-	const res = Buffer.from(interaction.customID, 'binary');
+	const res = Buffer.from(interaction.customId, 'binary');
 	const op = res.readInt16LE();
 
 	if (op === OpCodes.PAGE_TRIGGER) {
@@ -198,7 +199,7 @@ client.on('interaction', async (interaction) => {
 		buttons.push(
 			new MessageButton({
 				style: 2,
-				customID: serializePage(OpCodes.PAGE_TRIGGER, Math.max(page - 1, 0)),
+				customId: serializePage(OpCodes.PAGE_TRIGGER, Math.max(page - 1, 0)),
 				emoji: EMOJI_ID_CHEVRON_LEFT,
 				disabled: page === 0,
 			}),
@@ -208,7 +209,7 @@ client.on('interaction', async (interaction) => {
 			new MessageButton({
 				style: 2,
 				disabled: true,
-				customID: 'noop',
+				customId: 'noop',
 				label: `${page}`,
 			}),
 		);
@@ -216,7 +217,7 @@ client.on('interaction', async (interaction) => {
 		buttons.push(
 			new MessageButton({
 				style: 2,
-				customID: serializePage(OpCodes.PAGE_TRIGGER, page + 1),
+				customId: serializePage(OpCodes.PAGE_TRIGGER, page + 1),
 				emoji: EMOJI_ID_CHEVRON_RIGHT,
 				disabled: (page + 1) * 10 >= triggerCount,
 			}),
@@ -224,7 +225,7 @@ client.on('interaction', async (interaction) => {
 
 		return void interaction.update({
 			content: messageParts.join('\n'),
-			components: buttons.length ? [buttons] : [],
+			components: buttons.length ? [new MessageActionRow().addComponents(buttons)] : [],
 		});
 	}
 

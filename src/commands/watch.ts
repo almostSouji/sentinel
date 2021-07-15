@@ -19,11 +19,10 @@ export async function handleWatchCommand(interaction: CommandInteraction, args: 
 	const {
 		client,
 		client: { redis },
-		guildID,
 		guild,
 	} = interaction;
 
-	if (!guildID || !guild) {
+	if (!guild) {
 		return interaction.reply({
 			content: NOT_IN_DM,
 			ephemeral: true,
@@ -88,10 +87,10 @@ export async function handleWatchCommand(interaction: CommandInteraction, args: 
 	if (valid.length) {
 		switch (action) {
 			case 'add':
-				await redis.sadd(CHANNELS_WATCHING(guildID), ...valid);
+				await redis.sadd(CHANNELS_WATCHING(guild.id), ...valid);
 				break;
 			case 'remove':
-				await redis.srem(CHANNELS_WATCHING(guildID), ...valid);
+				await redis.srem(CHANNELS_WATCHING(guild.id), ...valid);
 		}
 		messageParts.push(CONFIG_CHANNELS_CHANGED(action, valid.map((c) => formatChannelMentions(c)).join(', ')));
 	} else {

@@ -9,9 +9,9 @@ export async function handleRedisCommand(interaction: CommandInteraction, args: 
 	const {
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		client: { redis },
-		guildID,
+		guild,
 	} = interaction;
-	if (!guildID) {
+	if (!guild) {
 		return interaction.reply({
 			content: NOT_IN_DM,
 			ephemeral: true,

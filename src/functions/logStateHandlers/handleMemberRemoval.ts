@@ -15,7 +15,7 @@ export function handleMemberRemoval(
 ): Promise<boolean> {
 	if (isBanned && removedUser === target) {
 		row.components = row.components.filter((c) => {
-			const op = Buffer.from(c.customID ?? '', 'binary').readUInt16LE();
+			const op = Buffer.from(c.customId ?? '', 'binary').readUInt16LE();
 			return ![OpCodes.BAN, OpCodes.REVIEW].includes(op);
 		});
 		return Promise.resolve(true);

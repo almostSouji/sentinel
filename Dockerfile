@@ -1,15 +1,18 @@
-FROM node:15-alpine
+FROM node:16-alpine
 LABEL name "sentinel"
 LABEL version "0.0.0"
 LABEL maintainer "almostSouji <https://github.com/almostSouji>"
-ENV DISCORD_TOKEN=\
+ENV 
+	DISCORD_CLIENT_ID=\
+	DISCORD_GUILD_ID=\
+	DISCORD_TOKEN=\
 	PERSPECTIVE_TOKEN=\
 	FORCE_COLOR=1
 WORKDIR /usr/sentinel
 COPY package.json ./
 RUN apk add --update \
 	&& apk add --no-cache ca-certificates \
-	&& apk add --no-cache --virtual .build-deps git curl build-base python g++ make \
+	&& apk add --no-cache --virtual .build-deps git curl build-base python3 g++ make \
 	&& npm i \
 	&& apk del .build-deps
 COPY . .

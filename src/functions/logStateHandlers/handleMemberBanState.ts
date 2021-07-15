@@ -15,7 +15,7 @@ export async function handleMemberBanState(
 		const bans = await guild.bans.fetch();
 		if (bans.has(target)) {
 			row.components = row.components.filter(
-				(c) => Buffer.from(c.customID ?? '', 'binary').readUInt16LE() !== OpCodes.BAN,
+				(c) => Buffer.from(c.customId ?? '', 'binary').readUInt16LE() !== OpCodes.BAN,
 			);
 			return true;
 		}

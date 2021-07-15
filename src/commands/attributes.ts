@@ -21,11 +21,10 @@ export async function handleAttributesCommand(
 
 	const {
 		client: { redis },
-		guildID,
 		guild,
 	} = interaction;
 
-	if (!guildID || !guild) {
+	if (!guild) {
 		return interaction.reply({
 			content: NOT_IN_DM,
 			ephemeral: true,
@@ -41,11 +40,11 @@ export async function handleAttributesCommand(
 
 	if (enabled.length) {
 		const enabledFlags = enabled.map((v) => formatFlag(v));
-		await redis.sadd(ATTRIBUTES(guildID), ...enabledFlags);
+		await redis.sadd(ATTRIBUTES(guild.id), ...enabledFlags);
 		messageParts.push(CONFIG_ATTRIBUTES_ENABLED(enabledFlags.map((f) => `\`${f}\``).join(', ')));
 	} else if (disabled.length) {
 		const disabledFlags = disabled.map((v) => formatFlag(v));
-		await redis.srem(ATTRIBUTES(guildID), ...disabledFlags);
+		await redis.srem(ATTRIBUTES(guild.id), ...disabledFlags);
 		messageParts.push(CONFIG_ATTRIBUTES_DISABLED(disabledFlags.map((f) => `\`${f}\``).join(', ')));
 	} else {
 		messageParts.push(CONFIG_ATTRIBUTES_NONE);

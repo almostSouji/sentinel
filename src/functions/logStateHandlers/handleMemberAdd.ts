@@ -16,7 +16,7 @@ export function handleMemberAdd(
 		const targetMember = guild.members.resolve(target);
 		if (!targetMember) return false;
 		const banIndex = row.components.findIndex(
-			(c) => Buffer.from(c.customID ?? '', 'binary').readUInt16LE() === OpCodes.BAN,
+			(c) => Buffer.from(c.customId ?? '', 'binary').readUInt16LE() === OpCodes.BAN,
 		);
 
 		row.components.splice(

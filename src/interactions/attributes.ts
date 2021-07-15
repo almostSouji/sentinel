@@ -1,7 +1,7 @@
 export const AttributesCommand = {
 	name: 'attributes',
 	description: 'Configure which attributes are tracked',
-	default_permissions: false,
+	default_permission: false,
 	options: [
 		{
 			name: 'toxicity',

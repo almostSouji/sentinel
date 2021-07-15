@@ -13,7 +13,7 @@ export async function handleMessageDeletableState(
 	const channel = guild.channels.resolve(targetChannel);
 	if (!channel || !channel.isText()) {
 		row.components = row.components.filter(
-			(c) => Buffer.from(c.customID ?? '', 'binary').readUInt16LE() !== OpCodes.DELETE,
+			(c) => Buffer.from(c.customId ?? '', 'binary').readUInt16LE() !== OpCodes.DELETE,
 		);
 		return true;
 	}
@@ -26,7 +26,7 @@ export async function handleMessageDeletableState(
 	} catch (error) {
 		logger.error(error);
 		row.components = row.components.filter(
-			(c) => Buffer.from(c.customID ?? '', 'binary').readUInt16LE() !== OpCodes.DELETE,
+			(c) => Buffer.from(c.customId ?? '', 'binary').readUInt16LE() !== OpCodes.DELETE,
 		);
 		return true;
 	}

@@ -1,6 +1,7 @@
-import { Client, Snowflake } from 'discord.js';
 import { config } from 'dotenv';
 import { resolve } from 'path';
+import { REST } from '@discordjs/rest';
+import { Routes, Snowflake } from 'discord-api-types/v8';
 
 config({ path: resolve(__dirname, '../../.env') });
 
@@ -14,41 +15,42 @@ import { FetchLogCommand } from '../interactions/fetchLog';
 import { RedisCommand } from '../interactions/redis';
 import { TestCommand } from '../interactions/test';
 import { WatchCommand } from '../interactions/watch';
-import { logger } from '../functions/logger';
+import { KarmaCommand } from '../interactions/karma';
 /* eslint-enable @typescript-eslint/no-unused-vars */
+import { logger } from '../functions/logger';
 
-const data = [
+const commands = [
 	AttributesCommand,
 	ConfigCommand,
 	CustomTriggerCommand,
-	// FetchLogCommand, // ! devcommand
+	FetchLogCommand, // ! devcommand
 	NotifyCommand,
 	NYTAttributesCommand,
-	// RedisCommand, // ! devcommand
+	RedisCommand, // ! devcommand
 	TestCommand,
 	WatchCommand,
+	KarmaCommand, // 🔧 in-dev
 ];
 
-const client = new Client({ intents: ['GUILDS'] });
+async function main() {
+	const rest = new REST({ version: '9' }).setToken(process.env.DISCORD_TOKEN!);
 
-client.on('ready', async () => {
-	logger.info('Command deployment starting...');
-
-	const g = client.guilds.resolve(process.env.DEPLOY_GUILD_ID as Snowflake);
-	if (!g) {
-		logger.info('Could not find dev guild!');
-		client.destroy();
-		logger.info('Client destroyed.');
-		process.exit(0);
+	try {
+		logger.info('Start refreshing interaction (/) commands');
+		await rest.put(
+			// @ts-ignore
+			Routes.applicationGuildCommands(
+				process.env.DISCORD_CLIENT_ID as Snowflake,
+				process.env.DISCORD_GUILD_ID as Snowflake,
+			),
+			{
+				body: commands,
+			},
+		);
+		logger.info('Sucessfully reloaded interaction (/) commands.');
+	} catch (e) {
+		logger.error(e);
 	}
+}
 
-	// @ts-ignore
-	await g.commands.set(data);
-
-	logger.info('Command deployment done...');
-	client.destroy();
-	logger.info('Client destroyed.');
-	process.exit(0);
-});
-
-void client.login(process.env.DISCORD_TOKEN);
+void main();

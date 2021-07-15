@@ -1,4 +1,4 @@
-import { MessageButton, CommandInteraction } from 'discord.js';
+import { MessageButton, CommandInteraction, MessageActionRow } from 'discord.js';
 import { OpCodes } from '..';
 import { EMOJI_ID_CHEVRON_LEFT, EMOJI_ID_CHEVRON_RIGHT, MAX_TRIGGER_COUNT, MAX_TRIGGER_LENGTH } from '../constants';
 import { CUSTOM_FLAGS_PHRASES, CUSTOM_FLAGS_WORDS } from '../keys';
@@ -25,19 +25,18 @@ export async function handleCustomTriggerCommand(
 
 	const {
 		client: { redis },
-		guildID,
 		guild,
 	} = interaction;
 
-	if (!guildID || !guild) {
+	if (!guild) {
 		return interaction.reply({
 			content: NOT_IN_DM,
 			ephemeral: true,
 		});
 	}
 
-	const phrases = await redis.zrange(CUSTOM_FLAGS_PHRASES(guildID), 0, -1, 'WITHSCORES');
-	const words = await redis.zrange(CUSTOM_FLAGS_WORDS(guildID), 0, -1, 'WITHSCORES');
+	const phrases = await redis.zrange(CUSTOM_FLAGS_PHRASES(guild.id), 0, -1, 'WITHSCORES');
+	const words = await redis.zrange(CUSTOM_FLAGS_WORDS(guild.id), 0, -1, 'WITHSCORES');
 	const buttons = [];
 
 	const action = Object.keys(args)[0] as keyof ArgumentsOf<typeof CustomTriggerCommand>;
@@ -59,7 +58,7 @@ export async function handleCustomTriggerCommand(
 				}
 
 				const key = mode === 1 ? CUSTOM_FLAGS_PHRASES : CUSTOM_FLAGS_WORDS;
-				await redis.zadd(key(guildID), level, trigger);
+				await redis.zadd(key(guild.id), level, trigger);
 				const levelId = levelIdentifier(level);
 				const prefix = mode === 1 ? 'Phrase' : 'Word';
 				messageParts.push(CUSTOM_SET(prefix, trigger, levelId));
@@ -71,7 +70,7 @@ export async function handleCustomTriggerCommand(
 				const trigger = args.remove.trigger.replaceAll('`', '');
 
 				const key = mode === 1 ? CUSTOM_FLAGS_PHRASES : CUSTOM_FLAGS_WORDS;
-				const res = await redis.zrem(key(guildID), trigger);
+				const res = await redis.zrem(key(guild.id), trigger);
 				const prefix = mode === 1 ? 'phrase' : 'word';
 
 				if (res) {
@@ -108,7 +107,7 @@ export async function handleCustomTriggerCommand(
 					buttons.push(
 						new MessageButton({
 							style: 2,
-							customID: serializeOpCode(OpCodes.NOOP),
+							customId: serializeOpCode(OpCodes.NOOP),
 							emoji: EMOJI_ID_CHEVRON_LEFT,
 							disabled: true,
 						}),
@@ -117,14 +116,14 @@ export async function handleCustomTriggerCommand(
 						new MessageButton({
 							style: 2,
 							disabled: true,
-							customID: serializeOpCode(OpCodes.NOOP),
+							customId: serializeOpCode(OpCodes.NOOP),
 							label: '0',
 						}),
 					);
 					buttons.push(
 						new MessageButton({
 							style: 2,
-							customID: serializePage(OpCodes.PAGE_TRIGGER, 1),
+							customId: serializePage(OpCodes.PAGE_TRIGGER, 1),
 							emoji: EMOJI_ID_CHEVRON_RIGHT,
 						}),
 					);
@@ -137,6 +136,6 @@ export async function handleCustomTriggerCommand(
 	return interaction.reply({
 		content: messageParts.join('\n'),
 		ephemeral: true,
-		components: buttons.length ? [buttons] : [],
+		components: buttons.length ? [new MessageActionRow().addComponents(buttons)] : [],
 	});
 }

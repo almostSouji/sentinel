@@ -13,7 +13,7 @@ export function handleMessageDelete(
 	const channel = guild.channels.resolve(targetChannel);
 	if (!channel || !channel.isText() || deletedMessages.includes(targetMessage)) {
 		row.components = row.components.filter(
-			(c) => Buffer.from(c.customID ?? '', 'binary').readUInt16LE() !== OpCodes.DELETE,
+			(c) => Buffer.from(c.customId ?? '', 'binary').readUInt16LE() !== OpCodes.DELETE,
 		);
 		return true;
 	}

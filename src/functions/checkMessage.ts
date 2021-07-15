@@ -9,6 +9,10 @@ import {
 	IMMUNITY,
 	STRICTNESS,
 	DEBUG_GUILDS,
+	GUILD_USER_FLAGS,
+	GUILD_USER_LEVELS,
+	GUILD_USER_MESSAGES,
+	GUILD_USER_MESSAGES_TRIPPED,
 } from '../keys';
 import { Score } from '../types/perspective';
 import { logger } from './logger';
@@ -55,21 +59,21 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 			member: authorAsMember,
 		} = message;
 
-		void redis.incr(MESSAGES_SEEN(guild?.id ?? '0'));
-
 		if (
-			channel.type === 'dm' ||
 			!content ||
 			!guild ||
+			channel.type === 'DM' ||
 			system ||
 			!['DEFAULT', 'REPLY'].includes(messageType ?? '') ||
 			!author ||
 			!authorAsMember
 		)
 			return;
+		void redis.incr(MESSAGES_SEEN(guild.id));
 
 		const isWatch = await redis.sismember(CHANNELS_WATCHING(guild.id), channel.id);
 		if (!isWatch) return;
+		void redis.incr(GUILD_USER_MESSAGES(guild.id, author.id));
 
 		const immunityValue = parseInt((await redis.get(IMMUNITY(guild.id))) ?? '0', 10);
 
@@ -117,6 +121,7 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 		const { severe, high, tags } = perspective;
 
 		if (customTrigger.length) {
+			void redis.hincrby(GUILD_USER_FLAGS(guild.id, author.id), 'CUSTOM', 1);
 			embed.addField(
 				'Custom Trigger',
 				customTrigger
@@ -179,6 +184,13 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 				true,
 			);
 		}
+
+		for (const tag of [...high, ...severe]) {
+			void redis.hincrby(GUILD_USER_FLAGS(guild.id, author.id), tag.key, 1);
+		}
+
+		void redis.hincrby(GUILD_USER_LEVELS(guild.id, author.id), String(severityLevel), 1);
+		void redis.incr(GUILD_USER_MESSAGES_TRIPPED(guild.id, author.id));
 
 		void sendLog(
 			logChannel,

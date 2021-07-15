@@ -8,8 +8,8 @@ export async function handleFetchLogCommand(
 	interaction: CommandInteraction,
 	args: ArgumentsOf<typeof FetchLogCommand>,
 ) {
-	const { guildID, client } = interaction;
-	if (!guildID) {
+	const { client, guild } = interaction;
+	if (!guild) {
 		return interaction.reply({
 			content: NOT_IN_DM,
 			ephemeral: true,

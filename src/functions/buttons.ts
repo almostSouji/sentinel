@@ -42,7 +42,7 @@ export function banButton(
 	return new MessageButton({
 		type: 2,
 		style: 4,
-		customID: serializeTargets(OpCodes.BAN, targetUser, targetChannel, targetMessage),
+		customId: serializeTargets(OpCodes.BAN, targetUser, targetChannel, targetMessage),
 		label: BUTTON_LABEL_BAN,
 		emoji: EMOJI_ID_BAN_WHITE,
 		disabled: !canBan,
@@ -58,7 +58,7 @@ export function deleteButton(
 	return new MessageButton({
 		type: 2,
 		style: 4,
-		customID: serializeTargets(OpCodes.DELETE, targetUser, targetChannel, targetMessage),
+		customId: serializeTargets(OpCodes.DELETE, targetUser, targetChannel, targetMessage),
 		label: BUTTON_LABEL_DELETE,
 		emoji: EMOJI_ID_DELETE_WHITE,
 		disabled: !canDelete,
@@ -69,7 +69,7 @@ export function reviewButton(targetUser: Snowflake, targetChannel: Snowflake, ta
 	return new MessageButton({
 		type: 2,
 		style: 1,
-		customID: serializeTargets(OpCodes.REVIEW, targetUser, targetChannel, targetMessage),
+		customId: serializeTargets(OpCodes.REVIEW, targetUser, targetChannel, targetMessage),
 		label: BUTTON_LABEL_REVIEW,
 		emoji: EMOJI_ID_REVIEW_WHITE,
 	});
@@ -79,7 +79,7 @@ export const listButton = (values: number[]) => {
 	return new MessageButton({
 		type: 2,
 		style: 2,
-		customID: serializeAttributes(OpCodes.LIST, values),
+		customId: serializeAttributes(OpCodes.LIST, values),
 		label: BUTTON_LABEL_LIST,
 		emoji: EMOJI_ID_LIST_WHITE,
 	});

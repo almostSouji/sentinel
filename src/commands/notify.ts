@@ -25,11 +25,10 @@ export async function handleNotifyCommand(interaction: CommandInteraction, args:
 
 	const {
 		client: { redis },
-		guildID,
 		guild,
 	} = interaction;
 
-	if (!guildID || !guild) {
+	if (!guild) {
 		return interaction.reply({
 			content: NOT_IN_DM,
 			ephemeral: true,
@@ -44,10 +43,10 @@ export async function handleNotifyCommand(interaction: CommandInteraction, args:
 				const level = args.add.level!;
 				const levelId = levelIdentifier(level);
 				if (entity instanceof Role) {
-					await redis.zadd(NOTIF_ROLES(guildID), level, entity.id);
+					await redis.zadd(NOTIF_ROLES(guild.id), level, entity.id);
 					messageParts.push(NOTIFY_ROLE_ADD(entity.id, levelId));
 				} else {
-					await redis.zadd(NOTIF_USERS(guildID), level, entity.user.id);
+					await redis.zadd(NOTIF_USERS(guild.id), level, entity.user.id);
 					messageParts.push(NOTIFY_USER_ADD(levelId, entity.user.id));
 				}
 			}
@@ -57,18 +56,18 @@ export async function handleNotifyCommand(interaction: CommandInteraction, args:
 			{
 				const entity = args.remove.entity!;
 				if (entity instanceof Role) {
-					await redis.zrem(NOTIF_ROLES(guildID), entity.id);
+					await redis.zrem(NOTIF_ROLES(guild.id), entity.id);
 					messageParts.push(NOTIFY_ROLE_REMOVE(entity.id));
 				} else {
-					await redis.zrem(NOTIF_USERS(guildID), entity.user.id);
+					await redis.zrem(NOTIF_USERS(guild.id), entity.user.id);
 					messageParts.push(NOTIFY_USER_REMOVE(entity.user.id));
 				}
 			}
 			break;
 		case 'show':
 			{
-				const notifUsers = await redis.zrange(NOTIF_USERS(guildID), 0, -1, 'WITHSCORES');
-				const notifRoles = await redis.zrange(NOTIF_ROLES(guildID), 0, -1, 'WITHSCORES');
+				const notifUsers = await redis.zrange(NOTIF_USERS(guild.id), 0, -1, 'WITHSCORES');
+				const notifRoles = await redis.zrange(NOTIF_ROLES(guild.id), 0, -1, 'WITHSCORES');
 
 				if (notifUsers.length || notifRoles.length) {
 					const userMap = zSetZipper(notifUsers);
