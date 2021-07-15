@@ -1,5 +1,6 @@
 import { google } from 'googleapis';
 import { PerspectiveResponseData, PerspectiveResponse, PerspectiveAttribute } from '../types/perspective';
+import { cleanContent } from './util';
 
 export const perspectiveAttributes = [
 	'SEVERE_TOXICITY',
@@ -44,7 +45,7 @@ export async function analyzeText(text: string, attributes: PerspectiveAttribute
 
 	const analyzeRequest = {
 		comment: {
-			text,
+			text: cleanContent(text),
 		},
 		requestedAttributes,
 		doNotStore: true,

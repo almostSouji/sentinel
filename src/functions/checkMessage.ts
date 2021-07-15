@@ -24,6 +24,7 @@ import { formatPerspectiveShort } from './formatting/formatPerspective';
 import { MATCH_PHRASE } from '../messages/messages';
 import { levelIdentifier } from '../commands/notify';
 import { IMMUNITY_LEVEL } from '../commands/config';
+import { cleanContent } from './util';
 
 const colors = [COLOR_MILD, COLOR_MILD, COLOR_ALERT, COLOR_SEVERE, COLOR_PURPLE] as const;
 
@@ -98,6 +99,8 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
 		const logChannel = guild.channels.resolve(((await redis.get(CHANNELS_LOG(guild.id))) ?? '') as Snowflake);
 		if (!logChannel || !logChannel.isText()) return;
+
+		if (!cleanContent(content).length) return;
 
 		const strictness = parseInt((await redis.get(STRICTNESS(guild.id))) ?? '1', 10);
 		const embed = new MessageEmbed();

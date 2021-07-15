@@ -124,3 +124,7 @@ export function serializeOpCode(op: number): string {
 	b.writeUInt16LE(op);
 	return b.toString('binary');
 }
+
+export function cleanContent(initial: string): string {
+	return initial.replace(/\b(?:fuck|shi+t)\b/g, '');
+}
