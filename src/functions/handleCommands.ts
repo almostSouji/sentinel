@@ -9,6 +9,7 @@ import { NotifyCommand } from '../interactions/notify';
 import { NYTAttributesCommand } from '../interactions/nytAttributes';
 import { TestCommand } from '../interactions/test';
 import { WatchCommand } from '../interactions/watch';
+import { KarmaCommand } from '../interactions/karma';
 import { FetchLogCommand } from '../interactions/fetchLog';
 import { RedisCommand } from '../interactions/redis';
 import { handleAttributesCommand } from '../commands/attributes';
@@ -18,6 +19,7 @@ import { handleCustomTriggerCommand } from '../commands/customTrigger';
 import { handleNotifyCommand } from '../commands/notify';
 import { handleTestCommand } from '../commands/test';
 import { handleWatchCommand } from '../commands/watch';
+import { handleKarmaCommand } from '../commands/karma';
 import { handleFetchLogCommand } from '../commands/fetchLog';
 import { handleRedisCommand } from '../commands/redis';
 
@@ -53,6 +55,9 @@ export function handleCommands(interaction: Interaction) {
 
 		case RedisCommand.name:
 			return handleRedisCommand(interaction, transformInteraction<typeof RedisCommand>(args));
+
+		case KarmaCommand.name:
+			return handleKarmaCommand(interaction, transformInteraction<typeof KarmaCommand>(args));
 
 		default:
 			return interaction.reply({
