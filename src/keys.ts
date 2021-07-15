@@ -54,6 +54,20 @@ export const MESSAGES_SEEN = (guild: Snowflake) => `guild:${guild}:messages:seen
 // Counting total messages checked per guild (edits also count)
 export const MESSAGES_CHECKED = (guild: Snowflake) => `guild:${guild}:messages:checked`;
 
+//* HSET
+// How often each user tripped each attribute
+export const GUILD_USER_FLAGS = (guild: Snowflake, user: Snowflake) => `guild:${guild}:user:${user}:flags`;
+//* HSET
+// How often each user tripped each severity level
+export const GUILD_USER_LEVELS = (guild: Snowflake, user: Snowflake) => `guild:${guild}:user:${user}:levels`;
+//* HSET
+// Amount of messages per user
+export const GUILD_USER_MESSAGES = (guild: Snowflake, user: Snowflake) => `guild:${guild}:user:${user}:messages`;
+//* INT
+// Amount of messages per user that tripped flags
+export const GUILD_USER_MESSAGES_TRIPPED = (guild: Snowflake, user: Snowflake) =>
+	`guild:${guild}:user:${user}:messages:tripped`;
+
 // 🧪 SET
 // Guilds with debug mode enabled
 export const DEBUG_GUILDS = 'debug:guilds';
