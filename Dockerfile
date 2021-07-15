@@ -2,8 +2,7 @@ FROM node:16-alpine
 LABEL name "sentinel"
 LABEL version "0.0.0"
 LABEL maintainer "almostSouji <https://github.com/almostSouji>"
-ENV 
-	DISCORD_CLIENT_ID=\
+ENV DISCORD_CLIENT_ID=\
 	DISCORD_GUILD_ID=\
 	DISCORD_TOKEN=\
 	PERSPECTIVE_TOKEN=\
