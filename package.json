@@ -14,7 +14,8 @@
 		"lint": "eslint src --ext .ts",
 		"lint:fix": "eslint src --ext .ts --fix",
 		"prettier": "prettier --write **/*.{ts,js,json,yml,yaml}",
-		"deploy-commands": "npm run build && node dist/deployFunctions/deployCommands.js"
+		"deploy-commands": "npm run build && node dist/deployFunctions/deployCommands.js",
+		"prepare": "is-ci || husky install"
 	},
 	"dependencies": {
 		"discord.js": "^13.0.0-dev.edf6f0ca7012b6b678367a1b5d716d0b85e23ba3",
@@ -40,7 +41,7 @@
 		"eslint-config-marine": "^7.2.0",
 		"eslint-config-prettier": "^6.11.0",
 		"eslint-plugin-prettier": "^3.1.4",
-		"husky": "^4.2.5",
+		"husky": "^7.0.1",
 		"lint-staged": "^10.2.13",
 		"pino-pretty": "^5.0.0",
 		"prettier": "^2.1.1",
@@ -49,67 +50,5 @@
 	},
 	"engines": {
 		"node": ">=15.0.0"
-	},
-	"eslintConfig": {
-		"extends": "marine/prettier/node",
-		"parserOptions": {
-			"project": "./tsconfig.eslint.json"
-		},
-		"rules": {
-			"@typescript-eslint/naming-convention": 0,
-			"no-console": 1
-		}
-	},
-	"prettier": {
-		"printWidth": 120,
-		"useTabs": true,
-		"singleQuote": true,
-		"quoteProps": "as-needed",
-		"trailingComma": "all",
-		"endOfLine": "lf"
-	},
-	"husky": {
-		"hooks": {
-			"pre-commit": "lint-staged",
-			"commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
-		}
-	},
-	"lint-staged": {
-		"*.js": [
-			"prettier --write"
-		],
-		"*.ts": [
-			"eslint --fix",
-			"prettier --write"
-		],
-		"*.{json,yml,yaml}": [
-			"prettier --write"
-		]
-	},
-	"commitlint": {
-		"extends": [
-			"@commitlint/config-angular"
-		],
-		"rules": {
-			"type-enum": [
-				2,
-				"always",
-				[
-					"chore",
-					"build",
-					"ci",
-					"docs",
-					"feat",
-					"fix",
-					"perf",
-					"refactor",
-					"revert",
-					"style",
-					"test",
-					"types",
-					"wip"
-				]
-			]
-		}
 	}
 }
