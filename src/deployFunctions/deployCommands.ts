@@ -47,7 +47,7 @@ async function main() {
 				body: commands,
 			},
 		);
-		logger.info('Sucessfully reloaded interaction (/) commands.');
+		logger.info('Successfully reloaded interaction (/) commands.');
 	} catch (e) {
 		logger.error(e);
 	}

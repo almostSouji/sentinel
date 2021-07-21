@@ -81,7 +81,9 @@ export const CONFIG_CHANNELS_WRONG_TYPE = (action: string, channels: string) =>
 	`${PREFIX_ERROR} Can not ${action} channels: ${channels} (channels need to be text based).`;
 export const CONFIG_CHANNELS_NONE = (action: string) => `${PREFIX_ERROR} can not ${action} any channels.`;
 export const CONFIG_CHANNELS_CHANGED = (action: string, channels: string) =>
-	`${PREFIX_SUCCESS} Channel watch list edited. Sucessfully ${action}ed channels: ${channels}`;
+	`${PREFIX_SUCCESS} Channel watch list edited. Successfully ${
+		action === 'remove' ? 'removed' : 'added'
+	} channels: ${channels}`;
 
 export const NOTIFY_ROLE_ADD = (role: string, level: string) =>
 	`Added a notification for <@&${role}> at level ${level}.`;
