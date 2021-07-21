@@ -36,7 +36,7 @@ In the current state, the project uses the [Perspective API](https://perspective
 
 ## Privacy Policy
 
-1. There are currently no plans to save data associated with end-users persistently. This statement might change if karma comes into play.
+1. User associated data saved: Amount of messages, attribute flags and severity levels per user in configured channels.
 2. Configuration data is saved persistently and indefinitely. The application uses IDs whenever possible.
 3. Perspective API is used with the `doNotStore` parameter, preventing any data retention by third parties.
 4. Debug logs to improve the flow of the app may be employed temporarily and may log any data necessary. Log entries of any kind do not persist.
