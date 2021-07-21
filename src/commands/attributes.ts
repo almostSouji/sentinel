@@ -42,11 +42,14 @@ export async function handleAttributesCommand(
 		const enabledFlags = enabled.map((v) => formatFlag(v));
 		await redis.sadd(ATTRIBUTES(guild.id), ...enabledFlags);
 		messageParts.push(CONFIG_ATTRIBUTES_ENABLED(enabledFlags.map((f) => `\`${f}\``).join(', ')));
-	} else if (disabled.length) {
+	}
+	if (disabled.length) {
 		const disabledFlags = disabled.map((v) => formatFlag(v));
 		await redis.srem(ATTRIBUTES(guild.id), ...disabledFlags);
 		messageParts.push(CONFIG_ATTRIBUTES_DISABLED(disabledFlags.map((f) => `\`${f}\``).join(', ')));
-	} else {
+	}
+
+	if (!enabled.length && !disabled.length) {
 		messageParts.push(CONFIG_ATTRIBUTES_NONE);
 	}
 
