@@ -26,7 +26,7 @@ import { handleRedisCommand } from '../commands/redis';
 export function handleCommands(interaction: Interaction) {
 	if (!interaction.isCommand()) return;
 	const { commandName, options } = interaction;
-	const args = [...options.values()];
+	const args = [...options.data.values()];
 
 	switch (commandName) {
 		case AttributesCommand.name:

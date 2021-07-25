@@ -112,4 +112,5 @@ export const FETCHLOG_GUILD = (should: Snowflake, actual: Snowflake) =>
 	`${PREFIX_ERROR} guild id forged. Is: \`${actual}\` should be \`${should}\`.`;
 export const FETCHLOG_NOTLOG = `${PREFIX_ERROR} provided message does not resolve to a log message.`;
 
-export const KARMA_NO_DATA = (user: string) => `${PREFIX_ERROR} Can not find any data on \`${user}\``;
+export const KARMA_NO_DATA = (user: string) => `${PREFIX_ERROR} Cannot find any data on \`${user}\``;
+export const TEST_NO_CONTENT = `${PREFIX_ERROR} Cannot test empty messages.` as const;

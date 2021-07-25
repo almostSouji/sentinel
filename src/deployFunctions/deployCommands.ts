@@ -16,20 +16,22 @@ import { RedisCommand } from '../interactions/redis';
 import { TestCommand } from '../interactions/test';
 import { WatchCommand } from '../interactions/watch';
 import { KarmaCommand } from '../interactions/karma';
+import { KarmaContextCommand } from '../interactions/karmacontext';
 /* eslint-enable @typescript-eslint/no-unused-vars */
 import { logger } from '../functions/logger';
 
 const commands = [
 	TestCommand,
-	KarmaCommand,
+	// KarmaCommand,
 	ConfigCommand,
 	WatchCommand,
 	AttributesCommand,
 	NYTAttributesCommand,
-	CustomTriggerCommand,
+	// CustomTriggerCommand,
 	NotifyCommand,
-	FetchLogCommand, // ! devcommand
-	RedisCommand, // ! devcommand
+	// FetchLogCommand, // ! devcommand
+	// RedisCommand, // ! devcommand
+	// KarmaContextCommand,
 ];
 
 async function main() {

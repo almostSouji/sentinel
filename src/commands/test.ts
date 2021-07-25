@@ -6,19 +6,26 @@ import { formatPerspectiveDetails } from '../functions/formatting/formatPerspect
 import { checkContent } from '../functions/inspection/checkContent';
 import { truncate } from '../functions/util';
 import { TestCommand } from '../interactions/test';
-import { NOT_IN_DM } from '../messages/messages';
+import { NOT_IN_DM, TEST_NO_CONTENT } from '../messages/messages';
 
 const cb = '```' as const;
 
 export async function handleTestCommand(interaction: CommandInteraction, args: ArgumentsOf<typeof TestCommand>) {
 	const { guild } = interaction;
-	const query = args.query;
-
 	if (!guild)
 		return interaction.reply({
 			content: NOT_IN_DM,
 			ephemeral: true,
 		});
+
+	const query = args.query ?? interaction.options.getMessage('message')?.content;
+
+	if (!query?.length) {
+		return interaction.reply({
+			content: TEST_NO_CONTENT,
+			ephemeral: true,
+		});
+	}
 
 	const { customTrigger, perspective } = await checkContent(query, guild);
 	const custom = formatCustom(customTrigger);
