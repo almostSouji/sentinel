@@ -61,10 +61,7 @@ type TypeIdToType<T, O, C> = T extends ApplicationCommandOptionType.SubCommand
 	: T extends ApplicationCommandOptionType.Role
 	? Role /* | APIRole */
 	: T extends ApplicationCommandOptionType.Mentionable
-	?
-			| { user: User; member?: GuildMember /* | (APIGuildMember & { permissions: Permissions }) */ }
-			| GuildChannel /* | (APIPartialChannel & { permissions: Permissions }) */
-			| Role /* | APIRole */
+	? { user: User; member?: GuildMember /* | (APIGuildMember & { permissions: Permissions }) */ } | Role /* | APIRole */
 	: never;
 
 type OptionToObject<O> = O extends {
