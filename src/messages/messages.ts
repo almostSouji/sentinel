@@ -42,7 +42,7 @@ export const EXPLAIN_UPDATING =
 export const EXPLAIN_PRIVATE =
 	`• Sentinel is a private bot. If you have any feedback let me know! (\`Souji#0001\`).` as const;
 
-export const NOT_IN_DM = 'You can not use commands in direct messages.' as const;
+export const NOT_IN_DM = 'You cannot use commands in direct messages.' as const;
 export const CUSTOM_TAG =
 	'Check if you watch any attributes! (custom tags are currently not supported in manual check mode.)' as const;
 
@@ -71,15 +71,15 @@ export const CONFIG_SHOW_ATTRIBUTES = (flags: string) => `${PREFIX_SUCCESS} Trac
 export const CONFIG_SHOW_WATCHING_NONE = `${PREFIX_ERROR} Not watching any channels (required)` as const;
 export const CONFIG_SHOW_WATCHING_FORCED = `${PREFIX_LOCKED} Tracking attributes: ${forcedAttributes
 	.map((a) => `\`${a}\``)
-	.join(', ')} (can not be unwatched)`;
+	.join(', ')} (cannot be unwatched)`;
 export const CONFIG_SHOW_WATCHING = (channels: string) => `${PREFIX_SUCCESS} Watching channels: ${channels}`;
 export const CONFIG_SHOW_STRICTNESS = (level: string) => `${PREFIX_SUCCESS} Strictness level: \`${level}\``;
 
 export const CONFIG_CHANNELS_ADD_MISSING_PERMISSIONS = (channels: string) =>
-	`${PREFIX_ERROR} Can not add channels: ${channels} (missing permissions to view or read message history)`;
+	`${PREFIX_ERROR} Cannot add channels: ${channels} (missing permissions to view or read message history)`;
 export const CONFIG_CHANNELS_WRONG_TYPE = (action: string, channels: string) =>
-	`${PREFIX_ERROR} Can not ${action} channels: ${channels} (channels need to be text based).`;
-export const CONFIG_CHANNELS_NONE = (action: string) => `${PREFIX_ERROR} can not ${action} any channels.`;
+	`${PREFIX_ERROR} Cannot ${action} channels: ${channels} (channels need to be text based).`;
+export const CONFIG_CHANNELS_NONE = (action: string) => `${PREFIX_ERROR} Cannot ${action} any channels.`;
 export const CONFIG_CHANNELS_CHANGED = (action: string, channels: string) =>
 	`${PREFIX_SUCCESS} Channel watch list edited. Successfully ${
 		action === 'remove' ? 'removed' : 'added'
