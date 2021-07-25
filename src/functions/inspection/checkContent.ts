@@ -7,9 +7,9 @@ export interface CheckResult {
 	perspective: PerspectiveResult;
 }
 
-export async function checkContent(content: string, guild: Guild): Promise<CheckResult> {
+export async function checkContent(content: string, guild: Guild, nsfw = false): Promise<CheckResult> {
 	const customTrigger = await checkCustomTriggers(content, guild);
-	const perspective = await checkPerspective(content, guild);
+	const perspective = await checkPerspective(content, guild, nsfw);
 
 	return {
 		customTrigger,

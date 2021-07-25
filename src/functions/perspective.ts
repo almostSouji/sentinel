@@ -33,6 +33,7 @@ export const nytAttributes = [
 ];
 
 export const forcedAttributes = ['SEVERE_TOXICITY', 'IDENTITY_ATTACK'];
+export const nsfwAtrributes = ['OBSCENE', 'SEXUALLY_EXPLICIT'];
 
 export interface AttributeScoreMapEntry {
 	value: number;

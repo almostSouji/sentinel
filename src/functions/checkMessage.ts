@@ -1,4 +1,4 @@
-import { Message, PartialMessage, Permissions, MessageEmbed, Snowflake } from 'discord.js';
+import { Message, PartialMessage, Permissions, MessageEmbed, Snowflake, ThreadChannel } from 'discord.js';
 import { COLOR_MILD, COLOR_ALERT, COLOR_SEVERE, COLOR_DARK, COLOR_PURPLE } from '../constants';
 import {
 	CHANNELS_WATCHING,
@@ -120,7 +120,11 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 		);
 		const severeAmount = 1;
 
-		const { customTrigger, perspective } = await checkContent(content, guild);
+		const { customTrigger, perspective } = await checkContent(
+			content,
+			guild,
+			channel instanceof ThreadChannel ? false : channel.nsfw,
+		);
 		const { severe, high, tags } = perspective;
 
 		if (customTrigger.length) {

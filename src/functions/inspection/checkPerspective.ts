@@ -2,7 +2,7 @@ import { Guild } from 'discord.js';
 import { ATTRIBUTES, ATTRIBUTE_SEEN, DEBUG_GUILDS_LOGALL, STRICTNESS } from '../../keys';
 import { PerspectiveAttribute, Scores } from '../../types/perspective';
 import { STRICTNESS_LEVELS, AttributeHit } from '../checkMessage';
-import { analyzeText, forcedAttributes, perspectiveAttributes } from '../perspective';
+import { analyzeText, forcedAttributes, nsfwAtrributes, perspectiveAttributes } from '../perspective';
 
 export function strictnessPick(level: number, highValue: number, mediumValue: number, lowValue: number) {
 	return level === STRICTNESS_LEVELS.HIGH ? highValue : level === STRICTNESS_LEVELS.MEDIUM ? mediumValue : lowValue;
@@ -14,13 +14,20 @@ export interface PerspectiveResult {
 	severe: AttributeHit[];
 }
 
-export async function checkPerspective(content: string, guild: Guild): Promise<PerspectiveResult> {
+export async function checkPerspective(content: string, guild: Guild, nsfw = false): Promise<PerspectiveResult> {
 	const { redis } = guild.client;
 	const strictness = parseInt((await redis.get(STRICTNESS(guild.id))) ?? '1', 10);
 	const logOverride = await redis.sismember(DEBUG_GUILDS_LOGALL, guild.id);
 	const attributes = [...new Set([...(await redis.smembers(ATTRIBUTES(guild.id))), ...forcedAttributes])];
 
-	const res = await analyzeText(content, (logOverride ? perspectiveAttributes : attributes) as PerspectiveAttribute[]);
+	const res = await analyzeText(
+		content,
+		(logOverride
+			? perspectiveAttributes
+			: nsfw
+			? attributes.filter((a) => !nsfwAtrributes.includes(a))
+			: attributes) as PerspectiveAttribute[],
+	);
 
 	const tags: AttributeHit[] = [];
 	const high: AttributeHit[] = [];
