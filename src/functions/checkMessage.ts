@@ -28,7 +28,7 @@ import { cleanContent } from './util';
 
 const colors = [COLOR_MILD, COLOR_MILD, COLOR_ALERT, COLOR_SEVERE, COLOR_PURPLE] as const;
 
-function setSeverityColor(embed: MessageEmbed, severity: number): MessageEmbed {
+export function setSeverityColor(embed: MessageEmbed, severity: number): MessageEmbed {
 	return embed.setColor(colors[severity] ?? COLOR_DARK);
 }
 

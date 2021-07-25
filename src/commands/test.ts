@@ -1,24 +1,27 @@
-import { CommandInteraction } from 'discord.js';
-import { MAX_MESSAGE_LEN } from '../constants';
+import { CommandInteraction, MessageEmbed, User } from 'discord.js';
 import { ArgumentsOf } from '../types/ArgumentsOf';
 import { formatCustom } from '../functions/formatting/formatCustom';
 import { formatPerspectiveDetails } from '../functions/formatting/formatPerspective';
 import { checkContent } from '../functions/inspection/checkContent';
-import { truncate } from '../functions/util';
 import { TestCommand } from '../interactions/test';
 import { NOT_IN_DM, TEST_NO_CONTENT } from '../messages/messages';
-
-const cb = '```' as const;
+import { setSeverityColor, strictnessPick } from '../functions/checkMessage';
+import { STRICTNESS } from '../keys';
+import { truncateEmbed } from '../functions/util';
 
 export async function handleTestCommand(interaction: CommandInteraction, args: ArgumentsOf<typeof TestCommand>) {
-	const { guild } = interaction;
+	const {
+		guild,
+		client: { redis },
+	} = interaction;
 	if (!guild)
 		return interaction.reply({
 			content: NOT_IN_DM,
 			ephemeral: true,
 		});
 
-	const query = args.query ?? interaction.options.getMessage('message')?.content;
+	const message = interaction.options.getMessage('message');
+	const query = args.query ?? message?.content;
 
 	if (!query?.length) {
 		return interaction.reply({
@@ -36,10 +39,30 @@ export async function handleTestCommand(interaction: CommandInteraction, args: A
 		})),
 	);
 
+	const strictness = parseInt((await redis.get(STRICTNESS(guild.id))) ?? '1', 10);
+	const highAmount = Math.ceil(
+		strictnessPick(strictness, attributes.length * 0.125, attributes.length * 0.1875, attributes.length * 0.25),
+	);
+	const severeAmount = 1;
+
+	const perspectiveSeverity =
+		perspective.severe.length >= severeAmount ? 3 : perspective.high.length >= highAmount ? 2 : 1;
+	const customSeverity = Math.max(...customTrigger.map((e) => e.severity), -1);
+	const severityLevel = Math.max(perspectiveSeverity, customSeverity);
+
+	const embed = new MessageEmbed().setDescription(query).addField('Perspective', attributes);
+	if (custom.length) {
+		embed.addField('Custom Triggers', custom);
+	}
+
+	if (message && message.author instanceof User) {
+		embed.setAuthor(`${message.author.tag} (${message.author.id})`, message.author.displayAvatarURL());
+	}
+
+	setSeverityColor(embed, severityLevel);
+
 	return interaction.reply({
-		content: `${cb}${truncate(query, MAX_MESSAGE_LEN - attributes.length - custom.length - 50)}${cb}\n${
-			custom.length ? `${custom}\n\n` : ''
-		}${attributes}`,
+		embeds: [truncateEmbed(embed)],
 		ephemeral: true,
 	});
 }
