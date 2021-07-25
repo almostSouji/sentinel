@@ -1,15 +1,17 @@
+import { ApplicationCommandOptionType } from 'discord-api-types/v9';
+
 export const CustomTriggerCommand = {
 	name: 'custom',
 	description: 'Show or edit custom triggers',
 	default_permission: false,
 	options: [
 		{
-			type: 1,
+			type: ApplicationCommandOptionType.SubCommand,
 			name: 'add',
 			description: 'Add a custom trigger',
 			options: [
 				{
-					type: 4,
+					type: ApplicationCommandOptionType.Integer,
 					name: 'mode',
 					description: 'If a whole word or part of a phrase should match',
 					required: true,
@@ -25,13 +27,13 @@ export const CustomTriggerCommand = {
 					],
 				},
 				{
-					type: 3,
+					type: ApplicationCommandOptionType.String,
 					name: 'trigger',
 					description: 'Phrase or word to match',
 					required: true,
 				},
 				{
-					type: 4,
+					type: ApplicationCommandOptionType.Integer,
 					name: 'level',
 					description: 'Log severity the phrase or word should trigger',
 					required: true,
@@ -57,12 +59,12 @@ export const CustomTriggerCommand = {
 			],
 		},
 		{
-			type: 1,
+			type: ApplicationCommandOptionType.SubCommand,
 			name: 'remove',
 			description: 'Remove a custom trigger',
 			options: [
 				{
-					type: 4,
+					type: ApplicationCommandOptionType.Integer,
 					name: 'mode',
 					description: 'If a whole word or part of a phrase is matched',
 					required: true,
@@ -78,7 +80,7 @@ export const CustomTriggerCommand = {
 					],
 				},
 				{
-					type: 3,
+					type: ApplicationCommandOptionType.String,
 					name: 'trigger',
 					description: 'Phrase or word to match',
 					required: true,
@@ -86,7 +88,7 @@ export const CustomTriggerCommand = {
 			],
 		},
 		{
-			type: 1,
+			type: ApplicationCommandOptionType.SubCommand,
 			name: 'show',
 			description: 'Show custom triggers',
 		},

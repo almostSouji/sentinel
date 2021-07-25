@@ -1,10 +1,12 @@
+import { ApplicationCommandOptionType } from 'discord-api-types/v9';
+
 export const KarmaCommand = {
 	name: 'karma',
 	description: 'Show user karma',
 	default_permission: false,
 	options: [
 		{
-			type: 6,
+			type: ApplicationCommandOptionType.User,
 			name: 'user',
 			description: 'User to show karma for',
 			required: true,

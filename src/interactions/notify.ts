@@ -1,21 +1,23 @@
+import { ApplicationCommandOptionType } from 'discord-api-types/v9';
+
 export const NotifyCommand = {
 	name: 'notify',
 	description: 'Show or edit server configuration',
 	default_permission: false,
 	options: [
 		{
-			type: 1,
+			type: ApplicationCommandOptionType.SubCommand,
 			name: 'add',
 			description: 'Add a notification',
 			options: [
 				{
-					type: 9,
+					type: ApplicationCommandOptionType.Mentionable,
 					name: 'entity',
 					description: 'User or role to notify',
 					required: true,
 				},
 				{
-					type: 4,
+					type: ApplicationCommandOptionType.Integer,
 					name: 'level',
 					description: 'Log severity the user or role should be notified at.',
 					required: true,
@@ -41,12 +43,12 @@ export const NotifyCommand = {
 			],
 		},
 		{
-			type: 1,
+			type: ApplicationCommandOptionType.SubCommand,
 			name: 'remove',
 			description: 'Remove a notification',
 			options: [
 				{
-					type: 9,
+					type: ApplicationCommandOptionType.Mentionable,
 					name: 'entity',
 					description: 'User or role to no longer notify',
 					required: true,
@@ -54,7 +56,7 @@ export const NotifyCommand = {
 			],
 		},
 		{
-			type: 1,
+			type: ApplicationCommandOptionType.SubCommand,
 			name: 'show',
 			description: 'Show notifications',
 		},

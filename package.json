@@ -19,7 +19,7 @@
 	},
 	"dependencies": {
 		"@discordjs/rest": "^0.1.0-canary.0",
-		"discord-api-types": "^0.18.1",
+		"discord-api-types": "^0.21.0-next.ab1951b.1627216104",
 		"discord.js": "^13.0.0-dev.4206e35.1626307444",
 		"dotenv": "^10.0.0",
 		"googleapis": "^73.0.0",

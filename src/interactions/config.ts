@@ -1,15 +1,17 @@
+import { ApplicationCommandOptionType } from 'discord-api-types/v9';
+
 export const ConfigCommand = {
 	name: 'config',
 	description: 'Show or edit server configuration',
 	default_permission: false,
 	options: [
 		{
-			type: 7,
+			type: ApplicationCommandOptionType.Channel,
 			name: 'logchannel',
 			description: 'Channel to log in',
 		},
 		{
-			type: 4,
+			type: ApplicationCommandOptionType.Integer,
 			name: 'strictness',
 			description: 'How strict you want the application to be',
 			choices: [
@@ -28,7 +30,7 @@ export const ConfigCommand = {
 			],
 		},
 		{
-			type: 4,
+			type: ApplicationCommandOptionType.Integer,
 			name: 'prefetch',
 			description: 'Amount of messages in the log channel to cache after a restart',
 			choices: [
@@ -47,7 +49,7 @@ export const ConfigCommand = {
 			],
 		},
 		{
-			type: 4,
+			type: ApplicationCommandOptionType.Integer,
 			name: 'immunity',
 			description: 'Ignore members with this permission',
 			choices: [
