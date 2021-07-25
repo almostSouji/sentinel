@@ -4,6 +4,7 @@ import { CommandInteraction, Permissions, Snowflake } from 'discord.js';
 import { ATTRIBUTES, CHANNELS_LOG, CHANNELS_WATCHING, IMMUNITY, PREFETCH, STRICTNESS } from '../keys';
 import {
 	CONFIG_IMMUNITY_SET,
+	CONFIG_NSFW_WARNING,
 	CONFIG_PREFETCH_SET,
 	CONFIG_SHOW_ATTRIBUTES,
 	CONFIG_SHOW_CHANNEL,
@@ -24,6 +25,7 @@ import {
 import { STRICTNESS_LEVELS } from '../functions/checkMessage';
 import { formatChannelMentions } from './watch';
 import { ArgumentsOf } from '../types/ArgumentsOf';
+import { nsfwAtrributes } from '../functions/perspective';
 
 export enum IMMUNITY_LEVEL {
 	NONE,
@@ -117,17 +119,29 @@ export async function handleConfigCommand(interaction: CommandInteraction, args:
 
 		const attributes = await redis.smembers(ATTRIBUTES(guild.id));
 
-		const flags = attributes.map((a) => `\`${a}\``);
+		const { flags, nsfwFlags } = attributes.reduce(
+			(acc, current) => {
+				if (nsfwAtrributes.includes(current)) {
+					acc.nsfwFlags.push(`\`${current}\``);
+					acc.flags.push(`\`${current}\` ¹`);
+				} else {
+					acc.flags.push(`\`${current}\``);
+				}
+				return acc;
+			},
+			{
+				flags: [] as string[],
+				nsfwFlags: [] as string[],
+			},
+		);
 
 		messageParts.push(CONFIG_SHOW_WATCHING_FORCED);
 		if (flags.length) {
-			messageParts.push(CONFIG_SHOW_ATTRIBUTES(flags.join(', ')));
+			messageParts.push(CONFIG_SHOW_ATTRIBUTES(flags.join(', '), flags.length));
+			if (nsfwFlags.length) {
+				messageParts.push(CONFIG_NSFW_WARNING(nsfwFlags.join(', ')));
+			}
 		}
-
-		return interaction.reply({
-			content: messageParts.join('\n'),
-			ephemeral: true,
-		});
 	}
 
 	return interaction.reply({

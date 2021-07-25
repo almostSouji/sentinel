@@ -67,7 +67,10 @@ export const CONFIG_STRICTNESS_SET = (level: string) => `${PREFIX_SUCCESS} Stric
 export const CONFIG_SHOW_CHANNEL = (channel: Snowflake) => `${PREFIX_SUCCESS} Log channel: <#${channel}>`;
 export const CONFIG_SHOW_IMMUNITY = (permission: string) => `${PREFIX_SUCCESS} Immunity permission: \`${permission}\``;
 export const CONFIG_SHOW_PREFETCH = (amount: number) => `${PREFIX_SUCCESS} Prefetch messages on restart: \`${amount}\``;
-export const CONFIG_SHOW_ATTRIBUTES = (flags: string) => `${PREFIX_SUCCESS} Tracking attributes: ${flags}`;
+export const CONFIG_SHOW_ATTRIBUTES = (flags: string, amount: number) =>
+	`${PREFIX_SUCCESS} Tracking attributes (${amount}): ${flags}`;
+export const CONFIG_NSFW_WARNING = (flags: string) =>
+	`**¹** *Note that the attributes ${flags} are not tracked in nsfw channels.*`;
 export const CONFIG_SHOW_WATCHING_NONE = `${PREFIX_ERROR} Not watching any channels (required)` as const;
 export const CONFIG_SHOW_WATCHING_FORCED = `${PREFIX_LOCKED} Tracking attributes: ${forcedAttributes
 	.map((a) => `\`${a}\``)

@@ -32,7 +32,7 @@ export const NYTAttributesCommand = {
 		},
 		{
 			name: 'obscene',
-			description: 'Check for obscenity',
+			description: 'Check for obscenity (disabled in NSFW channels)',
 			type: ApplicationCommandOptionType.Boolean,
 		},
 		{

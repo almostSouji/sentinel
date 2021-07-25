@@ -17,7 +17,7 @@ export const AttributesCommand = {
 		},
 		{
 			name: 'profanity',
-			description: 'Check for profanity',
+			description: 'Check for profanity (disabled in NSFW channels)',
 			type: ApplicationCommandOptionType.Boolean,
 		},
 		{
@@ -26,13 +26,13 @@ export const AttributesCommand = {
 			type: ApplicationCommandOptionType.Boolean,
 		},
 		{
-			name: 'sexually-explicit',
+			name: 'sexually-explicit (disabled in NSFW channels)',
 			description: 'Check for sexually explicitness',
 			type: ApplicationCommandOptionType.Boolean,
 		},
 		{
 			name: 'flirtation',
-			description: 'Check for flirtation',
+			description: 'Check for flirtation (disabled in NSFW channels)',
 			type: ApplicationCommandOptionType.Boolean,
 		},
 	],

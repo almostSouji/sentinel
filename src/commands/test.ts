@@ -1,4 +1,4 @@
-import { CommandInteraction, MessageEmbed, User } from 'discord.js';
+import { CommandInteraction, MessageEmbed, ThreadChannel, User } from 'discord.js';
 import { ArgumentsOf } from '../types/ArgumentsOf';
 import { formatCustom } from '../functions/formatting/formatCustom';
 import { formatPerspectiveDetails } from '../functions/formatting/formatPerspective';
@@ -11,10 +11,11 @@ import { truncateEmbed } from '../functions/util';
 
 export async function handleTestCommand(interaction: CommandInteraction, args: ArgumentsOf<typeof TestCommand>) {
 	const {
-		guild,
+		channel,
 		client: { redis },
+		guild,
 	} = interaction;
-	if (!guild)
+	if (channel?.type === 'DM' || !guild || !channel)
 		return interaction.reply({
 			content: NOT_IN_DM,
 			ephemeral: true,
@@ -30,7 +31,11 @@ export async function handleTestCommand(interaction: CommandInteraction, args: A
 		});
 	}
 
-	const { customTrigger, perspective } = await checkContent(query, guild);
+	const { customTrigger, perspective } = await checkContent(
+		query,
+		guild,
+		channel instanceof ThreadChannel ? false : channel.nsfw,
+	);
 	const custom = formatCustom(customTrigger);
 	const attributes = formatPerspectiveDetails(
 		perspective.tags.map(({ key, score }) => ({

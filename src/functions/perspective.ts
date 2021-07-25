@@ -33,7 +33,7 @@ export const nytAttributes = [
 ];
 
 export const forcedAttributes = ['SEVERE_TOXICITY', 'IDENTITY_ATTACK'];
-export const nsfwAtrributes = ['OBSCENE', 'SEXUALLY_EXPLICIT'];
+export const nsfwAtrributes = ['OBSCENE', 'SEXUALLY_EXPLICIT', 'PROFANITY', 'FLIRTATION'];
 
 export interface AttributeScoreMapEntry {
 	value: number;
@@ -43,10 +43,11 @@ export interface AttributeScoreMapEntry {
 export async function analyzeText(text: string, attributes: PerspectiveAttribute[]): Promise<PerspectiveResponseData> {
 	const client = await google.discoverAPI('https://commentanalyzer.googleapis.com/$discovery/rest?version=v1alpha1');
 	const requestedAttributes = Object.fromEntries(attributes.map((a) => [a, {}]));
+	const cleaned = cleanContent(text);
 
 	const analyzeRequest = {
 		comment: {
-			text: cleanContent(text),
+			text: cleaned.length ? cleaned : ' ',
 		},
 		requestedAttributes,
 		doNotStore: true,
