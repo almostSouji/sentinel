@@ -4,7 +4,7 @@
 $header-bg-color: #5865F2 !default;
 $header-bg-color-secondary: #5865F2 !default;
 $section-headings-color: #5865F2 !default;
-@import "{{ site.theme }}";
+@import "jekyll-theme-cayman";
 a {
 	color: $section-headings-color;
 }
