@@ -10,7 +10,8 @@ This project is in a very early alpha state!
 
 # Tai
 
-![Tai Avatar (Tai shiluette with rainbowshield logo)](./images/tai_100.png) Tai watches configured channels  This procedure is based on Attributes that a pre-trained AI model spots in the message content. Based on these Attributes and their probability, the project sets thresholds and emphasis to classify and pre-sort comments posted in specified Discord channels. Moderators can then review these comments via message links and investigate and handle the situation as appropriate.
+<img src="./images/tai_100.png" style="float: left; margin-right: 1rem; margin-bottom: 1rem;" alt="Tai Avatar (Tai shiluette with rainbowshield logo)"/>
+Tai watches configured channels  This procedure is based on Attributes that a pre-trained AI model spots in the message content. Based on these Attributes and their probability, the project sets thresholds and emphasis to classify and pre-sort comments posted in specified Discord channels. Moderators can then review these comments via message links and investigate and handle the situation as appropriate.
 
 With the recent addition of buttons the application now supports direct actioning via ban and delete buttons situated on the log message. Button availability depends on strictness settings and the bot's permissions relative to the message author.
 
@@ -45,4 +46,7 @@ In the current state, the project uses the [Perspective API](https://perspective
 
 # Cell
 
-![Cell Avatar (Cell shiluette with rainbowbox logo)](./images/cell_100.png) Cell administers Sandbox servers. Servers cann just be operated from the hub, because there is a hard limit of sandboxes due to Discord limitations.
+<img src="./images/cell_100.png" style="float: left; margin-right: 1rem; margin-bottom: 1rem;" alt="Cell Avatar (Cell shiluette with rainbowbox logo)"/>
+Cell is a slash command utility that allows creation of sandbox servers for permission and bot testing, without putting production servers at risks. The server topology is configurable through the creation command and can include base channel types as well as NSFW text channels. Administrator acccess and guild deletion can be requested through buttons in the sandbox.
+
+Sandboxes can only be created from the project hub server, as the amount of sandboxes is strictly limited to 8 at a time, due to Discord API limits for bot owned guilds.
