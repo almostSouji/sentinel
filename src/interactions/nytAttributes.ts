@@ -7,42 +7,42 @@ export const NYTAttributesCommand = {
 	options: [
 		{
 			name: 'attack-on-author',
-			description: 'Check for an attack on the author',
+			description: 'Check for an attack on the author 🗞️',
 			type: ApplicationCommandOptionType.Boolean,
 		},
 		{
 			name: 'attack-on-commenter',
-			description: 'Check for an attack on a commenter',
+			description: 'Check for an attack on a commenter 🗞️',
 			type: ApplicationCommandOptionType.Boolean,
 		},
 		{
 			name: 'incoherent',
-			description: 'Check for incoherent messages',
+			description: 'Check for incoherent messages 🗞️',
 			type: ApplicationCommandOptionType.Boolean,
 		},
 		{
 			name: 'inflammatory',
-			description: 'Check for inflammatory messages',
+			description: 'Check for inflammatory messages 🗞️',
 			type: ApplicationCommandOptionType.Boolean,
 		},
 		{
 			name: 'likely-to-reject',
-			description: 'Check for messages that are likely to be rejected',
-			type: ApplicationCommandOptionType.Boolean,
-		},
-		{
-			name: 'obscene',
-			description: 'Check for obscenity (disabled in NSFW channels)',
+			description: 'Check for messages that are likely to be rejected 🗞️',
 			type: ApplicationCommandOptionType.Boolean,
 		},
 		{
 			name: 'spam',
-			description: 'Check for spam',
+			description: 'Check for spam 🗞️',
 			type: ApplicationCommandOptionType.Boolean,
 		},
 		{
 			name: 'unsubstantial',
-			description: 'Check for unsubstantial messages',
+			description: 'Check for unsubstantial messages 🗞️',
+			type: ApplicationCommandOptionType.Boolean,
+		},
+		{
+			name: 'obscene',
+			description: 'Check for obscenity 🗞️ (🔞 disabled in NSFW channels)',
 			type: ApplicationCommandOptionType.Boolean,
 		},
 	],
