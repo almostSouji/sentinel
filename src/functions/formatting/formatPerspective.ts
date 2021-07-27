@@ -1,7 +1,7 @@
-import { PREFIX_NYT } from '../../constants';
-import { EXPLAIN_NYT, FLAGS_NONE } from '../../messages/messages';
+import { PREFIX_NSFW, PREFIX_NYT, PREFIX_LOCKED } from '../../constants';
+import { EXPLAIN_FORCED, EXPLAIN_NSFW, EXPLAIN_NYT, FLAGS_NONE } from '../../messages/messages';
 import { PerspectiveResult } from '../inspection/checkPerspective';
-import { AttributeScoreMapEntry, nytAttributes } from '../perspective';
+import { AttributeScoreMapEntry, forcedAttributes, nsfwAtrributes, nytAttributes } from '../perspective';
 
 function mapKeyToAdverb(key: string): string {
 	switch (key) {
@@ -41,14 +41,34 @@ function mapKeyToAdverb(key: string): string {
 	}
 }
 
+export function formatFlag(flag: string): string {
+	const icons = [];
+	if (nytAttributes.includes(flag)) icons.push(PREFIX_NYT);
+	if (nsfwAtrributes.includes(flag)) icons.push(PREFIX_NSFW);
+	if (forcedAttributes.includes(flag)) icons.push(PREFIX_LOCKED);
+	return `\`${flag}\` ${icons.join(' ')}`.trim();
+}
+
 export function formatPerspectiveDetails(data: AttributeScoreMapEntry[]) {
 	data = data.filter((entry) => entry.value > 0);
+	let nsfw = 0;
+	let nyt = 0;
 
 	const attributes = data
 		.sort((a, b) => b.value - a.value)
-		.map((val) => `• ${val.value}% \`${val.key}\` ${nytAttributes.includes(val.key) ? PREFIX_NYT : ''} `)
+		.map((val) => {
+			if (nytAttributes.includes(val.key)) nyt++;
+			if (nsfwAtrributes.includes(val.key)) nsfw++;
+			return `• ${val.value}% ${formatFlag(val.key)}`;
+		})
 		.join('\n');
-	return `${attributes}${data.some((e) => nytAttributes.includes(e.key)) ? `\n\n${EXPLAIN_NYT}` : ''}`;
+
+	const disclaimers = [];
+	if (nyt) disclaimers.push(EXPLAIN_NYT);
+	if (nsfw) disclaimers.push(EXPLAIN_NSFW);
+	disclaimers.push(EXPLAIN_FORCED);
+
+	return `${attributes}${disclaimers.length ? `\n\n${disclaimers.join('\n')}` : ''}`;
 }
 
 export function formatPerspectiveShort(data: PerspectiveResult): string {
