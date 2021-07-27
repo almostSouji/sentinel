@@ -23,6 +23,8 @@ export const MAX_MESSAGE_LEN = 2000 as const;
 export const PREFIX_ERROR = '`❌`' as const;
 export const PREFIX_SUCCESS = '`✅`' as const;
 export const PREFIX_LOCKED = '`🔒`' as const;
+export const PREFIX_NYT = '`🗞️`';
+export const PREFIX_NSFW = '`🔞`';
 
 export const MAX_TRIGGER_LENGTH = 20 as const;
 export const MAX_TRIGGER_COUNT = 400 as const;

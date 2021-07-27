@@ -1,6 +1,13 @@
 import { Snowflake } from 'discord.js';
-import { MAX_TRIGGER_COUNT, MAX_TRIGGER_LENGTH, PREFIX_ERROR, PREFIX_LOCKED, PREFIX_SUCCESS } from '../constants';
-import { forcedAttributes } from '../functions/perspective';
+import {
+	MAX_TRIGGER_COUNT,
+	MAX_TRIGGER_LENGTH,
+	PREFIX_ERROR,
+	PREFIX_LOCKED,
+	PREFIX_NSFW,
+	PREFIX_NYT,
+	PREFIX_SUCCESS,
+} from '../constants';
 
 export const READY_LOG = (tag: string) => `${tag} is watching!`;
 export const BAN_SUCCESS = (executor: string, target: string) =>
@@ -36,11 +43,13 @@ export const EXPLAIN_WORKING =
 export const EXPLAIN_PERCENTAGE =
 	`• The data reflects how probable each attribute is reflected in the target message (90% likely to be toxic).` as const;
 export const EXPLAIN_NYT =
-	`¹ trained on a single data source (New York Times comments tagged by their moderation team)` as const;
+	`${PREFIX_NYT} Trained on a single data source (New York Times comments tagged by their moderation team)` as const;
 export const EXPLAIN_UPDATING =
 	`• Buttons update based on permissions and member/message status (check for permission and hierarchy conflicts if buttons are greyed out)` as const;
 export const EXPLAIN_PRIVATE =
 	`• Sentinel is a private bot. If you have any feedback let me know! (\`Souji#0001\`).` as const;
+export const EXPLAIN_NSFW = `${PREFIX_NSFW} Attributes are not considered in nsfw channels`;
+export const EXPLAIN_FORCED = `${PREFIX_LOCKED} Attributes cannot be unwatched`;
 
 export const NOT_IN_DM = 'You cannot use commands in direct messages.' as const;
 export const CUSTOM_TAG =
@@ -53,31 +62,16 @@ export const LOG_NO_PERMS =
 	`${ERROR_LOGCHANNEL} (application needs the permissions to embed and read messages and history in the log channel)` as const;
 export const LOG_CHANNEL_SET = (channel: string) => `${PREFIX_SUCCESS} Log channel set to \`${channel}\``;
 
-export const CONFIG_SHOW_CHANNEL_MISSING = `${PREFIX_ERROR} Log channel: none (required)`;
+export const CONFIG_SHOW_CHANNEL_MISSING = `${PREFIX_ERROR} none (required)`;
 export const CONFIG_SHOW_CHANNEL_MISSING_PERMISSIONS = (channel: Snowflake, missing: string) =>
-	`${PREFIX_ERROR} Log channel: <#${channel}> (missing permissions: ${missing})`;
-export const CONFIG_IMMUNITY_SET = (permission: string) =>
-	`${PREFIX_SUCCESS} Immunity permission set to: \`${permission}\``;
+	`${PREFIX_ERROR} <#${channel}> (missing permissions: ${missing})`;
+export const CONFIG_IMMUNITY_SET = (permission: string) => `\`${permission}\``;
 export const CONFIG_PREFETCH_SET = (amount: number) => `${PREFIX_SUCCESS} Prefetch messages on restart: \`${amount}\``;
 export const CONFIG_ATTRIBUTES_ENABLED = (flags: string) => `${PREFIX_SUCCESS} Enabled flags: ${flags}`;
 export const CONFIG_ATTRIBUTES_DISABLED = (flags: string) => `${PREFIX_SUCCESS} Disabled flags: ${flags}`;
 export const CONFIG_ATTRIBUTES_NONE = `${PREFIX_ERROR} No attributes provided, aborting.` as const;
 export const CONFIG_STRICTNESS_SET = (level: string) => `${PREFIX_SUCCESS} Strictness level set to: \`${level}\``;
-
-export const CONFIG_SHOW_CHANNEL = (channel: Snowflake) => `${PREFIX_SUCCESS} Log channel: <#${channel}>`;
-export const CONFIG_SHOW_IMMUNITY = (permission: string) => `${PREFIX_SUCCESS} Immunity permission: \`${permission}\``;
-export const CONFIG_SHOW_PREFETCH = (amount: number) => `${PREFIX_SUCCESS} Prefetch messages on restart: \`${amount}\``;
-export const CONFIG_SHOW_ATTRIBUTES = (flags: string, amount: number) =>
-	`${PREFIX_SUCCESS} Tracking attributes (${amount}): ${flags}`;
-export const CONFIG_NSFW_WARNING = (flags: string) =>
-	`**¹** *Note that the attributes ${flags} are not tracked in nsfw channels.*`;
-export const CONFIG_SHOW_WATCHING_NONE = `${PREFIX_ERROR} Not watching any channels (required)` as const;
-export const CONFIG_SHOW_WATCHING_FORCED = `${PREFIX_LOCKED} Tracking attributes: ${forcedAttributes
-	.map((a) => `\`${a}\``)
-	.join(', ')} (cannot be unwatched)`;
-export const CONFIG_SHOW_WATCHING = (channels: string) => `${PREFIX_SUCCESS} Watching channels: ${channels}`;
-export const CONFIG_SHOW_STRICTNESS = (level: string) => `${PREFIX_SUCCESS} Strictness level: \`${level}\``;
-
+export const CONFIG_SHOW_WATCHING_NONE = `${PREFIX_ERROR} none (required)` as const;
 export const CONFIG_CHANNELS_ADD_MISSING_PERMISSIONS = (channels: string) =>
 	`${PREFIX_ERROR} Cannot add channels: ${channels} (missing permissions to view or read message history)`;
 export const CONFIG_CHANNELS_WRONG_TYPE = (action: string, channels: string) =>

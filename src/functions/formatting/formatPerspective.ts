@@ -1,3 +1,4 @@
+import { PREFIX_NYT } from '../../constants';
 import { EXPLAIN_NYT, FLAGS_NONE } from '../../messages/messages';
 import { PerspectiveResult } from '../inspection/checkPerspective';
 import { AttributeScoreMapEntry, nytAttributes } from '../perspective';
@@ -45,7 +46,7 @@ export function formatPerspectiveDetails(data: AttributeScoreMapEntry[]) {
 
 	const attributes = data
 		.sort((a, b) => b.value - a.value)
-		.map((val) => `• ${val.value}% \`${val.key}\` ${nytAttributes.includes(val.key) ? '¹' : ''} `)
+		.map((val) => `• ${val.value}% \`${val.key}\` ${nytAttributes.includes(val.key) ? PREFIX_NYT : ''} `)
 		.join('\n');
 	return `${attributes}${data.some((e) => nytAttributes.includes(e.key)) ? `\n\n${EXPLAIN_NYT}` : ''}`;
 }
