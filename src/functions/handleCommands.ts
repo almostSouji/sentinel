@@ -7,7 +7,7 @@ import { ConfigCommand } from '../interactions/config';
 import { CustomTriggerCommand } from '../interactions/customTrigger';
 import { NotifyCommand } from '../interactions/notify';
 import { NYTAttributesCommand } from '../interactions/nytAttributes';
-import { TestCommand } from '../interactions/test';
+import { EvaluateContentCommand } from '../interactions/evaluateContent';
 import { WatchCommand } from '../interactions/watch';
 import { KarmaCommand } from '../interactions/karma';
 import { FetchLogCommand } from '../interactions/fetchLog';
@@ -44,8 +44,8 @@ export function handleCommands(interaction: Interaction) {
 		case NYTAttributesCommand.name:
 			return handleNYTAttributesCommand(interaction, transformInteraction<typeof NYTAttributesCommand>(args));
 
-		case TestCommand.name:
-			return handleTestCommand(interaction, transformInteraction<typeof TestCommand>(args));
+		case EvaluateContentCommand.name:
+			return handleTestCommand(interaction, transformInteraction<typeof EvaluateContentCommand>(args));
 
 		case WatchCommand.name:
 			return handleWatchCommand(interaction, transformInteraction<typeof WatchCommand>(args));

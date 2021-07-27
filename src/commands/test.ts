@@ -3,13 +3,16 @@ import { ArgumentsOf } from '../types/ArgumentsOf';
 import { formatCustom } from '../functions/formatting/formatCustom';
 import { formatPerspectiveDetails } from '../functions/formatting/formatPerspective';
 import { checkContent } from '../functions/inspection/checkContent';
-import { TestCommand } from '../interactions/test';
+import { EvaluateContentCommand } from '../interactions/evaluateContent';
 import { NOT_IN_DM, TEST_NO_CONTENT } from '../messages/messages';
 import { setSeverityColor, strictnessPick } from '../functions/checkMessage';
 import { STRICTNESS } from '../keys';
 import { truncateEmbed } from '../functions/util';
 
-export async function handleTestCommand(interaction: CommandInteraction, args: ArgumentsOf<typeof TestCommand>) {
+export async function handleTestCommand(
+	interaction: CommandInteraction,
+	args: ArgumentsOf<typeof EvaluateContentCommand>,
+) {
 	const {
 		channel,
 		client: { redis },

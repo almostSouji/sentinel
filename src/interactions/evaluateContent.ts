@@ -1,8 +1,8 @@
 import { ApplicationCommandOptionType } from 'discord-api-types/v9';
 
-export const TestCommand = {
-	name: 'test',
-	description: 'Check a string for toxicity and custom triggers',
+export const EvaluateContentCommand = {
+	name: 'evaluate-content',
+	description: 'Evaluate a phrase for tracked attributes and custom triggers',
 	default_permission: false,
 	options: [
 		{

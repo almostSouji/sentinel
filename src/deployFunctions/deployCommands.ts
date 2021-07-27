@@ -13,7 +13,8 @@ import { NotifyCommand } from '../interactions/notify';
 import { NYTAttributesCommand } from '../interactions/nytAttributes';
 import { FetchLogCommand } from '../interactions/fetchLog';
 import { RedisCommand } from '../interactions/redis';
-import { TestCommand } from '../interactions/test';
+import { EvaluateContentCommand } from '../interactions/evaluateContent';
+import { EvaluateContentContextCommand } from '../interactions/evaluateContentContext';
 import { WatchCommand } from '../interactions/watch';
 import { KarmaCommand } from '../interactions/karma';
 import { KarmaContextCommand } from '../interactions/karmacontext';
@@ -21,17 +22,18 @@ import { KarmaContextCommand } from '../interactions/karmacontext';
 import { logger } from '../functions/logger';
 
 const commands = [
-	TestCommand,
-	// KarmaCommand,
 	ConfigCommand,
 	WatchCommand,
 	AttributesCommand,
 	NYTAttributesCommand,
-	// CustomTriggerCommand,
+	// CustomTriggerCommand, // 🔧 in-dev feature
 	NotifyCommand,
+	EvaluateContentCommand,
+	// EvaluateContentContextCommand, // 🔧 in-dev feature
 	// FetchLogCommand, // ! devcommand
 	// RedisCommand, // ! devcommand
-	// KarmaContextCommand,
+	// KarmaCommand, // 🔧 in-dev feature
+	// KarmaContextCommand,  // 🔧 in-dev feature
 ];
 
 async function main() {
