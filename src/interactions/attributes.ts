@@ -2,7 +2,7 @@ import { ApplicationCommandOptionType } from 'discord-api-types/v9';
 
 export const AttributesCommand = {
 	name: 'attributes',
-	description: 'Configure which attributes are tracked',
+	description: 'Configure which attributes are tracked in this guild',
 	default_permission: false,
 	options: [
 		{
@@ -27,7 +27,7 @@ export const AttributesCommand = {
 		},
 		{
 			name: 'sexually-explicit (🔞 disabled in NSFW channels)',
-			description: 'Check for sexually explicitness',
+			description: 'Check for sexually explicit messages',
 			type: ApplicationCommandOptionType.Boolean,
 		},
 		{

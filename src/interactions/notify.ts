@@ -2,7 +2,7 @@ import { ApplicationCommandOptionType } from 'discord-api-types/v9';
 
 export const NotifyCommand = {
 	name: 'notify',
-	description: 'Show or edit server configuration',
+	description: 'Show or edit server notifications',
 	default_permission: false,
 	options: [
 		{
@@ -19,7 +19,7 @@ export const NotifyCommand = {
 				{
 					type: ApplicationCommandOptionType.Integer,
 					name: 'level',
-					description: 'Log severity the user or role should be notified at.',
+					description: 'Log severity the user or role should be notified at',
 					required: true,
 					choices: [
 						{

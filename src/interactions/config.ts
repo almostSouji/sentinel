@@ -2,18 +2,18 @@ import { ApplicationCommandOptionType } from 'discord-api-types/v9';
 
 export const ConfigCommand = {
 	name: 'config',
-	description: 'Show or edit server configuration',
+	description: 'Edit server configuration (provide no options to show current config)',
 	default_permission: false,
 	options: [
 		{
 			type: ApplicationCommandOptionType.Channel,
 			name: 'logchannel',
-			description: 'Channel to log in',
+			description: 'Channel to use as log for flagged messages',
 		},
 		{
 			type: ApplicationCommandOptionType.Integer,
 			name: 'strictness',
-			description: 'How strict you want the application to be',
+			description: 'How strict flags should be judged',
 			choices: [
 				{
 					name: 'Forgiving (default)',
@@ -32,7 +32,7 @@ export const ConfigCommand = {
 		{
 			type: ApplicationCommandOptionType.Integer,
 			name: 'prefetch',
-			description: 'Amount of messages in the log channel to cache after a restart',
+			description: 'Amount of messages to cache after a restart in the log channel',
 			choices: [
 				{
 					name: '0 (default)',
