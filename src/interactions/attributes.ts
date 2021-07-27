@@ -22,17 +22,17 @@ export const AttributesCommand = {
 		},
 		{
 			name: 'profanity',
-			description: 'Check for profanity (🔞 disabled in NSFW channels)',
+			description: 'Check for profanity (🔞 not in NSFW)',
 			type: ApplicationCommandOptionType.Boolean,
 		},
 		{
-			name: 'sexually-explicit (🔞 disabled in NSFW channels)',
-			description: 'Check for sexually explicit messages',
+			name: 'sexually-explicit',
+			description: 'Check for sexually explicit messages (🔞 not in NSFW)',
 			type: ApplicationCommandOptionType.Boolean,
 		},
 		{
 			name: 'flirtation',
-			description: 'Check for flirtation (🔞 disabled in NSFW channels)',
+			description: 'Check for flirtation (🔞 not in NSFW)',
 			type: ApplicationCommandOptionType.Boolean,
 		},
 	],

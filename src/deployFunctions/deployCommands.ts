@@ -33,7 +33,7 @@ const commands = [
 	// FetchLogCommand, // ! devcommand
 	// RedisCommand, // ! devcommand
 	// KarmaCommand, // 🔧 in-dev feature
-	// KarmaContextCommand,  // 🔧 in-dev feature
+	KarmaContextCommand, // 🔧 in-dev feature
 ];
 
 async function main() {
