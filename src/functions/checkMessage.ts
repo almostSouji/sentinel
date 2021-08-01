@@ -7,12 +7,12 @@ import { sendLog } from './sendLog';
 import { checkContent } from './inspection/checkContent';
 import { formatPerspectiveShort } from './formatting/formatPerspective';
 import { cleanContent } from '../utils';
-import { COLOR_BLUE, COLOR_GREEN, COLOR_ORANGE, COLOR_RED, COLOR_YELLOW, COLOR_DARK, LIST_BULLET } from '../constants';
+import { COLOR_BLUE, COLOR_GREEN, COLOR_RED, COLOR_YELLOW, COLOR_DARK, LIST_BULLET } from '../constants';
 import { GuildSettings, Immunity, Strictness } from '../types/DataTypes';
 import { formatSeverity } from '../utils/formatting';
 import i18next from 'i18next';
 
-const colors = [COLOR_GREEN, COLOR_YELLOW, COLOR_ORANGE, COLOR_RED, COLOR_BLUE] as const;
+const colors = [COLOR_DARK, COLOR_GREEN, COLOR_YELLOW, COLOR_RED, COLOR_BLUE] as const;
 
 export function setSeverityColor(embed: MessageEmbed, severity: number): MessageEmbed {
 	return embed.setColor(colors[severity] ?? COLOR_DARK);
@@ -132,7 +132,7 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 						amount: attributeAmount,
 						lng: locale,
 					})}`,
-					`${LIST_BULLET} ${i18next.t('checks.debug.treshold', {
+					`${LIST_BULLET} ${i18next.t('checks.debug.threshold', {
 						threshold: attributeThreshold,
 						lng: locale,
 					})}`,
@@ -150,7 +150,7 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 						amount: highAmount,
 						lng: locale,
 					})}`,
-					`${LIST_BULLET} ${i18next.t('checks.debug.treshold', {
+					`${LIST_BULLET} ${i18next.t('checks.debug.threshold', {
 						threshold: highThreshold,
 						lng: locale,
 					})}`,
@@ -168,7 +168,7 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 						amount: severeAmount,
 						lng: locale,
 					})}`,
-					`${LIST_BULLET} ${i18next.t('checks.debug.treshold', {
+					`${LIST_BULLET} ${i18next.t('checks.debug.threshold', {
 						threshold: severeThreshold,
 						lng: locale,
 					})}`,
