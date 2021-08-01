@@ -31,7 +31,7 @@ export async function handleSQLCommand(
 		const res = await sql.unsafe(args.query);
 
 		void interaction.reply({
-			content: `\`\`\`js\n${truncate(`${inspect(res.toString(), { depth: null })}`, 1990, '')}\n\`\`\``,
+			content: `\`\`\`js\n${truncate(`${inspect([...res], { depth: null })}`, 1990, '')}\n\`\`\``,
 			ephemeral: true,
 		});
 		logger.debug(res);
