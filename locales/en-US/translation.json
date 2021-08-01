@@ -1,6 +1,6 @@
 {
 	"ready": {
-		"ready_log": "Ready on {{user}} ({{id}})!"
+		"ready_log": "Ready on {{-user}} ({{id}})!"
 	},
 	"common": {
 		"errors": {
@@ -11,14 +11,14 @@
 	"command": {
 		"attributes": {
 			"nothing_changed": "No change in attributes.",
-			"new_enabled": "Attribute enabled: {{flags}}.",
-			"new_enabled_plural": "Attributes enabled: {{flags}}.",
-			"new_disabled": "Attribute disabled: {{flags}}.",
-			"new_disabled_plural": "Attributes disabled: {{flags}}.",
-			"already_enabled": "Attribute already enabled: {{flags}}.",
-			"already_enabled_plural": "Attributes already enabled: {{flags}}.",
-			"already_disabled": "Attribute already enabled: {{flags}}.",
-			"already_disabled_plural": "Attributes already enabled: {{flags}}."
+			"new_enabled": "Attribute enabled: {{-flags}}.",
+			"new_enabled_plural": "Attributes enabled: {{-flags}}.",
+			"new_disabled": "Attribute disabled: {{-flags}}.",
+			"new_disabled_plural": "Attributes disabled: {{-flags}}.",
+			"already_enabled": "Attribute already enabled: {{-flags}}.",
+			"already_enabled_plural": "Attributes already enabled: {{-flags}}.",
+			"already_disabled": "Attribute already enabled: {{-flags}}.",
+			"already_disabled_plural": "Attributes already enabled: {{-flags}}."
 		},
 		"config": {
 			"immunity_unchanged": "Immunity stays at {{level}}.",
@@ -32,7 +32,7 @@
 			"strictness_already": "Strictness level is already {{level}}.",
 			"strictness_updated": "Strictness level updated to {{level}}.",
 			"show_logchannel_fieldname": "Log Channel",
-			"show_logchannel_missing_permissions": "Missing permissions {{permissions}} in {{-channel}}.",
+			"show_logchannel_missing_permissions": "Missing permissions {{-permissions}} in {{-channel}}.",
 			"show_logchannel_missing": "No log channel configured (required).",
 			"show_watching_fieldname": "Watching channel ({{count}})",
 			"show_watching_fieldname_plural": "Watching channels ({{count}})",
@@ -49,7 +49,7 @@
 		},
 		"fetchlog": {
 			"invalid_channel_type": "Channel type invalid.",
-			"guild_id_forged": "Guild Id is forged. Is: {{actual}} should be {{should}}",
+			"guild_id_forged": "Guild Id is forged. Is: {{-actual}} should be {{-should}}",
 			"not_a_log": "Provided message does not resolve to a log message"
 		},
 		"karma": {
@@ -60,8 +60,8 @@
 		},
 		"notify": {
 			"notification_change": "Set the notification level for {{-entity}} to severity {{level}}.",
-			"notification_remove": "Removed notifications for {{entity}}.",
-			"notification_show": "{{-enitty}} at severity {{level}}",
+			"notification_remove": "Removed notifications for {{-entity}}.",
+			"notification_show": "{{-entity}} at severity {{level}}",
 			"notification_none": "No configurations configured for this guild."
 		},
 		"evaluatecontent": {
@@ -115,8 +115,8 @@
 		"info_channel": "Channel: {{-channel}}",
 		"info_link": "Message link: [jump ➔](<{{-link}}>)",
 		"info_edit": "Message Edit",
-		"info_attachments": "Attachments ({{count}}): {{links}}",
-		"info_attachments_plural": "Attachments ({{count}}) {{links}}",
+		"info_attachments": "Attachments ({{count}}): {{-links}}",
+		"info_attachments_plural": "Attachments ({{count}}) {{-links}}",
 		"info_metadata_fieldname": "Metadata",
 		"info_flags_fieldname": "Flag",
 		"info_flags_fieldname_plural": "Flags",
@@ -130,7 +130,7 @@
 			"result": "Result: {{amount}}",
 			"immunity": "Immunity: {{immunity}}",
 			"strictness": "Strictness: {{strictness}}",
-			"severity": "Severity: {{severity}}"
+			"severity": "Severity: {{-severity}}"
 		},
 		"format_perspective_no_attributes": "No attributes tracked.",
 		"format_perspective_none": "Not flagged with any significant attributes."
