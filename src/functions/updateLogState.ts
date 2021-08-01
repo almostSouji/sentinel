@@ -1,8 +1,8 @@
 import { Guild, MessageButton, MessageActionRow, Snowflake, MessageEmbed, Permissions } from 'discord.js';
 import { OpCodes } from '..';
-import { CHANNELS_LOG } from '../keys';
 import { handleMemberAdd } from './logStateHandlers/handleMemberAdd';
-import { deserializeTargets, truncateEmbed } from './util';
+import { deserializeTargets, truncateEmbed } from '../utils';
+import { GuildSettings } from '../types/DataTypes';
 
 type BanHandler = (
 	guild: Guild,
@@ -12,6 +12,7 @@ type BanHandler = (
 	target: Snowflake,
 	targetChannel: Snowflake,
 	targetMessage: Snowflake,
+	locale: string,
 	changedUser?: Snowflake,
 	isBanned?: boolean,
 ) => boolean | Promise<boolean>;
@@ -24,6 +25,7 @@ type DeleteHandler = (
 	targetChannel: Snowflake,
 	targetMessage: Snowflake,
 	deletedMessages: Snowflake[],
+	locale: string,
 ) => boolean | Promise<boolean>;
 
 export async function updateLogState(
@@ -33,10 +35,15 @@ export async function updateLogState(
 	changedStructures: Snowflake[] = [],
 	isBanned?: boolean,
 ): Promise<void> {
-	const { client } = guild;
-	const channelId = (await client.redis.get(CHANNELS_LOG(guild.id))) ?? '';
-	// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-	const logChannel = guild.channels.resolve(`${channelId}` as Snowflake);
+	const {
+		client,
+		client: { sql },
+	} = guild;
+	const settings = (await sql<GuildSettings[]>`select * from guild_settings where guild = ${guild.id}`)[0];
+	if (!settings || !settings.logchannel) return;
+
+	const locale = settings.locale;
+	const logChannel = guild.channels.resolve(`${settings.logchannel}` as Snowflake);
 	if (!logChannel || !logChannel.isText()) return;
 
 	if (
@@ -74,6 +81,7 @@ export async function updateLogState(
 					targetUserId,
 					targetChannelId,
 					targetMessageId,
+					locale,
 					changedStructures[0],
 					isBanned,
 				);
@@ -101,7 +109,7 @@ export async function updateLogState(
 			const deleteBuffer = Buffer.from(deleteButton.customId ?? '', 'binary');
 			const { channel: targetChannelId, message: targetMessageId } = deserializeTargets(deleteBuffer);
 			for (const handler of deleteHandlers) {
-				const res = handler(guild, embed, dButton, row, targetChannelId, targetMessageId, changedStructures);
+				const res = handler(guild, embed, dButton, row, targetChannelId, targetMessageId, changedStructures, locale);
 				const change = res instanceof Promise ? await res : res;
 				changed = change || changed;
 			}

@@ -1,18 +1,14 @@
-import { Guild } from 'discord.js';
-import { checkCustomTriggers, CustomTriggerResult } from './checkCustomTriggers';
+import { GuildSettings } from '../../types/DataTypes';
 import { checkPerspective, PerspectiveResult } from './checkPerspective';
 
 export interface CheckResult {
-	customTrigger: CustomTriggerResult[];
 	perspective: PerspectiveResult;
 }
 
-export async function checkContent(content: string, guild: Guild, nsfw = false): Promise<CheckResult> {
-	const customTrigger = await checkCustomTriggers(content, guild);
-	const perspective = await checkPerspective(content, guild, nsfw);
+export async function checkContent(content: string, settings: GuildSettings, nsfw = false): Promise<CheckResult> {
+	const perspective = await checkPerspective(content, settings, nsfw);
 
 	return {
-		customTrigger,
 		perspective,
 	};
 }

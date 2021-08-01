@@ -6,5 +6,6 @@
 	"rules": {
 		"@typescript-eslint/naming-convention": 0,
 		"no-console": 1
-	}
+	},
+	"plugins": ["eslint-plugin-tsdoc"]
 }

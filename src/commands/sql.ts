@@ -1,19 +1,20 @@
 import { CommandInteraction, DMChannel } from 'discord.js';
 import { logger } from '../interactions/logger';
 import { truncate } from '../utils';
-import { RedisCommand } from '../interactions/redis';
+
 import { ArgumentsOf } from '../types/ArgumentsOf';
 import i18next from 'i18next';
 import { replyWithError } from '../utils/responses';
+import { SQLCommand } from '../interactions/sql';
+import { inspect } from 'util';
 
-export async function handleRedisCommand(
+export async function handleSQLCommand(
 	interaction: CommandInteraction,
-	args: ArgumentsOf<typeof RedisCommand>,
+	args: ArgumentsOf<typeof SQLCommand>,
 	locale: string,
 ) {
 	const {
-		// eslint-disable-next-line @typescript-eslint/no-unused-vars
-		client: { redis },
+		client: { sql },
 		guild,
 		channel,
 	} = interaction;
@@ -27,23 +28,10 @@ export async function handleRedisCommand(
 	}
 
 	try {
-		const query = args.query;
-		const redisArgs = query.split(' ');
-		let splitChar = ' ';
-		// eslint-disable-next-line no-eval
-		let res = await eval(
-			`redis['${redisArgs[0].toLowerCase()}'](...[${redisArgs
-				.slice(1)
-				.map((a) => `'${a}'`)
-				.join(',')}])`,
-		);
-		if (res instanceof Array) {
-			res = res.join('\n');
-			splitChar = '\n';
-		}
+		const res = await sql.unsafe(args.query);
 
 		void interaction.reply({
-			content: `\`\`\`\n${truncate(`${res as string}`, 1990, splitChar)}\n\`\`\``,
+			content: `\`\`\`js\n${truncate(`${inspect(res.toString(), { depth: null })}`, 1990, '')}\n\`\`\``,
 			ephemeral: true,
 		});
 		logger.debug(res);

@@ -1,7 +1,8 @@
-import { PREFIX_NSFW, PREFIX_NYT, PREFIX_LOCKED } from '../../constants';
-import { EXPLAIN_FORCED, EXPLAIN_NSFW, EXPLAIN_NYT, FLAGS_NONE } from '../../messages/messages';
+import i18next from 'i18next';
+import { LIST_BULLET, PREFIX_LOCKED, PREFIX_NSFW, PREFIX_NYT } from '../../constants';
+import { formatFlagString } from '../../utils/formatting';
 import { PerspectiveResult } from '../inspection/checkPerspective';
-import { AttributeScoreMapEntry, forcedAttributes, nsfwAtrributes, nytAttributes } from '../perspective';
+import { AttributeScoreMapEntry, nsfwAtrributes, nytAttributes } from '../perspective';
 
 function mapKeyToAdverb(key: string): string {
 	switch (key) {
@@ -41,15 +42,7 @@ function mapKeyToAdverb(key: string): string {
 	}
 }
 
-export function formatFlag(flag: string): string {
-	const icons = [];
-	if (nytAttributes.includes(flag)) icons.push(PREFIX_NYT);
-	if (nsfwAtrributes.includes(flag)) icons.push(PREFIX_NSFW);
-	if (forcedAttributes.includes(flag)) icons.push(PREFIX_LOCKED);
-	return `\`${flag}\` ${icons.join(' ')}`.trim();
-}
-
-export function formatPerspectiveDetails(data: AttributeScoreMapEntry[]) {
+export function formatPerspectiveDetails(data: AttributeScoreMapEntry[], locale: string) {
 	data = data.filter((entry) => entry.value > 0);
 	let nsfw = 0;
 	let nyt = 0;
@@ -59,24 +52,40 @@ export function formatPerspectiveDetails(data: AttributeScoreMapEntry[]) {
 		.map((val) => {
 			if (nytAttributes.includes(val.key)) nyt++;
 			if (nsfwAtrributes.includes(val.key)) nsfw++;
-			return `• ${val.value}% ${formatFlag(val.key)}`;
+			return `• ${val.value}% ${formatFlagString(val.key, true)}`;
 		})
 		.join('\n');
 
 	const disclaimers = [];
-	if (nyt) disclaimers.push(EXPLAIN_NYT);
-	if (nsfw) disclaimers.push(EXPLAIN_NSFW);
-	disclaimers.push(EXPLAIN_FORCED);
+	if (nyt)
+		disclaimers.push(
+			`${PREFIX_NYT} ${i18next.t('attributes.explain_nyt', {
+				lng: locale,
+			})}`,
+		);
+	if (nsfw)
+		disclaimers.push(
+			`${PREFIX_NSFW} ${i18next.t('attributes.explain_nsfw', {
+				lng: locale,
+			})}`,
+		);
+	disclaimers.push(
+		`${PREFIX_LOCKED} ${i18next.t('attributes.explain_forced', {
+			lng: locale,
+		})}`,
+	);
 
 	return `${attributes}${disclaimers.length ? `\n\n${disclaimers.join('\n')}` : ''}`;
 }
 
-export function formatPerspectiveShort(data: PerspectiveResult): string {
+export function formatPerspectiveShort(data: PerspectiveResult, locale: string): string {
 	const { high } = data;
 	return high.length
 		? high
 				.sort((a, b) => b.score.value - a.score.value)
-				.map((e) => `• ${mapKeyToAdverb(e.key)}`)
+				.map((e) => `${LIST_BULLET} ${mapKeyToAdverb(e.key)}`)
 				.join('\n')
-		: FLAGS_NONE;
+		: i18next.t('checks.format_perspective_none', {
+				lng: locale,
+		  });
 }

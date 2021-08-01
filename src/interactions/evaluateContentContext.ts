@@ -1,5 +1,5 @@
 export const EvaluateContentContextCommand = {
-	name: 'evaluate-content',
+	name: 'Evaluate content',
 	default_permission: false,
 	type: 3,
 } as const;

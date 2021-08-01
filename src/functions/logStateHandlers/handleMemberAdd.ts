@@ -10,6 +10,7 @@ export function handleMemberAdd(
 	target: Snowflake,
 	targetChannel: Snowflake,
 	targetMessage: Snowflake,
+	locale: string,
 	changedUser?: Snowflake,
 ): boolean {
 	if (changedUser === target) {
@@ -22,7 +23,7 @@ export function handleMemberAdd(
 		row.components.splice(
 			Math.max(banIndex, 0),
 			banIndex >= 0 ? 1 : 0,
-			banButton(target, targetChannel, targetMessage, targetMember.bannable),
+			banButton(target, targetChannel, targetMessage, targetMember.bannable, locale),
 		);
 		return true;
 	}

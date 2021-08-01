@@ -8,31 +8,31 @@ config({ path: resolve(__dirname, '../../.env') });
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { AttributesCommand } from '../interactions/attributes';
 import { ConfigCommand } from '../interactions/config';
-import { CustomTriggerCommand } from '../interactions/customTrigger';
 import { NotifyCommand } from '../interactions/notify';
 import { NYTAttributesCommand } from '../interactions/nytAttributes';
 import { FetchLogCommand } from '../interactions/fetchLog';
 import { RedisCommand } from '../interactions/redis';
+import { SQLCommand } from '../interactions/sql';
 import { EvaluateContentCommand } from '../interactions/evaluateContent';
 import { EvaluateContentContextCommand } from '../interactions/evaluateContentContext';
 import { WatchCommand } from '../interactions/watch';
 import { KarmaCommand } from '../interactions/karma';
 import { KarmaContextCommand } from '../interactions/karmacontext';
 /* eslint-enable @typescript-eslint/no-unused-vars */
-import { logger } from '../functions/logger';
+import { logger } from '../interactions/logger';
 
 const commands = [
 	ConfigCommand,
 	WatchCommand,
 	AttributesCommand,
 	NYTAttributesCommand,
-	// CustomTriggerCommand, // 🔧 in-dev feature
 	NotifyCommand,
 	EvaluateContentCommand,
-	// EvaluateContentContextCommand, // 🔧 in-dev feature
-	// FetchLogCommand, // ! devcommand
-	// RedisCommand, // ! devcommand
-	// KarmaCommand, // 🔧 in-dev feature
+	EvaluateContentContextCommand, // 🔧 in-dev feature
+	FetchLogCommand, // ! devcommand
+	RedisCommand, // ! devcommand
+	SQLCommand, // ! devcommand
+	KarmaCommand, // 🔧 in-dev feature
 	KarmaContextCommand, // 🔧 in-dev feature
 ];
 

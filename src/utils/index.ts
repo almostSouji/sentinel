@@ -1,6 +1,31 @@
-import { Snowflake, MessageEmbed } from 'discord.js';
-import { AttributeScoreMapEntry, perspectiveAttributes } from './perspective';
+import { Snowflake, MessageEmbed, DMChannel, GuildChannel, ThreadChannel, PartialDMChannel } from 'discord.js';
+import { AttributeScoreMapEntry, perspectiveAttributes } from '../functions/perspective';
 
+/**
+ * Return a custom emoji or fallback string based on the everyone permissions in the provided channel
+ * @param channel - The channel the permissions should be checked in
+ * @param emoji - The custom emoji to return
+ * @param fallback - The fallback string to return
+ * @returns Custom emoji or fallback string
+ */
+export function emojiOrFallback(
+	channel: GuildChannel | DMChannel | ThreadChannel | PartialDMChannel | null,
+	emoji: string,
+	fallback: string,
+) {
+	if (channel instanceof DMChannel || !channel || channel.partial) return emoji;
+	// ! can not determine permissions in threads because the parent is not sent with slash commands
+	if (channel instanceof ThreadChannel) return emoji;
+	return channel.permissionsFor(channel.guild.roles.everyone).has('USE_EXTERNAL_EMOJIS') ? emoji : fallback;
+}
+
+/**
+ * Truncate a text to a provided length using a provided splitcharacter
+ * @param text - Text to truncate
+ * @param len - Length to truncate to
+ * @param splitChar - Split character to use
+ * @returns The truncated text
+ */
 export function truncate(text: string, len: number, splitChar = ' '): string {
 	if (text.length <= len) return text;
 	const words = text.split(splitChar);
@@ -16,25 +41,7 @@ export function truncate(text: string, len: number, splitChar = ' '): string {
 	return resText.length === text.length ? resText : `${resText.trim()}...`;
 }
 
-export function zSetZipper(raw: string[], words = false): [string, number][] {
-	const res: [string, number][] = [];
-	for (let i = 0; i < raw.length; i += 2) {
-		res.push([words ? `\\b${escapeRegex(raw[i])}\\b` : escapeRegex(raw[i]), parseInt(raw[i + 1], 10)]);
-	}
-	return res;
-}
-
-export function mapZippedByScore(set: [string, number][]): Map<number, [string]> {
-	const map: Map<number, [string]> = new Map();
-	for (const [key, score] of set) {
-		const existing = map.get(score);
-		if (existing) existing.push(key);
-		else map.set(score, [key]);
-	}
-	return map;
-}
-
-const LIMIT_EMBED_DESCRIPTION = 2048 as const;
+const LIMIT_EMBED_DESCRIPTION = 4048 as const;
 const LIMIT_EMBED_TITLE = 256 as const;
 const LIMIT_EMBED_FIELDS = 25 as const;
 const LIMIT_EMBED_FIELD_NAME = 256 as const;
@@ -42,6 +49,11 @@ const LIMIT_EMBED_FIELD_VALUE = 1024 as const;
 const LIMIT_EMBED_AUTHOR_NAME = 256 as const;
 const LIMIT_EMBED_FOOTER_TEXT = 2048 as const;
 
+/**
+ * Truncate the provided embed
+ * @param embed - The embed to truncate
+ * @returns The truncated embed
+ */
 export function truncateEmbed(embed: MessageEmbed): MessageEmbed {
 	if (embed.description && embed.description.length > LIMIT_EMBED_DESCRIPTION) {
 		embed.description = truncate(embed.description, LIMIT_EMBED_DESCRIPTION);
@@ -65,10 +77,23 @@ export function truncateEmbed(embed: MessageEmbed): MessageEmbed {
 	return embed;
 }
 
+/**
+ * Escape a string from regular expression special characters
+ * @param str The string to escape
+ * @returns The escaped string
+ */
 export function escapeRegex(str: string): string {
 	return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+/**
+ * Encode provided targets into a binary string
+ * @param op - The OP-Code to use
+ * @param user - The target user id
+ * @param channel - The target channel id
+ * @param message - The target message id
+ * @returns Encoded binary
+ */
 export function serializeTargets(op: number, user: Snowflake, channel: Snowflake, message: Snowflake): string {
 	const b = Buffer.alloc(2 + 24);
 	b.writeUInt16LE(op);
@@ -84,6 +109,11 @@ export interface DeserializedTargets {
 	message: Snowflake;
 }
 
+/**
+ * Deserialize a provided buffer into a target structure
+ * @param buffer - The Buffer to deserialize
+ * @returns The deserialized structure
+ */
 export function deserializeTargets(buffer: Buffer): DeserializedTargets {
 	return {
 		user: `${buffer.readBigInt64LE(2)}` as const,
@@ -92,6 +122,12 @@ export function deserializeTargets(buffer: Buffer): DeserializedTargets {
 	};
 }
 
+/**
+ * Encode provided attribute values into a binary string
+ * @param op - The OP Code to use
+ * @param attributes - The attributes to serialize
+ * @returns Encoded binary
+ */
 export function serializeAttributes(op: number, attributes: number[]): string {
 	const b = Buffer.alloc(perspectiveAttributes.length * 2 + 2);
 	b.writeUInt16LE(op);
@@ -101,6 +137,11 @@ export function serializeAttributes(op: number, attributes: number[]): string {
 	return b.toString('binary');
 }
 
+/**
+ * Deserialize a provided buffer into an array of attribute values
+ * @param buffer - The buffer to deserialize
+ * @returns The deserialized structure
+ */
 export function deserializeAttributes(buffer: Buffer): AttributeScoreMapEntry[] {
 	return perspectiveAttributes.map((key, index) => ({
 		key,
@@ -108,23 +149,22 @@ export function deserializeAttributes(buffer: Buffer): AttributeScoreMapEntry[] 
 	}));
 }
 
-export function serializePage(op: number, page: number): string {
-	const b = Buffer.alloc(4);
-	b.writeUInt16LE(op);
-	b.writeUInt16LE(page, 2);
-	return b.toString('binary');
-}
-
-export function derserializePage(buffer: Buffer): number {
-	return buffer.readUInt16LE(2);
-}
-
+/**
+ * Encode an OP Code into binary
+ * @param op - The OP Code to use
+ * @returns Encoded binary
+ */
 export function serializeOpCode(op: number): string {
 	const b = Buffer.alloc(2);
 	b.writeUInt16LE(op);
 	return b.toString('binary');
 }
 
+/**
+ * Clean a text from common impactful words that cause unwarranted perspective scores
+ * @param initial - Text to clean
+ * @returns Cleaned text
+ */
 export function cleanContent(initial: string): string {
 	return initial.replace(/\b(?:fuck|shi+t)\b/g, '').trim();
 }

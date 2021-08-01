@@ -1,89 +1,101 @@
-import { CommandInteraction, Role } from 'discord.js';
-import { NOTIF_ROLES, NOTIF_USERS } from '../keys';
-import {
-	NOTIFY_NONE,
-	NOTIFY_ROLE_ADD,
-	NOTIFY_ROLE_REMOVE,
-	NOTIFY_ROLE_SHOW,
-	NOTIFY_USER_ADD,
-	NOTIFY_USER_REMOVE,
-	NOTIFY_USER_SHOW,
-	NOT_IN_DM,
-} from '../messages/messages';
-import { zSetZipper } from '../functions/util';
+import { CommandInteraction, DMChannel, Role } from 'discord.js';
 import { NotifyCommand } from '../interactions/notify';
 import { ArgumentsOf } from '../types/ArgumentsOf';
+import i18next from 'i18next';
+import { replyWithError } from '../utils/responses';
+import { EMOJI_ID_SHIELD_GREEN_SMALL, LIST_BULLET } from '../constants';
+import { emojiOrFallback } from '../utils';
+import { formatEmoji, formatRoleMention, formatSeverity, formatUserMention } from '../utils/formatting';
+import { Notification } from '../types/DataTypes';
 
-export function levelIdentifier(level: number): string {
-	return `\`${level === 3 ? 'SEVERE' : level === 2 ? 'HIGH' : level === 1 ? 'LOW' : 'CUSTOM'} ${
-		level === 3 ? '🔴' : level === 2 ? '🟡' : level === 1 ? '🟢' : '🔵'
-	}\``;
-}
-
-export async function handleNotifyCommand(interaction: CommandInteraction, args: ArgumentsOf<typeof NotifyCommand>) {
-	const messageParts = [];
-
+export async function handleNotifyCommand(
+	interaction: CommandInteraction,
+	args: ArgumentsOf<typeof NotifyCommand>,
+	locale: string,
+) {
 	const {
-		client: { redis },
+		client: { sql },
 		guild,
+		channel,
 	} = interaction;
 
-	if (!guild) {
-		return interaction.reply({
-			content: NOT_IN_DM,
-			ephemeral: true,
-		});
+	if (!channel || channel.partial) {
+		return;
 	}
+
+	if (!guild || channel instanceof DMChannel) {
+		return replyWithError(interaction, i18next.t('common.errors.not_in_dm', { lng: locale }));
+	}
+
+	const successEmoji = emojiOrFallback(channel, formatEmoji(EMOJI_ID_SHIELD_GREEN_SMALL), LIST_BULLET);
+	const messageParts = [];
 
 	const action = Object.keys(args)[0] as keyof ArgumentsOf<typeof NotifyCommand>;
 	switch (action) {
 		case 'add':
 			{
-				const entity = args.add.entity!;
-				const level = args.add.level!;
-				const levelId = levelIdentifier(level);
-				if (entity instanceof Role) {
-					await redis.zadd(NOTIF_ROLES(guild.id), level, entity.id);
-					messageParts.push(NOTIFY_ROLE_ADD(entity.id, levelId));
-				} else {
-					await redis.zadd(NOTIF_USERS(guild.id), level, entity.user.id);
-					messageParts.push(NOTIFY_USER_ADD(levelId, entity.user.id));
-				}
+				const entity = args.add.entity;
+				const level = args.add.level;
+				const newData = {
+					guild: guild.id,
+					entity: entity instanceof Role ? entity.id : entity.user.id,
+					type: entity instanceof Role ? 'ROLE' : 'USER',
+					level,
+				};
+
+				await sql`
+					insert into notifications ${sql(newData)}
+					on conflict (guild, entity)
+					do update set ${sql(newData)}
+				`;
+
+				messageParts.push(
+					`${successEmoji}${i18next.t('command.notify.notification_change', {
+						entity: entity instanceof Role ? formatRoleMention(entity.id) : formatUserMention(entity.user.id),
+						level: formatSeverity(channel, level),
+						lng: locale,
+					})}`,
+				);
 			}
 			break;
 
 		case 'remove':
 			{
-				const entity = args.remove.entity!;
-				if (entity instanceof Role) {
-					await redis.zrem(NOTIF_ROLES(guild.id), entity.id);
-					messageParts.push(NOTIFY_ROLE_REMOVE(entity.id));
-				} else {
-					await redis.zrem(NOTIF_USERS(guild.id), entity.user.id);
-					messageParts.push(NOTIFY_USER_REMOVE(entity.user.id));
-				}
+				const entity = args.remove.entity;
+				await sql`
+					delete from notifications where guild = ${guild.id} and entity = ${
+					entity instanceof Role ? entity.id : entity.user.id
+				}`;
+
+				messageParts.push(
+					`${successEmoji}${i18next.t('command.notify.notification_remove', {
+						entity: entity instanceof Role ? formatRoleMention(entity.id) : formatUserMention(entity.user.id),
+						lng: locale,
+					})}`,
+				);
 			}
 			break;
 		case 'show':
 			{
-				const notifUsers = await redis.zrange(NOTIF_USERS(guild.id), 0, -1, 'WITHSCORES');
-				const notifRoles = await redis.zrange(NOTIF_ROLES(guild.id), 0, -1, 'WITHSCORES');
+				const notifications = await sql<Notification[]>`
+					select * from notifications where guild = ${guild.id}
+				`;
 
-				if (notifUsers.length || notifRoles.length) {
-					const userMap = zSetZipper(notifUsers);
-					const roleMap = zSetZipper(notifRoles);
+				if (!notifications.length) {
+					return replyWithError(interaction, i18next.t('command.notify.notification_none', { lng: locale }));
+				}
 
-					for (const [id, level] of userMap) {
-						const levelId = levelIdentifier(level);
-						messageParts.push(NOTIFY_USER_SHOW(id, levelId));
-					}
-
-					for (const [id, level] of roleMap) {
-						const levelId = levelIdentifier(level);
-						messageParts.push(NOTIFY_ROLE_SHOW(id, levelId));
-					}
-				} else {
-					messageParts.push(NOTIFY_NONE);
+				for (const notification of notifications) {
+					messageParts.push(
+						`${LIST_BULLET} ${i18next.t('command.notify.notification_show', {
+							entity:
+								notification.type === 'ROLE'
+									? formatRoleMention(notification.entity)
+									: formatUserMention(notification.entity),
+							level: formatSeverity(channel, notification.level),
+							lng: locale,
+						})}`,
+					);
 				}
 			}
 			break;

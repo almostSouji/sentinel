@@ -1,38 +1,58 @@
-import { CommandInteraction, GuildChannel, Permissions } from 'discord.js';
-import { CHANNELS_WATCHING } from '../keys';
-import {
-	CONFIG_CHANNELS_ADD_MISSING_PERMISSIONS,
-	CONFIG_CHANNELS_CHANGED,
-	CONFIG_CHANNELS_NONE,
-	CONFIG_CHANNELS_WRONG_TYPE,
-	NOT_IN_DM,
-} from '../messages/messages';
+import { CategoryChannel, CommandInteraction, DMChannel, GuildChannel, Permissions, ThreadChannel } from 'discord.js';
 import { WatchCommand } from '../interactions/watch';
 import { ArgumentsOf } from '../types/ArgumentsOf';
+import i18next from 'i18next';
+import {
+	EMOJI_ID_SHIELD_GREEN_SMALL,
+	LIST_BULLET,
+	EMOJI_ID_SHIELD_YELLOW_SMALL,
+	EMOJI_ID_SHIELD_RED_SMALL,
+} from '../constants';
+import { emojiOrFallback } from '../utils';
+import { formatChannelMention, formatEmoji } from '../utils/formatting';
+import { replyWithError } from '../utils/responses';
+import { GuildSettings } from '../types/DataTypes';
 
-export function formatChannelMentions(id: string) {
-	return `<#${id}>`;
-}
-
-export async function handleWatchCommand(interaction: CommandInteraction, args: ArgumentsOf<typeof WatchCommand>) {
-	const messageParts = [];
+export async function handleWatchCommand(
+	interaction: CommandInteraction,
+	args: ArgumentsOf<typeof WatchCommand>,
+	locale: string,
+) {
 	const {
+		client: { sql },
 		client,
-		client: { redis },
 		guild,
+		channel,
 	} = interaction;
 
-	if (!guild) {
-		return interaction.reply({
-			content: NOT_IN_DM,
-			ephemeral: true,
-		});
+	if (!channel || channel.partial) {
+		return;
+	}
+	const successEmoji = emojiOrFallback(channel, formatEmoji(EMOJI_ID_SHIELD_GREEN_SMALL), LIST_BULLET);
+	const warnEmoji = emojiOrFallback(channel, formatEmoji(EMOJI_ID_SHIELD_YELLOW_SMALL), LIST_BULLET);
+	const failEmoji = emojiOrFallback(channel, formatEmoji(EMOJI_ID_SHIELD_RED_SMALL), LIST_BULLET);
+
+	if (!guild || channel instanceof DMChannel) {
+		return replyWithError(interaction, i18next.t('common.errors.not_in_dm', { lng: locale }));
 	}
 
+	const messageParts = [];
 	const missingView = [];
-	const wrongTpye = [];
+	const wrongType = [];
+	const already = [];
+	const valid: string[] = [];
 
-	const valid = [];
+	let [settings] = await sql<GuildSettings[]>`
+		select * from guild_settings where guild = ${guild.id}
+	`;
+	if (!settings) {
+		[settings] = await sql<[GuildSettings]>`
+			insert into guild_settings ${sql({
+				guild: guild.id,
+			})} returning *
+		`;
+	}
+
 	const action = Object.keys(args)[0] as keyof ArgumentsOf<typeof WatchCommand>;
 	switch (action) {
 		case 'add':
@@ -40,8 +60,28 @@ export async function handleWatchCommand(interaction: CommandInteraction, args: 
 				for (const c of Object.values(args.add)) {
 					// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
 					const channel = c as GuildChannel;
+					if (channel instanceof CategoryChannel) {
+						for (const child of channel.children.values()) {
+							if (!child.isText() || child instanceof ThreadChannel) continue;
+							if (
+								!child
+									.permissionsFor(client.user!)
+									?.has([Permissions.FLAGS.VIEW_CHANNEL, Permissions.FLAGS.READ_MESSAGE_HISTORY])
+							) {
+								missingView.push(child.id);
+								continue;
+							}
+
+							if (settings.watching.includes(child.id)) {
+								already.push(child.id);
+								continue;
+							}
+							valid.push(child.id);
+						}
+						continue;
+					}
 					if (!channel.isText()) {
-						wrongTpye.push(channel.id);
+						wrongType.push(channel.id);
 						continue;
 					}
 					if (
@@ -52,12 +92,20 @@ export async function handleWatchCommand(interaction: CommandInteraction, args: 
 						missingView.push(channel.id);
 						continue;
 					}
+					if (settings.watching.includes(channel.id)) {
+						already.push(channel.id);
+						continue;
+					}
 					valid.push(channel.id);
 				}
 
 				if (missingView.length) {
 					messageParts.push(
-						CONFIG_CHANNELS_ADD_MISSING_PERMISSIONS(missingView.map((c) => formatChannelMentions(c)).join(', ')),
+						`${failEmoji} ${i18next.t('command.watch.add_channels_permissions_missing', {
+							lng: locale,
+							count: missingView.length,
+							channels: missingView.map((channelId) => formatChannelMention(channelId)),
+						})}`,
 					);
 				}
 			}
@@ -67,8 +115,23 @@ export async function handleWatchCommand(interaction: CommandInteraction, args: 
 			for (const c of Object.values(args.remove)) {
 				// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
 				const channel = c as GuildChannel;
-				if (!channel.isText()) {
-					wrongTpye.push(channel.id);
+				if (channel instanceof CategoryChannel) {
+					for (const child of channel.children.values()) {
+						if (!child.isText() || child instanceof ThreadChannel) continue;
+						if (
+							!child
+								.permissionsFor(client.user!)
+								?.has([Permissions.FLAGS.VIEW_CHANNEL, Permissions.FLAGS.READ_MESSAGE_HISTORY])
+						) {
+							missingView.push(child.id);
+							continue;
+						}
+						if (!settings.watching.includes(child.id)) {
+							already.push(child.id);
+							continue;
+						}
+						valid.push(child.id);
+					}
 					continue;
 				}
 				if (
@@ -79,6 +142,10 @@ export async function handleWatchCommand(interaction: CommandInteraction, args: 
 					missingView.push(channel.id);
 					continue;
 				}
+				if (!settings.watching.includes(channel.id)) {
+					already.push(channel.id);
+					continue;
+				}
 				valid.push(channel.id);
 			}
 		}
@@ -87,19 +154,72 @@ export async function handleWatchCommand(interaction: CommandInteraction, args: 
 	if (valid.length) {
 		switch (action) {
 			case 'add':
-				await redis.sadd(CHANNELS_WATCHING(guild.id), ...valid);
+				settings.watching = settings.watching.concat(valid);
+				messageParts.push(
+					`${successEmoji} ${i18next.t('command.watch.add_channels_valid', {
+						lng: locale,
+						count: valid.length,
+						channels: valid.map((channelId) => formatChannelMention(channelId)),
+					})}`,
+				);
 				break;
 			case 'remove':
-				await redis.srem(CHANNELS_WATCHING(guild.id), ...valid);
+				settings.watching = settings.watching.filter((c: any) => !valid.includes(c));
+				messageParts.push(
+					`${successEmoji} ${i18next.t('command.watch.remove_channels_valid', {
+						lng: locale,
+						count: valid.length,
+						channels: valid.map((channelId) => formatChannelMention(channelId)),
+					})}`,
+				);
 		}
-		messageParts.push(CONFIG_CHANNELS_CHANGED(action, valid.map((c) => formatChannelMentions(c)).join(', ')));
-	} else {
-		messageParts.push(CONFIG_CHANNELS_NONE(action));
+
+		if (!settings.guild) settings.guild = guild.id;
+
+		await sql`
+			update guild_settings set watching = ${sql.array(settings.watching)}
+			where guild = ${settings.guild};
+		`;
 	}
 
-	if (wrongTpye.length) {
-		const wrongTypeFormatted = wrongTpye.map((c) => formatChannelMentions(c)).join(', ');
-		messageParts.push(CONFIG_CHANNELS_WRONG_TYPE(action, wrongTypeFormatted));
+	if (wrongType.length) {
+		messageParts.push(
+			`${failEmoji} ${i18next.t('command.watch.add_channels_wrong_type', {
+				lng: locale,
+				count: wrongType.length,
+				channels: wrongType.map((channelId) => formatChannelMention(channelId)),
+			})}`,
+		);
+	}
+
+	if (already.length) {
+		switch (action) {
+			case 'add':
+				messageParts.push(
+					`${warnEmoji} ${i18next.t('command.watch.add_channels_already', {
+						lng: locale,
+						count: already.length,
+						channels: already.map((channelId) => formatChannelMention(channelId)),
+					})}`,
+				);
+				break;
+			case 'remove':
+				messageParts.push(
+					`${warnEmoji} ${i18next.t('command.watch.remove_channels_already', {
+						lng: locale,
+						count: already.length,
+						channels: already.map((channelId) => formatChannelMention(channelId)),
+					})}`,
+				);
+		}
+	}
+
+	if (!messageParts.length) {
+		messageParts.push(
+			`${warnEmoji} ${i18next.t('command.watch.no_changes', {
+				lng: locale,
+			})}`,
+		);
 	}
 
 	return interaction.reply({

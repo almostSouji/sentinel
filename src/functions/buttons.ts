@@ -1,16 +1,8 @@
 import { MessageButton, Snowflake, Permissions, GuildMember } from 'discord.js';
+import i18next from 'i18next';
 import { OpCodes } from '..';
-import {
-	BUTTON_LABEL_BAN,
-	BUTTON_LABEL_DELETE,
-	BUTTON_LABEL_LIST,
-	BUTTON_LABEL_REVIEW,
-	EMOJI_ID_BAN_WHITE,
-	EMOJI_ID_DELETE_WHITE,
-	EMOJI_ID_LIST_WHITE,
-	EMOJI_ID_REVIEW_WHITE,
-} from '../constants';
-import { serializeAttributes, serializeTargets } from './util';
+import { EMOJI_ID_BAN_WHITE, EMOJI_ID_DELETE_WHITE, EMOJI_ID_LIST_WHITE, EMOJI_ID_REVIEW_WHITE } from '../constants';
+import { serializeAttributes, serializeTargets } from '../utils';
 
 export interface ResponseData {
 	data: {
@@ -38,12 +30,15 @@ export function banButton(
 	targetChannel: Snowflake,
 	targetMessage: Snowflake,
 	canBan: boolean,
+	locale: string,
 ): MessageButton {
 	return new MessageButton({
 		type: 2,
 		style: 4,
 		customId: serializeTargets(OpCodes.BAN, targetUser, targetChannel, targetMessage),
-		label: BUTTON_LABEL_BAN,
+		label: i18next.t('buttons.labels.ban', {
+			lng: locale,
+		}),
 		emoji: EMOJI_ID_BAN_WHITE,
 		disabled: !canBan,
 	});
@@ -54,33 +49,45 @@ export function deleteButton(
 	targetChannel: Snowflake,
 	targetMessage: Snowflake,
 	canDelete: boolean,
+	locale: string,
 ): MessageButton {
 	return new MessageButton({
 		type: 2,
 		style: 4,
 		customId: serializeTargets(OpCodes.DELETE, targetUser, targetChannel, targetMessage),
-		label: BUTTON_LABEL_DELETE,
+		label: i18next.t('buttons.labels.delete', {
+			lng: locale,
+		}),
 		emoji: EMOJI_ID_DELETE_WHITE,
 		disabled: !canDelete,
 	});
 }
 
-export function reviewButton(targetUser: Snowflake, targetChannel: Snowflake, targetMessage: Snowflake): MessageButton {
+export function reviewButton(
+	targetUser: Snowflake,
+	targetChannel: Snowflake,
+	targetMessage: Snowflake,
+	locale: string,
+): MessageButton {
 	return new MessageButton({
 		type: 2,
 		style: 1,
 		customId: serializeTargets(OpCodes.REVIEW, targetUser, targetChannel, targetMessage),
-		label: BUTTON_LABEL_REVIEW,
+		label: i18next.t('buttons.labels.review', {
+			lng: locale,
+		}),
 		emoji: EMOJI_ID_REVIEW_WHITE,
 	});
 }
 
-export const listButton = (values: number[]) => {
+export const listButton = (values: number[], locale: string) => {
 	return new MessageButton({
 		type: 2,
 		style: 2,
 		customId: serializeAttributes(OpCodes.LIST, values),
-		label: BUTTON_LABEL_LIST,
+		label: i18next.t('buttons.labels.list', {
+			lng: locale,
+		}),
 		emoji: EMOJI_ID_LIST_WHITE,
 	});
 };
@@ -92,20 +99,21 @@ export function generateButtons(
 	values: number[],
 	permissions: Readonly<Permissions> | null,
 	targetMember: GuildMember | null,
+	locale: string,
 ): MessageButton[] {
 	const res: MessageButton[] = [];
 	const canDelete = permissions?.has(Permissions.FLAGS.MANAGE_MESSAGES) ?? false;
 	if (targetUser !== '0') {
-		res.push(banButton(targetUser, targetChannel, targetMessage, targetMember?.bannable ?? true));
+		res.push(banButton(targetUser, targetChannel, targetMessage, targetMember?.bannable ?? true, locale));
 	}
 
 	if (targetChannel !== '0' && targetMessage !== '0') {
-		res.push(deleteButton(targetUser, targetChannel, targetMessage, canDelete));
+		res.push(deleteButton(targetUser, targetChannel, targetMessage, canDelete, locale));
 	}
 
-	res.push(reviewButton(targetUser, targetChannel, targetMessage));
+	res.push(reviewButton(targetUser, targetChannel, targetMessage, locale));
 	if (values.length) {
-		res.push(listButton(values));
+		res.push(listButton(values, locale));
 	}
 	return res;
 }

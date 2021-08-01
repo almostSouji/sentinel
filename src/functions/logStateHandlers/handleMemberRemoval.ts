@@ -10,6 +10,7 @@ export function handleMemberRemoval(
 	target: Snowflake,
 	targetChannel: Snowflake,
 	targetMessage: Snowflake,
+	locale: string,
 	removedUser?: Snowflake,
 	isBanned?: boolean,
 ): Promise<boolean> {
@@ -20,5 +21,5 @@ export function handleMemberRemoval(
 		});
 		return Promise.resolve(true);
 	}
-	return handleMemberBanState(guild, embed, button, row, target);
+	return handleMemberBanState(guild, embed, button, row, target, locale);
 }

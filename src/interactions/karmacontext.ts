@@ -1,5 +1,5 @@
 export const KarmaContextCommand = {
-	name: 'karma',
+	name: 'Show karma',
 	default_permission: false,
 	type: 2,
 } as const;

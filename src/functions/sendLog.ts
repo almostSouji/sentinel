@@ -9,10 +9,13 @@ import {
 	Permissions,
 	ThreadChannel,
 } from 'discord.js';
-import { DEBUG_GUILDS_LOGALL, NOTIF_ROLES, NOTIF_USERS, STRICTNESS } from '../keys';
 import { generateButtons, listButton } from './buttons';
 import { strictnessPick } from './checkMessage';
-import { truncate, truncateEmbed, zSetZipper } from './util';
+import { truncate, truncateEmbed } from '../utils';
+import { GuildSettings, Notification } from '../types/DataTypes';
+import { formatChannelMention, formatRoleMention, formatUserMention } from '../utils/formatting';
+import i18next from 'i18next';
+import { LIST_BULLET } from '../constants';
 
 export async function sendLog(
 	logChannel: TextChannel | NewsChannel | ThreadChannel,
@@ -24,7 +27,7 @@ export async function sendLog(
 ) {
 	if (targetMessage.channel.type === 'DM' || targetMessage.partial) return;
 	const {
-		client: { redis, user: clientUser },
+		client: { sql, user: clientUser },
 		channel: targetChannel,
 		author: targetUser,
 		content: targetContent,
@@ -40,10 +43,13 @@ export async function sendLog(
 			Permissions.FLAGS.READ_MESSAGE_HISTORY,
 		]);
 	if (!hasPerms) return;
+	const settings = (await sql<GuildSettings[]>`select * from guild_settings where guild = ${guild.id}`)[0];
 
-	const logOverride = await redis.sismember(DEBUG_GUILDS_LOGALL, guild.id);
+	if (!settings) return;
+	const locale = settings.locale;
+	const logOverride = settings.flags.includes('LOG_ALL');
 	const botPermissions = targetChannel.permissionsFor(clientUser!);
-	const strictness = parseInt((await redis.get(STRICTNESS(guild.id))) ?? '1', 10);
+	const strictness = settings.strictness;
 	const buttonLevel = logOverride ? 0 : strictnessPick(strictness, 1, 2, 3);
 
 	const metaDataParts: string[] = [];
@@ -53,49 +59,70 @@ export async function sendLog(
 	);
 	embed.setAuthor(`${targetUser.tag} (${targetUser.id})`, targetUser.displayAvatarURL());
 
-	metaDataParts.push(`• Channel: <#${targetChannel.id}>`);
-	metaDataParts.push(`• Message link: [jump ➔](${targetMessage.url})`);
+	metaDataParts.push(
+		`${LIST_BULLET} ${i18next.t('logstate.info_channel', {
+			channel: formatChannelMention(targetChannel.id),
+			lng: locale,
+		})}`,
+	);
+
+	metaDataParts.push(
+		`${LIST_BULLET} ${i18next.t('logstate.info_link', {
+			link: targetMessage.url,
+			lng: locale,
+		})}`,
+	);
 
 	if (isEdit) {
-		metaDataParts.push(`• Message edit`);
+		metaDataParts.push(
+			`${LIST_BULLET} ${i18next.t('logstate.info_edit', {
+				lng: locale,
+			})}`,
+		);
 	}
 
 	const attachments = targetMessage.attachments;
 	if (attachments.size) {
 		let counter = 1;
 		metaDataParts.push(
-			`• Attachments (${attachments.size}): ${attachments.map((a) => `[${counter++}](${a.proxyURL})`).join(', ')}`,
+			`${LIST_BULLET} ${i18next.t('logstate.info_attachments', {
+				count: attachments.size,
+				links: attachments.map((a) => `[${counter++}](${a.proxyURL})`).join(', '),
+				lng: locale,
+			})}`,
 		);
 	}
 	if (targetMessage.embeds.length) {
-		metaDataParts.push(`• Embeds: ${targetMessage.embeds.length}`);
+		metaDataParts.push(
+			`${LIST_BULLET} ${i18next.t('logstate.info_attachments', {
+				count: targetMessage.embeds.length,
+				lng: locale,
+			})}`,
+		);
 	}
 
-	embed.addField('Metadata', metaDataParts.join('\n'), true);
+	embed.addField(
+		i18next.t('logstate.info_metadata_fieldname', {
+			lng: locale,
+		}),
+		metaDataParts.join('\n'),
+		true,
+	);
 
 	const notificationParts = [];
-	const roles = [];
-	const users = [];
+	const roles: Snowflake[] = [];
+	const users: Snowflake[] = [];
 
-	const notifUsers = await redis.zrange(NOTIF_USERS(guild.id), 0, -1, 'WITHSCORES');
-	const notifRoles = await redis.zrange(NOTIF_ROLES(guild.id), 0, -1, 'WITHSCORES');
+	const notifications = await sql<Notification[]>`
+		select * from notifications where guild = ${guild.id}
+	`;
 
-	if (notifUsers.length || notifRoles.length) {
-		const userMap = zSetZipper(notifUsers);
-		const roleMap = zSetZipper(notifRoles);
-
-		for (const [id, level] of userMap) {
-			if (severityLevel >= level) {
-				notificationParts.push(`<@${id}>`);
-				users.push(id as Snowflake);
-			}
-		}
-
-		for (const [id, level] of roleMap) {
-			if (severityLevel >= level) {
-				notificationParts.push(`<@&${id}>`);
-				roles.push(id as Snowflake);
-			}
+	for (const notification of notifications) {
+		if (severityLevel >= notification.level) {
+			notificationParts.push(
+				notification.type === 'ROLE' ? formatRoleMention(notification.entity) : formatUserMention(notification.entity),
+			);
+			(notification.type === 'ROLE' ? roles : users).push(notification.entity as Snowflake);
 		}
 	}
 
@@ -107,13 +134,14 @@ export async function sendLog(
 		values,
 		botPermissions,
 		targetMessage.member,
+		locale,
 	);
 
 	truncateEmbed(embed);
 	if (severityLevel >= buttonLevel) {
 		void logChannel.send({
 			content: newContent.length ? newContent : undefined,
-			embeds: [embed],
+			embeds: [truncateEmbed(embed)],
 			allowedMentions: {
 				users,
 				roles,
@@ -130,6 +158,6 @@ export async function sendLog(
 			users,
 			roles,
 		},
-		components: [new MessageActionRow().addComponents(listButton(values))],
+		components: [new MessageActionRow().addComponents(listButton(values, locale))],
 	});
 }

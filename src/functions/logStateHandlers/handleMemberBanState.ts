@@ -1,7 +1,7 @@
 import { Guild, MessageButton, MessageActionRow, Snowflake, Permissions, MessageEmbed } from 'discord.js';
+import i18next from 'i18next';
 import { OpCodes } from '../..';
-import { BUTTON_LABEL_FORCE_BAN } from '../../constants';
-import { logger } from '../logger';
+import { logger } from '../../interactions/logger';
 
 export async function handleMemberBanState(
 	guild: Guild,
@@ -9,6 +9,7 @@ export async function handleMemberBanState(
 	button: MessageButton,
 	row: MessageActionRow,
 	target: Snowflake,
+	locale: string,
 	error?: Error,
 ): Promise<boolean> {
 	if (guild.me?.permissions.has(Permissions.FLAGS.BAN_MEMBERS)) {
@@ -19,7 +20,11 @@ export async function handleMemberBanState(
 			);
 			return true;
 		}
-		button.setLabel(BUTTON_LABEL_FORCE_BAN);
+		button.setLabel(
+			i18next.t('buttons.labels.forceban', {
+				lng: locale,
+			}),
+		);
 		button.setDisabled(false);
 		return true;
 	}
