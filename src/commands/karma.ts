@@ -17,7 +17,6 @@ export async function handleKarmaCommand(
 		client: { sql },
 		guild,
 		channel,
-		user,
 	} = interaction;
 
 	if (!channel || channel.partial) {
@@ -28,15 +27,19 @@ export async function handleKarmaCommand(
 		return replyWithError(interaction, i18next.t('common.errors.not_in_dm', { lng: locale }));
 	}
 
+	const targetUser = args.user?.user ?? interaction.options.getUser('user');
+	if (!targetUser) {
+		return replyWithError(interaction, i18next.t('command.karma.no_user', { lng: locale }));
+	}
 	const incidents = await sql<
 		Incident[]
-	>`select * from incidents where guild = ${guild.id} and author = ${args.user.user.id}`;
-	const [stats] = await sql<UserStats[]>`select * from users where "user" = ${args.user.user.id}`;
+	>`select * from incidents where guild = ${guild.id} and author = ${targetUser.id}`;
+	const [stats] = await sql<UserStats[]>`select * from users where "user" = ${targetUser.id}`;
 
 	if (!stats || !incidents.length) {
 		return replyWithError(
 			interaction,
-			i18next.t('command.karma.no_data', { lng: locale, user: formatUserMention(args.user.user.id) }),
+			i18next.t('command.karma.no_data', { lng: locale, user: formatUserMention(targetUser.id) }),
 		);
 	}
 
@@ -70,7 +73,7 @@ export async function handleKarmaCommand(
 						i18next.t('command.karma.attributes_fieldname', { lng: locale }),
 						`${attributesFormatted.join('\n')}`,
 					)
-					.setAuthor(`${user.tag} (${user.id})`, user.displayAvatarURL())
+					.setAuthor(`${targetUser.tag} (${targetUser.id})`, targetUser.displayAvatarURL())
 					.setColor(COLOR_DARK),
 			),
 		],

@@ -38,7 +38,7 @@ export function banButton(
 		customId: serializeTargets(OpCodes.BAN, targetUser, targetChannel, targetMessage),
 		label: i18next.t('buttons.labels.ban', {
 			lng: locale,
-		}),
+		})!,
 		emoji: EMOJI_ID_BAN_WHITE,
 		disabled: !canBan,
 	});
@@ -57,7 +57,7 @@ export function deleteButton(
 		customId: serializeTargets(OpCodes.DELETE, targetUser, targetChannel, targetMessage),
 		label: i18next.t('buttons.labels.delete', {
 			lng: locale,
-		}),
+		})!,
 		emoji: EMOJI_ID_DELETE_WHITE,
 		disabled: !canDelete,
 	});
@@ -75,7 +75,7 @@ export function reviewButton(
 		customId: serializeTargets(OpCodes.REVIEW, targetUser, targetChannel, targetMessage),
 		label: i18next.t('buttons.labels.review', {
 			lng: locale,
-		}),
+		})!,
 		emoji: EMOJI_ID_REVIEW_WHITE,
 	});
 }
@@ -87,7 +87,7 @@ export const listButton = (values: number[], locale: string) => {
 		customId: serializeAttributes(OpCodes.LIST, values),
 		label: i18next.t('buttons.labels.list', {
 			lng: locale,
-		}),
+		})!,
 		emoji: EMOJI_ID_LIST_WHITE,
 	});
 };

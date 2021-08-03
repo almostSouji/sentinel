@@ -22,17 +22,17 @@ import { KarmaContextCommand } from '../interactions/karmacontext';
 import { logger } from '../interactions/logger';
 
 const commands = [
-	ConfigCommand,
-	WatchCommand,
-	AttributesCommand,
-	NYTAttributesCommand,
-	NotifyCommand,
-	EvaluateContentCommand,
+	// ConfigCommand,
+	// WatchCommand,
+	// AttributesCommand,
+	// NYTAttributesCommand,
+	// NotifyCommand,
+	// EvaluateContentCommand,
 	EvaluateContentContextCommand, // 🔧 in-dev feature
-	FetchLogCommand, // ! devcommand
-	RedisCommand, // ! devcommand
-	SQLCommand, // ! devcommand
-	KarmaCommand, // 🔧 in-dev feature
+	// FetchLogCommand, // ! devcommand
+	// RedisCommand, // ! devcommand
+	// SQLCommand, // ! devcommand
+	// KarmaCommand, // 🔧 in-dev feature
 	KarmaContextCommand, // 🔧 in-dev feature
 ];
 

@@ -9,7 +9,7 @@ export const KarmaCommand = {
 			type: ApplicationCommandOptionType.User,
 			name: 'user',
 			description: 'User to show karma for',
-			required: true,
+			required: false, // required to be false because of context command handling
 		},
 	],
 } as const;

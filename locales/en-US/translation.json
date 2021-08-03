@@ -53,9 +53,10 @@
 			"not_a_log": "Provided message does not resolve to a log message"
 		},
 		"karma": {
-			"no_data": "Cannot find any data on {{-user}}",
+			"no_data": "Cannot find any data on {{-user}}.",
+			"no_user": "Cannot find a target user.",
 			"karma_fieldname": "Karma",
-			"karma_message": "{{numtripped}} of {{numtotal}} messages seen in watched channels on this guild have tripped {{numflags}} flags",
+			"karma_message": "{{numtripped}} of {{numtotal}} messages seen in watched channels on this guild have tripped {{numflags}} flags.",
 			"attributes_fieldname": "Attribute Flags"
 		},
 		"notify": {

@@ -45,6 +45,8 @@ export interface ProcessEnv {
 	PERSPECTIVE_TOKEN: string;
 	DISCORD_CLIENT_ID: string;
 	DEPLOY_GUILD_ID?: string;
+	ESHOST: string;
+	ESPORT: string;
 }
 
 export enum OpCodes {
@@ -120,7 +122,7 @@ async function main() {
 		});
 
 		client.on('interactionCreate', async (interaction) => {
-			if (interaction.isCommand()) {
+			if (interaction.isCommand() || interaction.isContextMenu()) {
 				try {
 					await handleCommands(interaction);
 				} catch (error) {
@@ -372,7 +374,7 @@ async function main() {
 		client.on('messageDeleteBulk', (deletedMessages) => {
 			const first = deletedMessages.first();
 			if (!first?.guild) return;
-			void updateLogState(first.guild, [], [handleMessageDelete], deletedMessages.keyArray());
+			void updateLogState(first.guild, [], [handleMessageDelete], [...deletedMessages.keys()]);
 		});
 
 		client.on('guildMemberAdd', (member) => {
