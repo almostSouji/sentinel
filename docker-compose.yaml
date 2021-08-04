@@ -8,19 +8,73 @@ services:
     restart: always
     env_file:
       - ./.env
+    depends_on:
+      - database
+
   database:
     image: postgres
     restart: always
     env_file:
       - ./database.env
     volumes:
-      - ./postgres_data:/var/lib/postgresql:rw
+      - type: volume
+        source: postgres_data
+        target: /var/lib/postgresql/data
     ports:
       - '8001:5432'
+
   redis:
     image: redis:alpine
     command: ['redis-server', '--appendonly', 'yes']
     volumes:
-      - ./redis-volume:/data
+      - type: volume
+        source: redis_data
+        target: /data
     expose:
       - '6379'
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.13.4
+    environment:
+      - 'discovery.type=single-node'
+    # - "xpack.security.enabled=true"
+    volumes:
+      - type: volume
+        source: elastic_data
+        target: /usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.13.4
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - SERVER_PORT=49237
+    # - XPACK_SECURITY_ENABLED=true
+    depends_on:
+      - elasticsearch
+    ports:
+      - 49237:49237
+
+  logstash:
+    build:
+      dockerfile: ./docker/logstash/Dockerfile
+      context: ./
+    env_file: ./logstash.env
+    volumes:
+      - type: bind
+        source: ./docker/logstash/config/logstash.conf
+        target: /usr/share/logstash/pipeline/logstash.conf
+      - type: bind
+        source: ./docker/logstash/config/.logstash_jdbc_last_run
+        target: /usr/share/logstash/.logstash_jdbc_last_run
+    ports:
+      - 9600:9600
+    depends_on:
+      - elasticsearch
+      - database
+
+volumes:
+  redis_data:
+  postgres_data:
+  elastic_data:

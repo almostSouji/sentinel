@@ -22,6 +22,8 @@ typings/
 # Data
 *-volume/
 *-data/
+*_volume/
+*_data/
 
 # Miscellaneous
 .tmp/

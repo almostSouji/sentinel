@@ -24,7 +24,8 @@ export default class extends Client {
 		await this.sql.begin(async (sql) => {
 			await sql`
 				create table if not exists incidents(
-					message		text primary key,
+					id			serial primary key,
+					message		text,
 					guild		text not null,
 					author		text not null,
 					attributes	text[] not null,

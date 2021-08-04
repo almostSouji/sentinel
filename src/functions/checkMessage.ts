@@ -199,7 +199,14 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 			);
 		}
 
-		await sql`insert into incidents values (
+		await sql`insert into incidents (
+			message,
+			guild,
+			author,
+			attributes,
+			flags,
+			severity
+		) values (
 			${message.id},
 			${guild.id},
 			${author.id},
