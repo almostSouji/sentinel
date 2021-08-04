@@ -15,7 +15,7 @@ import { truncate, truncateEmbed } from '../utils';
 import { GuildSettings, Notification } from '../types/DataTypes';
 import { formatChannelMention, formatRoleMention, formatUserMention } from '../utils/formatting';
 import i18next from 'i18next';
-import { LIST_BULLET } from '../constants';
+import { FLAG_LOG_ALL, LIST_BULLET } from '../constants';
 
 export async function sendLog(
 	logChannel: TextChannel | NewsChannel | ThreadChannel,
@@ -47,7 +47,7 @@ export async function sendLog(
 
 	if (!settings) return;
 	const locale = settings.locale;
-	const logOverride = settings.flags.includes('LOG_ALL');
+	const logOverride = settings.flags.includes(FLAG_LOG_ALL);
 	const botPermissions = targetChannel.permissionsFor(clientUser!);
 	const strictness = settings.strictness;
 	const buttonLevel = logOverride ? 0 : strictnessPick(strictness, 1, 2, 3);
@@ -122,7 +122,7 @@ export async function sendLog(
 			notificationParts.push(
 				notification.type === 'ROLE' ? formatRoleMention(notification.entity) : formatUserMention(notification.entity),
 			);
-			(notification.type === 'ROLE' ? roles : users).push(notification.entity as Snowflake);
+			(notification.type === 'ROLE' ? roles : users).push(notification.entity);
 		}
 	}
 

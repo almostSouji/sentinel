@@ -45,6 +45,7 @@
 			"show_attributes_nyt_fieldname": "NYTimes Attribute",
 			"show_attributes_nyt_fieldname_plural": "NYTimes Attributes",
 			"show_attributes_none": "Not watching any attributes (required).",
+			"show_attributes_debug_all": "Temporarily watching all attributes (debug mode).",
 			"no_changes": "Nothing changed!"
 		},
 		"fetchlog": {

@@ -7,7 +7,7 @@ import { sendLog } from './sendLog';
 import { checkContent } from './inspection/checkContent';
 import { formatPerspectiveShort } from './formatting/formatPerspective';
 import { cleanContent } from '../utils';
-import { COLOR_BLUE, COLOR_GREEN, COLOR_RED, COLOR_YELLOW, COLOR_DARK, LIST_BULLET } from '../constants';
+import { COLOR_BLUE, COLOR_GREEN, COLOR_RED, COLOR_YELLOW, COLOR_DARK, LIST_BULLET, FLAG_DEBUG } from '../constants';
 import { GuildSettings, Immunity, Strictness } from '../types/DataTypes';
 import { formatSeverity } from '../utils/formatting';
 import i18next from 'i18next';
@@ -88,7 +88,7 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 		const strictness = settings.strictness;
 		const embed = new MessageEmbed();
 
-		const debug = settings.flags.includes('DEBUG');
+		const debug = settings.flags.includes(FLAG_DEBUG);
 		const attributes = settings.attributes.concat(forcedAttributes);
 
 		const attributeThreshold = strictnessPick(strictness, 90, 93, 95);

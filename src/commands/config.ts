@@ -5,10 +5,13 @@ import { ArgumentsOf } from '../types/ArgumentsOf';
 import { forcedAttributes, nsfwAtrributes, nytAttributes } from '../functions/perspective';
 import {
 	COLOR_DARK,
+	FLAG_LOG_ALL,
 	EMOJI_ID_SHIELD_GREEN_SMALL,
+	EMOJI_ID_SHIELD_RAINBOW_SMALL,
 	EMOJI_ID_SHIELD_RED_SMALL,
 	EMOJI_ID_SHIELD_YELLOW_SMALL,
 	LIST_BULLET,
+	PREFIX_BUG,
 	PREFIX_LOCKED,
 	PREFIX_NSFW,
 	PREFIX_NYT,
@@ -44,6 +47,7 @@ export async function handleConfigCommand(
 	const successEmoji = emojiOrFallback(channel, formatEmoji(EMOJI_ID_SHIELD_GREEN_SMALL), LIST_BULLET);
 	const failEmoji = emojiOrFallback(channel, formatEmoji(EMOJI_ID_SHIELD_RED_SMALL), LIST_BULLET);
 	const warnEmoji = emojiOrFallback(channel, formatEmoji(EMOJI_ID_SHIELD_YELLOW_SMALL), LIST_BULLET);
+	const debugEmoji = emojiOrFallback(channel, formatEmoji(EMOJI_ID_SHIELD_RAINBOW_SMALL), PREFIX_BUG);
 
 	if (!guild || channel instanceof DMChannel) {
 		return replyWithError(interaction, i18next.t('common.errors.not_in_dm', { lng: locale }));
@@ -253,7 +257,18 @@ export async function handleConfigCommand(
 			);
 
 			const attributes = [...forcedAttributes, ...settings.attributes];
-			if (attributes.length) {
+			if (settings.flags.includes(FLAG_LOG_ALL)) {
+				embed.addField(
+					i18next.t('command.config.show_attributes_fieldname', {
+						count: 99,
+						lng: locale,
+					}),
+					`${debugEmoji} ${i18next.t('command.config.show_attributes_debug_all', {
+						lng: locale,
+					})}`,
+					true,
+				);
+			} else if (attributes.length) {
 				const disclaimers = [];
 				const activeRegular = [];
 				const activeNyt = [];
@@ -320,6 +335,7 @@ export async function handleConfigCommand(
 			} else {
 				embed.addField(
 					i18next.t('command.config.show_attributes_fieldname', {
+						count: 99,
 						lng: locale,
 					}),
 					`${failEmoji} ${i18next.t('command.config.show_attributes_none', {
