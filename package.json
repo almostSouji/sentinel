@@ -20,7 +20,7 @@
 	"dependencies": {
 		"@discordjs/rest": "^0.1.0-canary.0",
 		"discord-api-types": "^0.21.0-next.ab1951b.1627216104",
-		"discord.js": "github:discordjs/discord.js#fc1db3953d8f85f01c40ff4e15abe76c0eaad38f",
+		"discord.js": "github:discordjs/discord.js#598bd211e5bbadf906388f8683602e49577921b6",
 		"dotenv": "^10.0.0",
 		"googleapis": "^73.0.0",
 		"i18next": "^20.3.5",
