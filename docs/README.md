@@ -30,19 +30,19 @@ In the current state, the project uses the [Perspective API](https://perspective
 
 ## Terms of Service
 
-1. If you invite and use Sentinel, you acknowledge that this project is in an early alpha stage. I can not guarantee any uptime.
+1. If you invite and use any part of Sentinel, you acknowledge that this project is in an early alpha stage. I can not guarantee any uptime.
 2. Project Sentinel is a hobby project. I will do my best to fix issues as they appear but can not follow a specific update or maintenance schedule.
 3. I am not responsible for miss-categorization and the actions following it.
 4. I keep the right to terminate this service at any time. I don't need a reason for it, and this decision can only affect a subset of parties.
 
 ## Privacy Policy
 
-1. User associated data saved: Amount of messages, attribute flags and severity levels per user in configured channels.
-2. Configuration data is saved persistently and indefinitely. The application uses IDs whenever possible.
-3. Perspective API is used with the `doNotStore` parameter, preventing any data retention by third parties.
-4. Debug logs to improve the flow of the app may be employed temporarily and may log any data necessary. Log entries of any kind do not persist.
-5. Sentinel does not log or otherwise make data visible outside of the application's purpose.
-6. The application stores usage data (amount of messages seen and checked, amount of flags triggered per guild) on a 15s interval as time series and under a 15-day cadence. The amount of messages seen metric include messages from channels that Sentinel does not track.
+1. If a message is logged the incident is persistently saved with authorId, guildId, messageId, severity level the content triggered, and attributes it triggered above the log threshold (depending on configured strictness applied to the guild)
+2. Messages per user and guild are counted in watched channels and associated with Ids
+3. Configuration data is saved persistently and indefinitely. The application uses Ids whenever possible.
+4. Perspective API is used with the `doNotStore` parameter, preventing any data retention by third parties.
+5. Debug logs to improve the flow of the app may be employed temporarily and may log any data necessary. Log entries of any kind do not persist.
+6. Sentinel does not log or otherwise make data visible outside of the application's purpose.
 
 # Cell
 
