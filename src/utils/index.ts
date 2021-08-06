@@ -166,5 +166,5 @@ export function serializeOpCode(op: number): string {
  * @returns Cleaned text
  */
 export function cleanContent(initial: string): string {
-	return initial.replace(/\b(?:fuck|shi+t)\b/g, '').trim();
+	return initial.replace(/\b(?:fuck(?:ing)?|shi+t)\b/g, '').trim();
 }
