@@ -25,7 +25,8 @@ export default class extends Client {
 			await sql`
 				create table if not exists incidents(
 					id			serial primary key,
-					message		text,
+					message		text not null,
+					channel		text not null,
 					guild		text not null,
 					author		text not null,
 					attributes	text[] not null,

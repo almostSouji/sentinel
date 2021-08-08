@@ -201,6 +201,7 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 
 		await sql`insert into incidents (
 			message,
+			channel,
 			guild,
 			author,
 			attributes,
@@ -208,6 +209,7 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 			severity
 		) values (
 			${message.id},
+			${channel.id},
 			${guild.id},
 			${author.id},
 			${sql.array(high.map((t) => t.key))},

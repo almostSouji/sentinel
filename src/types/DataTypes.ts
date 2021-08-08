@@ -13,6 +13,7 @@ export enum Immunity {
 
 export interface Incident {
 	message: string;
+	channel: string;
 	guild: string;
 	author: string;
 	createdAt: number;
