@@ -68,9 +68,6 @@ services:
       - type: bind
         source: ./docker/logstash/config/logstash.conf
         target: /usr/share/logstash/pipeline/logstash.conf
-      - type: bind
-        source: ./docker/logstash/config/.logstash_jdbc_last_run
-        target: /usr/share/logstash/.logstash_jdbc_last_run
     ports:
       - 9600:9600
     depends_on:
