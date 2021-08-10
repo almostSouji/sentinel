@@ -151,27 +151,46 @@ export async function handleWatchCommand(
 		}
 	}
 
-	if (valid.length) {
-		switch (action) {
-			case 'add':
-				settings.watching = settings.watching.concat(valid);
-				messageParts.push(
-					`${successEmoji} ${i18next.t('command.watch.add_channels_valid', {
-						lng: locale,
-						count: valid.length,
-						channels: valid.map((channelId) => formatChannelMention(channelId)),
-					})}`,
-				);
-				break;
-			case 'remove':
-				settings.watching = settings.watching.filter((c: any) => !valid.includes(c));
-				messageParts.push(
-					`${successEmoji} ${i18next.t('command.watch.remove_channels_valid', {
-						lng: locale,
-						count: valid.length,
-						channels: valid.map((channelId) => formatChannelMention(channelId)),
-					})}`,
-				);
+	const cleanupChannels: string[] = [];
+	const validChannels: string[] = [];
+
+	for (const channel of settings.watching) {
+		(guild.channels.resolve(channel) ? validChannels : cleanupChannels).push(channel);
+	}
+
+	if (cleanupChannels.length) {
+		messageParts.push(
+			`${warnEmoji} ${i18next.t('command.config.removed_invalid_channels', {
+				channels: cleanupChannels.map((c) => `\`${c}\``).join(', '),
+				lng: locale,
+			})}`,
+		);
+		settings.watching = validChannels;
+	}
+
+	if (valid.length || cleanupChannels.length) {
+		if (valid.length) {
+			switch (action) {
+				case 'add':
+					settings.watching = settings.watching.concat(valid);
+					messageParts.push(
+						`${successEmoji} ${i18next.t('command.watch.add_channels_valid', {
+							lng: locale,
+							count: valid.length,
+							channels: valid.map((channelId) => formatChannelMention(channelId)),
+						})}`,
+					);
+					break;
+				case 'remove':
+					settings.watching = settings.watching.filter((c: any) => !valid.includes(c));
+					messageParts.push(
+						`${successEmoji} ${i18next.t('command.watch.remove_channels_valid', {
+							lng: locale,
+							count: valid.length,
+							channels: valid.map((channelId) => formatChannelMention(channelId)),
+						})}`,
+					);
+			}
 		}
 
 		if (!settings.guild) settings.guild = guild.id;

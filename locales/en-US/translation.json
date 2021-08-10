@@ -31,6 +31,7 @@
 			"prefetch_updated": "Fetching {{number}} messages in the log channel after restart *(enables dynamic button adaptation based on member state and permissions)*.",
 			"strictness_already": "Strictness level is already {{level}}.",
 			"strictness_updated": "Strictness level updated to {{level}}.",
+			"removed_invalid_channels": "Cleaned up deleted and invalid channels: {{channels}}.",
 			"show_logchannel_fieldname": "Log Channel",
 			"show_logchannel_missing_permissions": "Missing permissions {{-permissions}} in {{-channel}}.",
 			"show_logchannel_missing": "No log channel configured (required).",

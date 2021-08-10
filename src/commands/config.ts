@@ -171,9 +171,28 @@ export async function handleConfigCommand(
 				}
 			}
 
-			if (!args.edit.immunity && !args.edit.logchannel && !args.edit.prefetch && !args.edit.strictness) {
+			const invalidChannels: string[] = [];
+			const validChannels: string[] = [];
+
+			for (const channel of settings.watching) {
+				(guild.channels.resolve(channel) ? validChannels : invalidChannels).push(channel);
+			}
+
+			if (invalidChannels.length) {
+				messageParts.push(
+					`${warnEmoji}${i18next.t('command.config.removed_invalid_channels', {
+						channels: invalidChannels.map((c) => `\`${c}\``).join(', '),
+						lng: locale,
+					})}`,
+				);
+				settings.watching = validChannels;
+			}
+
+			if (!messageParts.length) {
 				return interaction.reply({
-					content: `${warnEmoji} ${i18next.t('command.config.no_changes')}`,
+					content: `${warnEmoji}${i18next.t('command.config.no_changes', {
+						lng: locale,
+					})}`,
 					ephemeral: true,
 				});
 			}
@@ -183,7 +202,8 @@ export async function handleConfigCommand(
 					logchannel = ${settings.logchannel ?? null},
 					strictness = ${settings.strictness},
 					prefetch = ${settings.prefetch},
-					immunity = ${settings.immunity}
+					immunity = ${settings.immunity},
+					watching = ${sql.array(settings.watching)}
 				where guild = ${settings.guild}
 			`;
 
