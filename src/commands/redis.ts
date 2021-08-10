@@ -1,5 +1,5 @@
 import { CommandInteraction, DMChannel } from 'discord.js';
-import { logger } from '../interactions/logger';
+import { logger } from '../functions/logger';
 import { truncate } from '../utils';
 import { RedisCommand } from '../interactions/redis';
 import { ArgumentsOf } from '../types/ArgumentsOf';

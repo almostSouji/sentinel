@@ -1,6 +1,6 @@
 import { Guild, MessageButton, MessageActionRow, Snowflake, MessageEmbed } from 'discord.js';
 import { OpCodes } from '../..';
-import { logger } from '../../interactions/logger';
+import { logger } from '../logger';
 
 export async function handleMessageDeletableState(
 	guild: Guild,

@@ -19,7 +19,7 @@ import { WatchCommand } from '../interactions/watch';
 import { KarmaCommand } from '../interactions/karma';
 import { KarmaContextCommand } from '../interactions/karmacontext';
 /* eslint-enable @typescript-eslint/no-unused-vars */
-import { logger } from '../interactions/logger';
+import { logger } from '../functions/logger';
 
 const commands = [
 	// ConfigCommand,

@@ -1,6 +1,6 @@
 import { Message, PartialMessage, Permissions, MessageEmbed, Snowflake, ThreadChannel } from 'discord.js';
 import { Score } from '../types/perspective';
-import { logger } from '../interactions/logger';
+import { logger } from './logger';
 import { forcedAttributes, perspectiveAttributes } from './perspective';
 import { sendLog } from './sendLog';
 

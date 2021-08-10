@@ -24,7 +24,7 @@ import {
 } from './constants';
 import Client from './structures/Client';
 import { checkMessage } from './functions/checkMessage';
-import { logger } from './interactions/logger';
+import { logger } from './functions/logger';
 import { deserializeAttributes, deserializeTargets, emojiOrFallback, truncateEmbed } from './utils';
 import { updateLogState } from './functions/updateLogState';
 import { handleMemberGuildState } from './functions/logStateHandlers/handleMemberGuildState';

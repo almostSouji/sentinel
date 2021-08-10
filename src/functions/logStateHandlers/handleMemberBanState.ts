@@ -1,7 +1,7 @@
 import { Guild, MessageButton, MessageActionRow, Snowflake, Permissions, MessageEmbed } from 'discord.js';
 import i18next from 'i18next';
 import { OpCodes } from '../..';
-import { logger } from '../../interactions/logger';
+import { logger } from '../logger';
 
 export async function handleMemberBanState(
 	guild: Guild,

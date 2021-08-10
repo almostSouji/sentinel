@@ -4,7 +4,7 @@ import Backend from 'i18next-fs-backend';
 import * as Redis from 'ioredis';
 import { join } from 'path';
 import postgres from 'postgres';
-import { logger } from '../interactions/logger';
+import { logger } from '../functions/logger';
 
 declare module 'discord.js' {
 	export interface Client {
