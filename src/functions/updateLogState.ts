@@ -43,7 +43,7 @@ export async function updateLogState(
 	if (!settings || !settings.logchannel) return;
 
 	const locale = settings.locale;
-	const logChannel = guild.channels.resolve(`${settings.logchannel}` as Snowflake);
+	const logChannel = guild.channels.resolve(settings.logchannel);
 	if (!logChannel || !logChannel.isText()) return;
 
 	if (

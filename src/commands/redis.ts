@@ -5,6 +5,7 @@ import { RedisCommand } from '../interactions/redis';
 import { ArgumentsOf } from '../types/ArgumentsOf';
 import i18next from 'i18next';
 import { replyWithError } from '../utils/responses';
+import { codeBlock } from '@discordjs/builders';
 
 export async function handleRedisCommand(
 	interaction: CommandInteraction,
@@ -43,14 +44,14 @@ export async function handleRedisCommand(
 		}
 
 		void interaction.reply({
-			content: `\`\`\`\n${truncate(`${res as string}`, 1990, splitChar)}\n\`\`\``,
+			content: codeBlock(truncate(`${res as string}`, 1990, splitChar)),
 			ephemeral: true,
 		});
 		logger.debug(res);
 	} catch (error) {
 		logger.error(error);
 		void interaction.reply({
-			content: `\`\`\`\n${truncate(error.toString(), 1990, '\n')}\n\`\`\``,
+			content: codeBlock(truncate(error.toString(), 1990, '\n')),
 			ephemeral: true,
 		});
 	}

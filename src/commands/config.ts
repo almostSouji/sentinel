@@ -19,8 +19,8 @@ import {
 import i18next from 'i18next';
 import { GuildSettings, Immunity, Strictness } from '../types/DataTypes';
 import { emojiOrFallback, truncateEmbed } from '../utils';
-import { formatChannelMention, formatEmoji } from '../utils/formatting';
 import { replyWithError } from '../utils/responses';
+import { channelMention, formatEmoji, inlineCode } from '@discordjs/builders';
 
 export enum IMMUNITY_LEVEL {
 	NONE,
@@ -83,7 +83,7 @@ export async function handleConfigCommand(
 						if (channel.id === settings.logchannel) {
 							messageParts.push(
 								`${warnEmoji}${i18next.t('command.config.lochannel_already', {
-									channel: `<#${channel.id}>`,
+									channel: channelMention(channel.id),
 									lng: locale,
 								})}`,
 							);
@@ -91,7 +91,7 @@ export async function handleConfigCommand(
 							settings.logchannel = channel.id;
 							messageParts.push(
 								`${successEmoji}${i18next.t('command.config.logchannel_set', {
-									channel: `<#${channel.id}>`,
+									channel: channelMention(channel.id),
 									lng: locale,
 								})}`,
 							);
@@ -99,7 +99,7 @@ export async function handleConfigCommand(
 					} else {
 						messageParts.push(
 							`${failEmoji}${i18next.t('command.config.logchannel_no_permissions', {
-								channel: `<#${channel.id}>`,
+								channel: channelMention(channel.id),
 								lng: locale,
 							})}`,
 						);
@@ -107,7 +107,7 @@ export async function handleConfigCommand(
 				} else {
 					messageParts.push(
 						`${failEmoji}${i18next.t('command.config.logchannel_not_text', {
-							channel: `<#${channel.id}>`,
+							channel: channelMention(channel.id),
 							lng: locale,
 						})}`,
 					);
@@ -118,7 +118,7 @@ export async function handleConfigCommand(
 				if (args.edit.strictness === settings.strictness) {
 					messageParts.push(
 						`${warnEmoji}${i18next.t('command.config.strictness_already', {
-							level: `\`${Strictness[args.edit.strictness]!}\``,
+							level: inlineCode(Strictness[args.edit.strictness]!),
 							lng: locale,
 						})}`,
 					);
@@ -126,7 +126,7 @@ export async function handleConfigCommand(
 					settings.strictness = args.edit.strictness;
 					messageParts.push(
 						`${successEmoji}${i18next.t('command.config.strictness_updated', {
-							level: `\`${Strictness[args.edit.strictness]!}\``,
+							level: inlineCode(Strictness[args.edit.strictness]!),
 							lng: locale,
 						})}`,
 					);
@@ -137,7 +137,7 @@ export async function handleConfigCommand(
 				if (args.edit.prefetch === settings.prefetch) {
 					messageParts.push(
 						`${warnEmoji}${i18next.t('command.config.prefetch_already', {
-							number: `\`${args.edit.prefetch}\``,
+							number: inlineCode(String(args.edit.prefetch)),
 							lng: locale,
 						})}`,
 					);
@@ -145,7 +145,7 @@ export async function handleConfigCommand(
 					settings.prefetch = args.edit.prefetch;
 					messageParts.push(
 						`${successEmoji}${i18next.t('command.config.prefetch_updated', {
-							number: `\`${args.edit.prefetch}\``,
+							number: inlineCode(String(args.edit.prefetch)),
 							lng: locale,
 						})}`,
 					);
@@ -181,7 +181,7 @@ export async function handleConfigCommand(
 			if (invalidChannels.length) {
 				messageParts.push(
 					`${warnEmoji}${i18next.t('command.config.removed_invalid_channels', {
-						channels: invalidChannels.map((c) => `\`${c}\``).join(', '),
+						channels: invalidChannels.map((c) => inlineCode(c)).join(', '),
 						lng: locale,
 					})}`,
 				);
@@ -229,11 +229,11 @@ export async function handleConfigCommand(
 				channel
 					? missing?.length
 						? `${failEmoji}${i18next.t('command.config.show_logchannel_missing_permissions', {
-								permissions: missing.map((k) => `\`${k}\``).join(', '),
-								channel: `<#${channel.id}>`,
+								permissions: missing.map((k) => inlineCode(k)).join(', '),
+								channel: channelMention(channel.id),
 								lng: locale,
 						  })}`
-						: `<#${channel.id}>`
+						: channelMention(channel.id)
 					: `${failEmoji} ${i18next.t('command.config.show_logchannel_missing', {
 							lng: locale,
 					  })}`,
@@ -245,7 +245,7 @@ export async function handleConfigCommand(
 					lng: locale,
 				}),
 				settings.watching.length
-					? settings.watching.map((c) => formatChannelMention(c)).join(', ')
+					? settings.watching.map((c) => channelMention(c)).join(', ')
 					: `${failEmoji}${i18next.t('command.config.show_watching_none', {
 							lng: locale,
 					  })}`,
@@ -297,15 +297,16 @@ export async function handleConfigCommand(
 				for (const flag of attributes) {
 					if (nytAttributes.includes(flag)) {
 						if (nsfwAtrributes.includes(flag)) {
-							activeNyt.push(`• \`${flag}\` ${PREFIX_NYT} ${PREFIX_NSFW}`);
+							activeNyt.push(`• ${inlineCode(flag)} ${PREFIX_NYT} ${PREFIX_NSFW}`);
 							nsfw++;
-						} else if (forcedAttributes.includes(flag)) activeNyt.push(`• \`${flag}\` ${PREFIX_NYT} ${PREFIX_LOCKED}`);
-						else activeNyt.push(`• \`${flag}\` ${PREFIX_NYT}`);
+						} else if (forcedAttributes.includes(flag))
+							activeNyt.push(`• ${inlineCode(flag)} ${PREFIX_NYT} ${PREFIX_LOCKED}`);
+						else activeNyt.push(`• ${inlineCode(flag)} ${PREFIX_NYT}`);
 					} else if (nsfwAtrributes.includes(flag)) {
-						activeRegular.push(`• \`${flag}\` ${PREFIX_NSFW}`);
+						activeRegular.push(`• ${inlineCode(flag)} ${PREFIX_NSFW}`);
 						nsfw++;
-					} else if (forcedAttributes.includes(flag)) activeRegular.push(`• \`${flag}\` ${PREFIX_LOCKED}`);
-					else activeRegular.push(`• \`${flag}\``);
+					} else if (forcedAttributes.includes(flag)) activeRegular.push(`• ${inlineCode(flag)} ${PREFIX_LOCKED}`);
+					else activeRegular.push(`• ${inlineCode(flag)}`);
 				}
 
 				if (activeRegular.length) {

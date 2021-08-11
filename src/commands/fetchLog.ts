@@ -4,6 +4,7 @@ import { FetchLogCommand } from '../interactions/fetchLog';
 import i18next from 'i18next';
 import { replyWithError } from '../utils/responses';
 import { truncate } from '../utils';
+import { codeBlock, inlineCode } from '@discordjs/builders';
 
 export async function handleFetchLogCommand(
 	interaction: CommandInteraction,
@@ -28,8 +29,8 @@ export async function handleFetchLogCommand(
 					interaction,
 					i18next.t('commands.fetchlog.guild_id_forged', {
 						lng: locale,
-						actual: `\`${channel.guild.id}\``,
-						should: `\`${guildId ?? ' '}\``,
+						actual: inlineCode(channel.guild.id),
+						should: inlineCode(guildId ?? ' '),
 					}),
 				);
 			}
@@ -47,7 +48,7 @@ export async function handleFetchLogCommand(
 			});
 		} catch (error) {
 			return void interaction.reply({
-				content: `\`\`\`\n${truncate(error.toString(), 1990, '\n')}\n\`\`\``,
+				content: codeBlock(truncate(error.toString(), 1990, '\n')),
 				ephemeral: true,
 			});
 		}

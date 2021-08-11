@@ -3,11 +3,12 @@ import { ArgumentsOf } from '../types/ArgumentsOf';
 import { AttributesCommand } from '../interactions/attributes';
 import { GuildSettings } from '../types/DataTypes';
 import i18next from 'i18next';
-import { formatEmoji, formatFlag, formatFlagString } from '../utils/formatting';
+import { formatFlag, formatFlagString } from '../utils/formatting';
 import { replyWithError } from '../utils/responses';
 import { emojiOrFallback } from '../utils';
 import { EMOJI_ID_SHIELD_GREEN_SMALL, EMOJI_ID_SHIELD_YELLOW_SMALL, LIST_BULLET } from '../constants';
 import { NYTAttributesCommand } from '../interactions/nytAttributes';
+import { formatEmoji, inlineCode } from '@discordjs/builders';
 
 export async function handleAttributesCommand(
 	interaction: CommandInteraction,
@@ -82,7 +83,7 @@ export async function handleAttributesCommand(
 		messageParts.push(
 			`${successEmoji}${i18next.t('command.attributes.new_enabled', {
 				count: newEnabled.length,
-				flags: newEnabled.map((f) => `\`${formatFlagString(f)}\``).join(', '),
+				flags: newEnabled.map((f) => inlineCode(formatFlagString(f))).join(', '),
 				lng: locale,
 			})}`,
 		);
@@ -92,7 +93,7 @@ export async function handleAttributesCommand(
 		messageParts.push(
 			`${successEmoji}${i18next.t('command.attributes.new_disabled', {
 				count: newDisabled.length,
-				flags: newDisabled.map((f) => `\`${formatFlagString(f)}\``).join(', '),
+				flags: newDisabled.map((f) => inlineCode(formatFlagString(f))).join(', '),
 				lng: locale,
 			})}`,
 		);
@@ -103,7 +104,7 @@ export async function handleAttributesCommand(
 			`${warnEmoji}${i18next.t('command.attributes.already_enabled', {
 				count: alreadyEnabled.length,
 				lng: locale,
-				flags: alreadyEnabled.map((f) => `\`${formatFlagString(f)}\``).join(', '),
+				flags: alreadyEnabled.map((f) => inlineCode(formatFlagString(f))).join(', '),
 			})}`,
 		);
 	}
@@ -113,7 +114,7 @@ export async function handleAttributesCommand(
 			i18next.t('command.attributes.already_disabled', {
 				count: alreadyDisabled.length,
 				lng: locale,
-				flags: alreadyDisabled.map((f) => `\`${formatFlagString(f)}\``).join(', '),
+				flags: alreadyDisabled.map((f) => inlineCode(formatFlagString(f))).join(', '),
 			}),
 		);
 	}

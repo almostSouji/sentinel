@@ -25,6 +25,7 @@ import { EvaluateContentContextCommand } from '../interactions/evaluateContentCo
 import { KarmaContextCommand } from '../interactions/karmacontext';
 import { SQLCommand } from '../interactions/sql';
 import { handleSQLCommand } from '../commands/sql';
+import { inlineCode } from '@discordjs/builders';
 
 export async function handleCommands(interaction: CommandInteraction) {
 	const { commandName, options } = interaction;
@@ -75,8 +76,8 @@ export async function handleCommands(interaction: CommandInteraction) {
 			await replyWithError(
 				interaction,
 				`${PREFIX_BUG} ${i18next.t('commandexecution.no_handler', {
-					command: `\`${interaction.commandName}\``,
-					id: `\`${interaction.id}\``,
+					command: inlineCode(interaction.commandName),
+					id: inlineCode(interaction.id),
 					lng: locale,
 				})}`,
 			);

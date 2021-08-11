@@ -3,6 +3,7 @@ import { LIST_BULLET, PREFIX_LOCKED, PREFIX_NSFW, PREFIX_NYT } from '../../const
 import { formatFlagString } from '../../utils/formatting';
 import { PerspectiveResult } from '../inspection/checkPerspective';
 import { AttributeScoreMapEntry, nsfwAtrributes, nytAttributes } from '../perspective';
+import { inlineCode } from '@discordjs/builders';
 
 function mapKeyToAdverb(key: string): string {
 	switch (key) {
@@ -38,7 +39,7 @@ function mapKeyToAdverb(key: string): string {
 		case 'UNSUBSTANTIAL':
 			return 'unsubstantial';
 		default:
-			return `\`${key}\``;
+			return inlineCode(key);
 	}
 }
 

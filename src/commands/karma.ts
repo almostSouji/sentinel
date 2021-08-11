@@ -5,8 +5,8 @@ import { KarmaCommand } from '../interactions/karma';
 import { ArgumentsOf } from '../types/ArgumentsOf';
 import { Incident, UserStats } from '../types/DataTypes';
 import { truncateEmbed } from '../utils';
-import { formatUserMention } from '../utils/formatting';
 import { replyWithError } from '../utils/responses';
+import { userMention, inlineCode } from '@discordjs/builders';
 
 export async function handleKarmaCommand(
 	interaction: CommandInteraction,
@@ -39,7 +39,7 @@ export async function handleKarmaCommand(
 	if (!stats || !incidents.length) {
 		return replyWithError(
 			interaction,
-			i18next.t('command.karma.no_data', { lng: locale, user: formatUserMention(targetUser.id) }),
+			i18next.t('command.karma.no_data', { lng: locale, user: userMention(targetUser.id) }),
 		);
 	}
 
@@ -53,7 +53,7 @@ export async function handleKarmaCommand(
 	}
 
 	for (const [key, value] of [...flagCounts.entries()].sort((a, b) => b[1] - a[1])) {
-		attributesFormatted.push(`${LIST_BULLET} ${value}x \`${key}\``);
+		attributesFormatted.push(`${LIST_BULLET} ${value}x ${inlineCode(key)}`);
 	}
 
 	void interaction.reply({

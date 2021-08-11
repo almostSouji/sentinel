@@ -9,9 +9,9 @@ import {
 	EMOJI_ID_SHIELD_RED_SMALL,
 } from '../constants';
 import { emojiOrFallback } from '../utils';
-import { formatChannelMention, formatEmoji } from '../utils/formatting';
 import { replyWithError } from '../utils/responses';
 import { GuildSettings } from '../types/DataTypes';
+import { formatEmoji, channelMention, inlineCode } from '@discordjs/builders';
 
 export async function handleWatchCommand(
 	interaction: CommandInteraction,
@@ -109,7 +109,7 @@ export async function handleWatchCommand(
 						`${failEmoji} ${i18next.t('command.watch.add_channels_permissions_missing', {
 							lng: locale,
 							count: missingView.length,
-							channels: missingView.map((channelId) => formatChannelMention(channelId)),
+							channels: missingView.map((channelId) => channelMention(channelId)),
 						})}`,
 					);
 				}
@@ -166,7 +166,7 @@ export async function handleWatchCommand(
 	if (cleanupChannels.length) {
 		messageParts.push(
 			`${warnEmoji} ${i18next.t('command.config.removed_invalid_channels', {
-				channels: cleanupChannels.map((c) => `\`${c}\``).join(', '),
+				channels: cleanupChannels.map((c) => inlineCode(c)).join(', '),
 				lng: locale,
 			})}`,
 		);
@@ -182,7 +182,7 @@ export async function handleWatchCommand(
 						`${successEmoji} ${i18next.t('command.watch.add_channels_valid', {
 							lng: locale,
 							count: valid.length,
-							channels: valid.map((channelId) => formatChannelMention(channelId)),
+							channels: valid.map((channelId) => channelMention(channelId)),
 						})}`,
 					);
 					break;
@@ -192,7 +192,7 @@ export async function handleWatchCommand(
 						`${successEmoji} ${i18next.t('command.watch.remove_channels_valid', {
 							lng: locale,
 							count: valid.length,
-							channels: valid.map((channelId) => formatChannelMention(channelId)),
+							channels: valid.map((channelId) => channelMention(channelId)),
 						})}`,
 					);
 			}
@@ -211,7 +211,7 @@ export async function handleWatchCommand(
 			`${failEmoji} ${i18next.t('command.watch.add_channels_wrong_type', {
 				lng: locale,
 				count: wrongType.length,
-				channels: wrongType.map((channelId) => formatChannelMention(channelId)),
+				channels: wrongType.map((channelId) => channelMention(channelId)),
 			})}`,
 		);
 	}
@@ -221,7 +221,7 @@ export async function handleWatchCommand(
 			`${warnEmoji} ${i18next.t('command.watch.add_channels_wrong_type_thread', {
 				lng: locale,
 				count: threads.length,
-				channels: threads.map((channelId) => formatChannelMention(channelId)),
+				channels: threads.map((channelId) => channelMention(channelId)),
 			})}`,
 		);
 	}
@@ -233,7 +233,7 @@ export async function handleWatchCommand(
 					`${warnEmoji} ${i18next.t('command.watch.add_channels_already', {
 						lng: locale,
 						count: already.length,
-						channels: already.map((channelId) => formatChannelMention(channelId)),
+						channels: already.map((channelId) => channelMention(channelId)),
 					})}`,
 				);
 				break;
@@ -242,7 +242,7 @@ export async function handleWatchCommand(
 					`${warnEmoji} ${i18next.t('command.watch.remove_channels_already', {
 						lng: locale,
 						count: already.length,
-						channels: already.map((channelId) => formatChannelMention(channelId)),
+						channels: already.map((channelId) => channelMention(channelId)),
 					})}`,
 				);
 		}

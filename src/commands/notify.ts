@@ -5,8 +5,9 @@ import i18next from 'i18next';
 import { replyWithError } from '../utils/responses';
 import { EMOJI_ID_SHIELD_GREEN_SMALL, LIST_BULLET } from '../constants';
 import { emojiOrFallback } from '../utils';
-import { formatEmoji, formatRoleMention, formatSeverity, formatUserMention } from '../utils/formatting';
+import { formatSeverity } from '../utils/formatting';
 import { Notification } from '../types/DataTypes';
+import { formatEmoji, userMention, roleMention } from '@discordjs/builders';
 
 export async function handleNotifyCommand(
 	interaction: CommandInteraction,
@@ -51,7 +52,7 @@ export async function handleNotifyCommand(
 
 				messageParts.push(
 					`${successEmoji}${i18next.t('command.notify.notification_change', {
-						entity: entity instanceof Role ? formatRoleMention(entity.id) : formatUserMention(entity.user.id),
+						entity: entity instanceof Role ? roleMention(entity.id) : userMention(entity.user.id),
 						level: formatSeverity(channel, level),
 						lng: locale,
 					})}`,
@@ -69,7 +70,7 @@ export async function handleNotifyCommand(
 
 				messageParts.push(
 					`${successEmoji}${i18next.t('command.notify.notification_remove', {
-						entity: entity instanceof Role ? formatRoleMention(entity.id) : formatUserMention(entity.user.id),
+						entity: entity instanceof Role ? roleMention(entity.id) : userMention(entity.user.id),
 						lng: locale,
 					})}`,
 				);
@@ -89,9 +90,7 @@ export async function handleNotifyCommand(
 					messageParts.push(
 						`${LIST_BULLET} ${i18next.t('command.notify.notification_show', {
 							entity:
-								notification.type === 'ROLE'
-									? formatRoleMention(notification.entity)
-									: formatUserMention(notification.entity),
+								notification.type === 'ROLE' ? roleMention(notification.entity) : userMention(notification.entity),
 							level: formatSeverity(channel, notification.level),
 							lng: locale,
 						})}`,

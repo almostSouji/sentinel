@@ -11,6 +11,7 @@ import { COLOR_BLUE, COLOR_GREEN, COLOR_RED, COLOR_YELLOW, COLOR_DARK, LIST_BULL
 import { GuildSettings, Immunity, Strictness } from '../types/DataTypes';
 import { formatSeverity } from '../utils/formatting';
 import i18next from 'i18next';
+import { inlineCode } from '@discordjs/builders';
 
 const colors = [COLOR_DARK, COLOR_GREEN, COLOR_YELLOW, COLOR_RED, COLOR_BLUE] as const;
 
@@ -183,15 +184,15 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 				'@debug(misc)',
 				[
 					`${LIST_BULLET} ${i18next.t('checks.debug.immunity', {
-						immunity: `\`${immunityValue}\``,
+						immunity: inlineCode(immunityValue),
 						lng: locale,
 					})}`,
 					`${LIST_BULLET} ${i18next.t('checks.debug.strictness', {
-						strictness: `\`${Strictness[strictness] ?? 'NONE'}\` \`(${strictness})\``,
+						strictness: `${inlineCode(Strictness[strictness] ?? 'NONE')} ${inlineCode(`(${strictness})`)}`,
 						lng: locale,
 					})}`,
 					`${LIST_BULLET} ${i18next.t('checks.debug.severity', {
-						severity: `${formatSeverity(logChannel, severityLevel)} \`(${severityLevel})\``,
+						severity: `${formatSeverity(logChannel, severityLevel)} ${inlineCode(`(${severityLevel})`)}`,
 						lng: locale,
 					})}`,
 				].join('\n'),

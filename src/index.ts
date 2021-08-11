@@ -38,7 +38,7 @@ import { formatPerspectiveDetails } from './functions/formatting/formatPerspecti
 import { GuildSettings } from './types/DataTypes';
 import i18next from 'i18next';
 import { replyWithError } from './utils/responses';
-import { formatEmoji } from './utils/formatting';
+import { formatEmoji, inlineCode } from '@discordjs/builders';
 
 export interface ProcessEnv {
 	DISCORD_TOKEN: string;
@@ -189,8 +189,8 @@ async function main() {
 
 					messageParts.push(
 						`${LIST_BULLET} ${i18next.t('buttons.ban_success', {
-							executor: `\`${executor.tag}\``,
-							target: `\`${user instanceof GuildMember ? user.user.tag : user instanceof User ? user.tag : user}\``,
+							executor: inlineCode(executor.tag),
+							target: inlineCode(user instanceof GuildMember ? user.user.tag : user instanceof User ? user.tag : user),
 							lng: locale,
 						})}`,
 					);
@@ -201,8 +201,8 @@ async function main() {
 					if (error.code === ERROR_CODE_MISSING_PERMISSIONS) {
 						messageParts.push(
 							`${LIST_BULLET} ${i18next.t('buttons.ban_missing_permissions', {
-								executor: `\`${executor.tag}\``,
-								target: `\`${targetUserId}\``,
+								executor: inlineCode(executor.tag),
+								target: inlineCode(targetUserId),
 								lng: locale,
 							})}`,
 						);
@@ -211,8 +211,8 @@ async function main() {
 					} else if (error.code === ERROR_CODE_UNKNOWN_USER) {
 						messageParts.push(
 							`${LIST_BULLET} ${i18next.t('buttons.ban_unknown_user', {
-								executor: `\`${executor.tag}\``,
-								target: `\`${targetUserId}\``,
+								executor: inlineCode(executor.tag),
+								target: inlineCode(targetUserId),
 								lng: locale,
 							})}`,
 						);
@@ -220,8 +220,8 @@ async function main() {
 					} else {
 						messageParts.push(
 							`${LIST_BULLET} ${i18next.t('buttons.ban_unsuccessful', {
-								executor: `\`${executor.tag}\``,
-								target: `\`${targetUserId}\``,
+								executor: inlineCode(executor.tag),
+								target: inlineCode(targetUserId),
 								lng: locale,
 							})}`,
 						);
@@ -250,7 +250,7 @@ async function main() {
 						await channel.messages.delete(targetMessageId);
 						messageParts.push(
 							`${LIST_BULLET} ${i18next.t('buttons.delete_success', {
-								executor: `\`${executor.tag}\``,
+								executor: inlineCode(executor.tag),
 								lng: locale,
 							})}`,
 						);
@@ -261,7 +261,7 @@ async function main() {
 						if (error.code === ERROR_CODE_UNKNOWN_MESSAGE) {
 							messageParts.push(
 								`${LIST_BULLET} ${i18next.t('buttons.delete_unknown_message', {
-									executor: `\`${executor.tag}\``,
+									executor: inlineCode(executor.tag),
 									lng: locale,
 								})}`,
 							);
@@ -269,7 +269,7 @@ async function main() {
 						} else if (error.code === ERROR_CODE_MISSING_PERMISSIONS) {
 							messageParts.push(
 								`${LIST_BULLET} ${i18next.t('buttons.delete_missing_permissions', {
-									executor: `\`${executor.tag}\``,
+									executor: inlineCode(executor.tag),
 									lng: locale,
 								})}`,
 							);
@@ -277,7 +277,7 @@ async function main() {
 						} else {
 							messageParts.push(
 								`${LIST_BULLET} ${i18next.t('buttons.delete_unsuccesful', {
-									executor: `\`${executor.tag}\``,
+									executor: inlineCode(executor.tag),
 									lng: locale,
 								})}`,
 							);
@@ -286,7 +286,7 @@ async function main() {
 				} else {
 					messageParts.push(
 						`${LIST_BULLET} ${i18next.t('buttons.delete_unknown_channel', {
-							executor: `\`${executor.tag}\``,
+							executor: inlineCode(executor.tag),
 							lng: locale,
 						})}`,
 					);
@@ -308,7 +308,7 @@ async function main() {
 
 				messageParts.push(
 					`${LIST_BULLET} ${i18next.t('buttons.reviewed', {
-						executor: `\`${executor.tag}\``,
+						executor: inlineCode(executor.tag),
 						lng: locale,
 					})}`,
 				);

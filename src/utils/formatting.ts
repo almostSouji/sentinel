@@ -10,6 +10,7 @@ import {
 	EMOJI_ID_SHIELD_BLUE_SMALL,
 } from '../constants';
 import { nytAttributes, nsfwAtrributes, forcedAttributes } from '../functions/perspective';
+import { formatEmoji, inlineCode } from '@discordjs/builders';
 
 /**
  * Formats a flag from the limited discord option format flag-format to FLAG_FORMAT
@@ -33,7 +34,7 @@ export function formatFlagString(flag: string, verbose = false) {
 	if (nytAttributes.includes(flag)) icons.push(PREFIX_NYT);
 	if (nsfwAtrributes.includes(flag)) icons.push(PREFIX_NSFW);
 	if (forcedAttributes.includes(flag)) icons.push(PREFIX_LOCKED);
-	return `\`${flag}\` ${icons.join(' ')}`.trim();
+	return `${inlineCode(flag)} ${icons.join(' ')}`.trim();
 }
 
 /**
@@ -57,40 +58,4 @@ export function formatSeverity(
 			: emojiOrFallback(channel, formatEmoji(EMOJI_ID_SHIELD_BLUE_SMALL), '🔵');
 
 	return `${word} ${emoji}`;
-}
-
-/**
- * Format an Emoji to be used in a Discord message from the provided Emoji Id
- * @param emojiId - The Emoji Id to format
- * @returns The formatted Discord emoji
- */
-export function formatEmoji(emojiId: string): string {
-	return `<:_:${emojiId}>`;
-}
-
-/**
- * Format a channel Id to a discord mention string
- * @param channelId - Channel Id to use
- * @returns The formatted channel mention
- */
-export function formatChannelMention(channelId: string): string {
-	return `<#${channelId}>`;
-}
-
-/**
- * Format a user Id to a discord mention string
- * @param userId - User Id to use
- * @returns The formatted user mention
- */
-export function formatUserMention(userId: string): string {
-	return `<@${userId}>`;
-}
-
-/**
- * Format a role Id to a discord mention string
- * @param userId - Role Id to use
- * @returns The formatted role mention
- */
-export function formatRoleMention(userId: string): string {
-	return `<@&${userId}>`;
 }

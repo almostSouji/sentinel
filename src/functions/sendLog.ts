@@ -13,9 +13,9 @@ import { generateButtons, listButton } from './buttons';
 import { strictnessPick } from './checkMessage';
 import { truncate, truncateEmbed } from '../utils';
 import { GuildSettings, Notification } from '../types/DataTypes';
-import { formatChannelMention, formatRoleMention, formatUserMention } from '../utils/formatting';
 import i18next from 'i18next';
 import { FLAG_LOG_ALL, LIST_BULLET } from '../constants';
+import { channelMention, roleMention, userMention } from '@discordjs/builders';
 
 export async function sendLog(
 	logChannel: TextChannel | NewsChannel | ThreadChannel,
@@ -62,12 +62,12 @@ export async function sendLog(
 	metaDataParts.push(
 		targetChannel instanceof ThreadChannel
 			? `${LIST_BULLET} ${i18next.t('logstate.info_channel_thread', {
-					channel: formatChannelMention(targetChannel.id),
-					parent: targetChannel.parentId ? formatChannelMention(targetChannel.parentId) : 'not found',
+					channel: channelMention(targetChannel.id),
+					parent: targetChannel.parentId ? channelMention(targetChannel.parentId) : 'not found',
 					lng: locale,
 			  })}`
 			: `${LIST_BULLET} ${i18next.t('logstate.info_channel', {
-					channel: formatChannelMention(targetChannel.id),
+					channel: channelMention(targetChannel.id),
 					lng: locale,
 			  })}`,
 	);
@@ -126,7 +126,7 @@ export async function sendLog(
 	for (const notification of notifications) {
 		if (severityLevel >= notification.level) {
 			notificationParts.push(
-				notification.type === 'ROLE' ? formatRoleMention(notification.entity) : formatUserMention(notification.entity),
+				notification.type === 'ROLE' ? roleMention(notification.entity) : userMention(notification.entity),
 			);
 			(notification.type === 'ROLE' ? roles : users).push(notification.entity);
 		}

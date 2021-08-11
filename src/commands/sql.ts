@@ -7,6 +7,7 @@ import i18next from 'i18next';
 import { replyWithError } from '../utils/responses';
 import { SQLCommand } from '../interactions/sql';
 import { inspect } from 'util';
+import { codeBlock } from '@discordjs/builders';
 
 export async function handleSQLCommand(
 	interaction: CommandInteraction,
@@ -31,14 +32,14 @@ export async function handleSQLCommand(
 		const res = await sql.unsafe(args.query);
 
 		void interaction.reply({
-			content: `\`\`\`js\n${truncate(`${inspect([...res], { depth: null })}`, 1990, '')}\n\`\`\``,
+			content: codeBlock('js', truncate(`${inspect([...res], { depth: null })}`, 1990, '')),
 			ephemeral: true,
 		});
 		logger.debug(res);
 	} catch (error) {
 		logger.error(error);
 		void interaction.reply({
-			content: `\`\`\`\n${truncate(error.toString(), 1990, '\n')}\n\`\`\``,
+			content: codeBlock(truncate(error.toString(), 1990, '\n')),
 			ephemeral: true,
 		});
 	}

@@ -18,6 +18,7 @@
 		"prepare": "is-ci || husky install"
 	},
 	"dependencies": {
+		"@discordjs/builders": "^0.5.0",
 		"@discordjs/rest": "^0.1.0-canary.0",
 		"discord-api-types": "^0.23.0-next.8fcd0f2.1628685220",
 		"discord.js": "^13.1.0-dev.1628683680.75b48d8",
