@@ -71,7 +71,7 @@ async function main() {
 		await client.init();
 
 		client.on('messageCreate', (message) => {
-			if (message.author.bot || !message.content.length || message.channel.type !== 'GUILD_TEXT') return;
+			if (message.author.bot || !message.content.length) return;
 			void checkMessage(message);
 		});
 

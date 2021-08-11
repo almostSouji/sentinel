@@ -116,6 +116,7 @@
 	},
 	"logstate": {
 		"info_channel": "Channel: {{-channel}}",
+		"info_channel_thread": "Thread: {{-channel}} in channel {{-parent}}",
 		"info_link": "Message link: [jump ➔](<{{-link}}>)",
 		"info_edit": "Message Edit",
 		"info_attachments": "Attachments ({{count}}): {{-links}}",

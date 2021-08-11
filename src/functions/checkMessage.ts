@@ -61,7 +61,7 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 		if (!settings) return;
 		const locale = settings.locale;
 
-		if (!settings.watching.includes(channel.id)) return;
+		if (!settings.watching.includes(channel instanceof ThreadChannel ? channel.parentId ?? '0' : channel.id)) return;
 
 		await sql`
 			insert into users ${sql({

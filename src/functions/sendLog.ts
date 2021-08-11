@@ -60,10 +60,16 @@ export async function sendLog(
 	embed.setAuthor(`${targetUser.tag} (${targetUser.id})`, targetUser.displayAvatarURL());
 
 	metaDataParts.push(
-		`${LIST_BULLET} ${i18next.t('logstate.info_channel', {
-			channel: formatChannelMention(targetChannel.id),
-			lng: locale,
-		})}`,
+		targetChannel instanceof ThreadChannel
+			? `${LIST_BULLET} ${i18next.t('logstate.info_channel_thread', {
+					channel: formatChannelMention(targetChannel.id),
+					parent: targetChannel.parentId ? formatChannelMention(targetChannel.parentId) : 'not found',
+					lng: locale,
+			  })}`
+			: `${LIST_BULLET} ${i18next.t('logstate.info_channel', {
+					channel: formatChannelMention(targetChannel.id),
+					lng: locale,
+			  })}`,
 	);
 
 	metaDataParts.push(
