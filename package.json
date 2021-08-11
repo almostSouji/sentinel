@@ -19,8 +19,8 @@
 	},
 	"dependencies": {
 		"@discordjs/rest": "^0.1.0-canary.0",
-		"discord-api-types": "^0.21.0-next.ab1951b.1627216104",
-		"discord.js": "github:discordjs/discord.js#598bd211e5bbadf906388f8683602e49577921b6",
+		"discord-api-types": "^0.23.0-next.8fcd0f2.1628685220",
+		"discord.js": "^13.1.0-dev.1628683680.75b48d8",
 		"dotenv": "^10.0.0",
 		"googleapis": "^73.0.0",
 		"i18next": "^20.3.5",
@@ -55,6 +55,6 @@
 		"typescript": "^4.3.5"
 	},
 	"engines": {
-		"node": ">=16.0.0"
+		"node": ">=16.6.0"
 	}
 }

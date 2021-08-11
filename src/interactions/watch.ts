@@ -6,7 +6,7 @@ export const WatchCommand = {
 	default_permission: false,
 	options: [
 		{
-			type: ApplicationCommandOptionType.SubCommand,
+			type: ApplicationCommandOptionType.Subcommand,
 			name: 'add',
 			description: 'Specify channels the application should watch',
 			options: [
@@ -39,7 +39,7 @@ export const WatchCommand = {
 			],
 		},
 		{
-			type: ApplicationCommandOptionType.SubCommand,
+			type: ApplicationCommandOptionType.Subcommand,
 			name: 'remove',
 			description: 'Specify channels the application should no longer watch',
 			options: [

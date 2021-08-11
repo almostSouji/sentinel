@@ -6,7 +6,7 @@ export const ConfigCommand = {
 	default_permission: false,
 	options: [
 		{
-			type: ApplicationCommandOptionType.SubCommand,
+			type: ApplicationCommandOptionType.Subcommand,
 			name: 'edit',
 			description: 'Edit the server configuration',
 			options: [
@@ -79,7 +79,7 @@ export const ConfigCommand = {
 			],
 		},
 		{
-			type: ApplicationCommandOptionType.SubCommand,
+			type: ApplicationCommandOptionType.Subcommand,
 			name: 'show',
 			description: 'Show the current server configuration',
 		},

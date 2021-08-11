@@ -6,7 +6,7 @@ export const NotifyCommand = {
 	default_permission: false,
 	options: [
 		{
-			type: ApplicationCommandOptionType.SubCommand,
+			type: ApplicationCommandOptionType.Subcommand,
 			name: 'add',
 			description: 'Add a notification',
 			options: [
@@ -43,7 +43,7 @@ export const NotifyCommand = {
 			],
 		},
 		{
-			type: ApplicationCommandOptionType.SubCommand,
+			type: ApplicationCommandOptionType.Subcommand,
 			name: 'remove',
 			description: 'Remove a notification',
 			options: [
@@ -56,7 +56,7 @@ export const NotifyCommand = {
 			],
 		},
 		{
-			type: ApplicationCommandOptionType.SubCommand,
+			type: ApplicationCommandOptionType.Subcommand,
 			name: 'show',
 			description: 'Show notifications',
 		},
