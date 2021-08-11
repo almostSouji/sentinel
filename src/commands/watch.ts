@@ -40,6 +40,7 @@ export async function handleWatchCommand(
 	const missingView = [];
 	const wrongType = [];
 	const already = [];
+	const threads = [];
 	const valid: string[] = [];
 
 	let [settings] = await sql<GuildSettings[]>`
@@ -78,6 +79,10 @@ export async function handleWatchCommand(
 							}
 							valid.push(child.id);
 						}
+						continue;
+					}
+					if (channel.isThread()) {
+						threads.push(channel.id);
 						continue;
 					}
 					if (!channel.isText()) {
@@ -207,6 +212,16 @@ export async function handleWatchCommand(
 				lng: locale,
 				count: wrongType.length,
 				channels: wrongType.map((channelId) => formatChannelMention(channelId)),
+			})}`,
+		);
+	}
+
+	if (threads.length) {
+		messageParts.push(
+			`${warnEmoji} ${i18next.t('command.watch.add_channels_wrong_type_thread', {
+				lng: locale,
+				count: threads.length,
+				channels: threads.map((channelId) => formatChannelMention(channelId)),
 			})}`,
 		);
 	}

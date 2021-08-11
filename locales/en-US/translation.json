@@ -76,6 +76,8 @@
 			"add_channels_permissions_missing_plural": "Cannot add channels {{-channels}} (missing permission to view or read message history).",
 			"add_channels_wrong_type": "Cannot add channel {{-channels}} (wrong channel type).",
 			"add_channels_wrong_type_plural": "Cannot add channels {{-channels}} (wrong channel type).",
+			"add_channels_wrong_type_thread": "Cannot add channel {{-channels}} (threads are watched with their parent channel)",
+			"add_channels_wrong_type_thread_plural": "Cannot add channels {{-channels}} (threads are watched with their parent channel)",
 			"add_channels_valid": "Added channel {{-channels}} to the watchlist.",
 			"add_channels_valid_plural": "Added channels {{-channels}} to the watchlist.",
 			"add_channels_already": "Cannot add channel {{-channels}} (already watching).",
