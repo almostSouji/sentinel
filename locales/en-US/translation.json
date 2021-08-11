@@ -59,7 +59,8 @@
 			"no_user": "Cannot find a target user.",
 			"karma_fieldname": "Karma",
 			"karma_message": "{{numtripped}} of {{numtotal}} messages seen in watched channels on this guild have tripped {{numflags}} flags.",
-			"attributes_fieldname": "Attribute Flags"
+			"attributes_fieldname": "Attribute Flags",
+			"severity_fieldname": "Severitiy triggered"
 		},
 		"notify": {
 			"notification_change": "Set the notification level for {{-entity}} to severity {{level}}.",

@@ -7,6 +7,7 @@ import { Incident, UserStats } from '../types/DataTypes';
 import { truncateEmbed } from '../utils';
 import { replyWithError } from '../utils/responses';
 import { userMention, inlineCode } from '@discordjs/builders';
+import { formatSeverity } from '../utils/formatting';
 
 export async function handleKarmaCommand(
 	interaction: CommandInteraction,
@@ -44,14 +45,22 @@ export async function handleKarmaCommand(
 	}
 
 	const attributesFormatted = [];
+	const severityFormatted = [];
 	const flagCounts = new Map<string, number>();
+	const severityCounts = new Map<number, number>();
+
 	for (const incident of incidents) {
+		const currentSeverityNumber = severityCounts.get(incident.severity) ?? 0;
+		severityCounts.set(incident.severity, currentSeverityNumber + 1);
 		for (const attribute of incident.attributes) {
 			const current = flagCounts.get(attribute) ?? 0;
 			flagCounts.set(attribute, current + 1);
 		}
 	}
 
+	for (const [key, value] of [...severityCounts.entries()].sort((a, b) => b[0] - a[0])) {
+		severityFormatted.push(`${LIST_BULLET} ${value}x ${formatSeverity(channel, key)}`);
+	}
 	for (const [key, value] of [...flagCounts.entries()].sort((a, b) => b[1] - a[1])) {
 		attributesFormatted.push(`${LIST_BULLET} ${value}x ${inlineCode(key)}`);
 	}
@@ -71,8 +80,10 @@ export async function handleKarmaCommand(
 					)
 					.addField(
 						i18next.t('command.karma.attributes_fieldname', { lng: locale }),
-						`${attributesFormatted.join('\n')}`,
+						attributesFormatted.join('\n'),
+						true,
 					)
+					.addField(i18next.t('command.karma.severity_fieldname', { lng: locale }), severityFormatted.join('\n'), true)
 					.setAuthor(`${targetUser.tag} (${targetUser.id})`, targetUser.displayAvatarURL())
 					.setColor(COLOR_DARK),
 			),
