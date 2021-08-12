@@ -7,13 +7,22 @@ import { sendLog } from './sendLog';
 import { checkContent } from './inspection/checkContent';
 import { formatPerspectiveShort } from './formatting/formatPerspective';
 import { cleanContent } from '../utils';
-import { COLOR_BLUE, COLOR_GREEN, COLOR_RED, COLOR_YELLOW, COLOR_DARK, LIST_BULLET, FLAG_DEBUG } from '../constants';
+import {
+	COLOR_BLUE,
+	COLOR_GREEN,
+	COLOR_RED,
+	COLOR_YELLOW,
+	COLOR_DARK,
+	LIST_BULLET,
+	FLAG_DEBUG,
+	COLOR_ORANGE,
+} from '../constants';
 import { GuildSettings, Immunity, Strictness } from '../types/DataTypes';
 import { formatSeverity } from '../utils/formatting';
 import i18next from 'i18next';
 import { inlineCode } from '@discordjs/builders';
 
-const colors = [COLOR_DARK, COLOR_GREEN, COLOR_YELLOW, COLOR_RED, COLOR_BLUE] as const;
+const colors = [COLOR_DARK, COLOR_GREEN, COLOR_YELLOW, COLOR_ORANGE, COLOR_RED, COLOR_BLUE] as const;
 
 export function setSeverityColor(embed: MessageEmbed, severity: number): MessageEmbed {
 	return embed.setColor(colors[severity] ?? COLOR_DARK);
@@ -101,6 +110,9 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 		const highAmount = Math.ceil(
 			strictnessPick(strictness, attributes.length * 0.125, attributes.length * 0.1875, attributes.length * 0.25),
 		);
+		const veryHighAmount = Math.ceil(
+			strictnessPick(strictness, attributes.length * 0.3, attributes.length * 0.4, attributes.length * 0.5),
+		);
 		const severeAmount = 1;
 
 		const { perspective } = await checkContent(
@@ -112,7 +124,8 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 
 		if (high.length < attributeAmount && !severe.length) return;
 
-		const perspectiveSeverity = severe.length >= severeAmount ? 3 : high.length >= highAmount ? 2 : 1;
+		const perspectiveSeverity =
+			severe.length >= severeAmount ? 4 : high.length >= veryHighAmount ? 3 : high.length >= highAmount ? 2 : 1;
 		const severityLevel = Math.max(perspectiveSeverity);
 
 		setSeverityColor(embed, severityLevel);
