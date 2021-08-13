@@ -1,3 +1,4 @@
+import { createHash } from 'crypto';
 import { Snowflake, MessageEmbed, DMChannel, GuildChannel, ThreadChannel, PartialDMChannel } from 'discord.js';
 import { AttributeScoreMapEntry, perspectiveAttributes } from '../functions/perspective';
 
@@ -167,4 +168,26 @@ export function serializeOpCode(op: number): string {
  */
 export function cleanContent(initial: string): string {
 	return initial.replace(/\b(?:fuck(?:ing)?|shi+t)\b/g, '').trim();
+}
+
+/**
+ * Hashes a text with md5 to use for bucketing
+ * @param initial - Text to hash
+ * @returns Hashed text
+ */
+export function hashString(initial: string): string {
+	return createHash('md5').update(initial).digest('hex');
+}
+
+/**
+ * Builds a record from provided entry array
+ * @param initial - Redis hashset records
+ * @param transformer - Function to apply to each value
+ * @returns The built record
+ */
+export function transformHashset<T>(
+	initial: Record<string, string>,
+	transformer: (element: string) => T,
+): Record<string, T> {
+	return Object.fromEntries(Object.entries(initial).map(([key, value]) => [key, transformer(value)]));
 }

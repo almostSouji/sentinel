@@ -39,6 +39,7 @@ import { GuildSettings } from './types/DataTypes';
 import i18next from 'i18next';
 import { replyWithError } from './utils/responses';
 import { formatEmoji, inlineCode } from '@discordjs/builders';
+import { messageSpam } from './functions/antiRaid/messageSpam';
 
 export interface ProcessEnv {
 	DISCORD_TOKEN: string;
@@ -73,6 +74,7 @@ async function main() {
 		client.on('messageCreate', (message) => {
 			if (message.author.bot || !message.content.length) return;
 			void checkMessage(message);
+			void messageSpam(message);
 		});
 
 		client.on('messageUpdate', (oldMessage, newMessage) => {

@@ -1,4 +1,2 @@
 import createLogger from 'pino';
-export const logger = createLogger({
-	level: 'debug',
-});
+export const logger = createLogger();

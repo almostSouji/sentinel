@@ -23,6 +23,9 @@
 		"config": {
 			"immunity_unchanged": "Immunity stays at {{level}}.",
 			"immunity_updated": "Immunity level changed to {{level}}.",
+			"spamthreshold_updated": "Spam threshold set to {{threshold}} identical messages by the same user.",
+			"spamthreshold_unchanged": "Spam threshold stays at {{threshold}} identical messages by the same user.",
+			"spamthreshold_disabled": "No longer watching for spam.",
 			"logchannel_not_text": "Provided logchannel {{-channel}} is not a text channel.",
 			"logchannel_no_permissions": "The bot needs permissions to embed links, read messages and message history in the provided log channel {{-channel}}.",
 			"logchannel_already": "Logchannel is already set to {{-channel}}.",
@@ -45,6 +48,9 @@
 			"show_attributes_fieldname_plural": "Attributes",
 			"show_attributes_nyt_fieldname": "NYTimes Attribute",
 			"show_attributes_nyt_fieldname_plural": "NYTimes Attributes",
+			"show_spamthreshold_fieldname": "Spam threshold",
+			"show_spamthreshold_enabled": "Identical messages by the same person: {{-formattedCount}}",
+			"show_spamthreshold_disabled": "Feature disabled",
 			"show_attributes_none": "Not watching any attributes (required).",
 			"show_attributes_debug_all": "Temporarily watching all attributes (debug mode).",
 			"no_changes": "Nothing changed!"
@@ -60,7 +66,8 @@
 			"karma_fieldname": "Karma",
 			"karma_message": "{{numtripped}} of {{numtotal}} messages seen in watched channels on this guild have tripped {{numflags}} flags.",
 			"attributes_fieldname": "Attribute Flags",
-			"severity_fieldname": "Severitiy triggered"
+			"severity_fieldname": "Severitiy triggered",
+			"spam_fieldname": "Spam incidents"
 		},
 		"notify": {
 			"notification_change": "Set the notification level for {{-entity}} to severity {{level}}.",
@@ -144,5 +151,11 @@
 	},
 	"commandexecution": {
 		"no_handler": "No handler found for command {{command}} {{id}}"
+	},
+	"spam": {
+		"spam_detected": "Spam detected",
+		"hash_fieldname": "Hash",
+		"messages_in": "{{bullet}} {{-formattedCount}} message in {{-channel}}",
+		"messages_in_plural": "{{bullet}} {{-formattedCount}} messages in {{-channel}}"
 	}
 }

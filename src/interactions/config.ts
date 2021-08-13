@@ -76,6 +76,11 @@ export const ConfigCommand = {
 						},
 					],
 				},
+				{
+					type: ApplicationCommandOptionType.Integer,
+					name: 'spamthreshold',
+					description: 'Threshold of exact message repetitions to consider spam (0 to disable)',
+				},
 			],
 		},
 		{

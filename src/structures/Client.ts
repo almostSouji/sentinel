@@ -41,6 +41,7 @@ export default class extends Client {
 					"user"		text,
 					guild		text,
 					messages	integer not null default 1,
+					antispam	integer not null default 0,
 					primary key(guild, "user")
 				);
 			`;
@@ -55,7 +56,8 @@ export default class extends Client {
 					prefetch		smallint not null default 0,
 					immunity		text not null default 'NONE',
 					flags			text[] not null default '{}'::text[],
-					locale			text not null default 'en-US'
+					locale			text not null default 'en-US',
+					spamthreshold	smallint
 				);
 			`;
 

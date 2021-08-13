@@ -26,11 +26,12 @@ export interface UserStats {
 	user: string;
 	guild: string;
 	messages: number;
+	antispam: number;
 }
 
 export interface GuildSettings {
 	guild: string;
-	logchannel?: string;
+	logchannel: string | null;
 	strictness: number;
 	watching: string[];
 	attributes: string[];
@@ -38,6 +39,7 @@ export interface GuildSettings {
 	immunity: string;
 	flags: string[];
 	locale: string;
+	spamthreshold: number | null;
 }
 
 export interface Notification {

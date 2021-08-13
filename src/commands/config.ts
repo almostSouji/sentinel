@@ -171,6 +171,32 @@ export async function handleConfigCommand(
 				}
 			}
 
+			if (args.edit.spamthreshold !== undefined) {
+				if (args.edit.spamthreshold === 0) {
+					settings.spamthreshold = null;
+					messageParts.push(
+						`${successEmoji}${i18next.t('command.config.spamthreshold_disabled', {
+							lng: locale,
+						})}`,
+					);
+				} else if (settings.spamthreshold === args.edit.spamthreshold) {
+					messageParts.push(
+						`${warnEmoji}${i18next.t('command.config.spamthreshold_unchanged', {
+							threshold: inlineCode(String(settings.spamthreshold)),
+							lng: locale,
+						})}`,
+					);
+				} else {
+					settings.spamthreshold = args.edit.spamthreshold;
+					messageParts.push(
+						`${successEmoji}${i18next.t('command.config.spamthreshold_updated', {
+							threshold: inlineCode(String(settings.spamthreshold)),
+							lng: locale,
+						})}`,
+					);
+				}
+			}
+
 			const invalidChannels: string[] = [];
 			const validChannels: string[] = [];
 
@@ -199,11 +225,12 @@ export async function handleConfigCommand(
 
 			await sql`
 				update guild_settings set 
-					logchannel = ${settings.logchannel ?? null},
+					logchannel = ${settings.logchannel},
 					strictness = ${settings.strictness},
 					prefetch = ${settings.prefetch},
 					immunity = ${settings.immunity},
-					watching = ${sql.array(settings.watching)}
+					watching = ${sql.array(settings.watching)},
+					spamthreshold = ${settings.spamthreshold}
 				where guild = ${settings.guild}
 			`;
 
@@ -274,6 +301,21 @@ export async function handleConfigCommand(
 				}),
 				String(settings.prefetch),
 				true,
+			);
+
+			embed.addField(
+				i18next.t('command.config.show_spamthreshold_fieldname', {
+					lng: locale,
+				}),
+				settings.spamthreshold
+					? i18next.t('command.config.show_spamthreshold_enabled', {
+							lng: locale,
+							formattedCount: inlineCode(String(settings.spamthreshold)),
+					  })
+					: i18next.t('command.config.show_spamthreshold_disabled', {
+							lng: locale,
+					  }),
+				false,
 			);
 
 			const attributes = [...forcedAttributes, ...settings.attributes];
