@@ -8,7 +8,7 @@ import {
 	Permissions,
 	ThreadChannel,
 } from 'discord.js';
-import { generateButtons, listButton } from './buttons';
+import { generateButtons } from './buttons';
 import { strictnessPick } from './checkMessage';
 import { resolveNotifications, truncate, truncateEmbed } from '../utils';
 import { GuildSettings, Notification } from '../types/DataTypes';
@@ -22,7 +22,6 @@ export async function sendLog(
 	severityLevel: number,
 	embed: MessageEmbed,
 	isEdit: boolean,
-	values: number[],
 ): Promise<Message | false> {
 	if (targetMessage.channel.type === 'DM' || targetMessage.partial) return false;
 	const {
@@ -125,7 +124,6 @@ export async function sendLog(
 		targetChannel instanceof ThreadChannel ? targetChannel.parentId ?? targetChannel.id : targetChannel.id,
 		targetMessage.author.id,
 		targetMessage.id,
-		values,
 		botPermissions,
 		targetMessage.member,
 		locale,
@@ -151,6 +149,5 @@ export async function sendLog(
 			users,
 			roles,
 		},
-		components: [new MessageActionRow().addComponents(listButton(values, locale))],
 	});
 }

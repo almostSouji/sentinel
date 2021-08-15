@@ -1,7 +1,6 @@
 import { roleMention, userMention } from '@discordjs/builders';
 import { createHash } from 'crypto';
 import { Snowflake, MessageEmbed, DMChannel, GuildChannel, ThreadChannel, PartialDMChannel } from 'discord.js';
-import { AttributeScoreMapEntry, perspectiveAttributes } from '../functions/perspective';
 import { Notification } from '../types/DataTypes';
 
 /**
@@ -145,33 +144,6 @@ export function deserializeTargets(buffer: Buffer): DeserializedTargets {
 		channel: `${buffer.readBigInt64LE(10)}` as const,
 		message: `${buffer.readBigInt64LE(18)}` as const,
 	};
-}
-
-/**
- * Encode provided attribute values into a binary string
- * @param op - The OP Code to use
- * @param attributes - The attributes to serialize
- * @returns Encoded binary
- */
-export function serializeAttributes(op: number, attributes: number[]): string {
-	const b = Buffer.alloc(perspectiveAttributes.length * 2 + 2);
-	b.writeUInt16LE(op);
-	for (let index = 0; index < attributes.length; index++) {
-		b.writeUInt16LE(attributes[index], 2 + index * 2);
-	}
-	return b.toString('binary');
-}
-
-/**
- * Deserialize a provided buffer into an array of attribute values
- * @param buffer - The buffer to deserialize
- * @returns The deserialized structure
- */
-export function deserializeAttributes(buffer: Buffer): AttributeScoreMapEntry[] {
-	return perspectiveAttributes.map((key, index) => ({
-		key,
-		value: buffer.readUInt16LE(2 + index * 2) / 100,
-	}));
 }
 
 /**

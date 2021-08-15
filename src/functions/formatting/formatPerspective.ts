@@ -53,7 +53,7 @@ export function formatPerspectiveDetails(data: AttributeScoreMapEntry[], locale:
 		.map((val) => {
 			if (nytAttributes.includes(val.key)) nyt++;
 			if (nsfwAtrributes.includes(val.key)) nsfw++;
-			return `• ${val.value}% ${formatFlagString(val.key, true)}`;
+			return `• ${val.value.toFixed(2)}% ${formatFlagString(val.key, true)}`;
 		})
 		.join('\n');
 

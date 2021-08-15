@@ -17,7 +17,6 @@ import {
 } from 'discord.js';
 
 import {
-	EMOJI_ID_SHIELD_RED_SMALL,
 	ERROR_CODE_MISSING_PERMISSIONS,
 	ERROR_CODE_UNKNOWN_MESSAGE,
 	ERROR_CODE_UNKNOWN_USER,
@@ -26,13 +25,7 @@ import {
 import Client from './structures/Client';
 import { checkMessage } from './functions/checkMessage';
 import { logger } from './functions/logger';
-import {
-	deserializeAttributes,
-	deserializeSingleTarget,
-	deserializeTargets,
-	emojiOrFallback,
-	truncateEmbed,
-} from './utils';
+import { deserializeSingleTarget, deserializeTargets, truncateEmbed } from './utils';
 import { updateLogState } from './functions/updateLogState';
 import { handleMemberGuildState } from './functions/logStateHandlers/handleMemberGuildState';
 import { handleMessageDeletableState } from './functions/logStateHandlers/handleMessageDeletableState';
@@ -41,11 +34,10 @@ import { handleMessageDelete } from './functions/logStateHandlers/handleMessageD
 import { handleChannelDelete } from './functions/logStateHandlers/handleChannelDelete';
 import { handleMemberAdd } from './functions/logStateHandlers/handleMemberAdd';
 import { handleCommands } from './functions/handleCommands';
-import { formatPerspectiveDetails } from './functions/formatting/formatPerspective';
 import { GuildSettings } from './types/DataTypes';
 import i18next from 'i18next';
 import { replyWithError } from './utils/responses';
-import { formatEmoji, inlineCode } from '@discordjs/builders';
+import { inlineCode } from '@discordjs/builders';
 import { messageSpam } from './functions/antiRaid/messageSpam';
 
 export interface ProcessEnv {
@@ -59,7 +51,6 @@ export interface ProcessEnv {
 
 export enum OpCodes {
 	NOOP,
-	LIST,
 	REVIEW,
 	BAN,
 	DELETE,
@@ -419,24 +410,6 @@ async function main() {
 					})}`,
 				);
 				buttons = buttons.filter((b) => !b.label || b.label === labelList);
-			}
-
-			if (op === OpCodes.LIST) {
-				const values = deserializeAttributes(res);
-				let response = formatPerspectiveDetails(values, locale);
-
-				if (!response.length) {
-					response = `${emojiOrFallback(
-						interaction.channel,
-						formatEmoji(EMOJI_ID_SHIELD_RED_SMALL),
-						LIST_BULLET,
-					)} ${i18next.t('checks.format_perspective_no_attributes', { lng: locale })}`;
-				}
-
-				return interaction.reply({
-					content: response,
-					ephemeral: true,
-				});
 			}
 
 			if (messageParts.length) {

@@ -1,11 +1,11 @@
 import { Message, PartialMessage, Permissions, MessageEmbed, Snowflake, ThreadChannel } from 'discord.js';
 import { Score } from '../types/perspective';
 import { logger } from './logger';
-import { forcedAttributes, perspectiveAttributes } from './perspective';
+import { forcedAttributes } from './perspective';
 import { sendLog } from './sendLog';
 
 import { checkContent } from './inspection/checkContent';
-import { formatPerspectiveShort } from './formatting/formatPerspective';
+import { formatPerspectiveDetails, formatPerspectiveShort } from './formatting/formatPerspective';
 import { cleanContent } from '../utils';
 import {
 	COLOR_BLUE,
@@ -211,16 +211,16 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 				].join('\n'),
 				true,
 			);
+			embed.addField(
+				'@debug(perspective)',
+				formatPerspectiveDetails(
+					tags.map((t) => ({ key: t.key, value: t.score.value * 100 })),
+					locale,
+				),
+			);
 		}
 
-		const logMessage = await sendLog(
-			logChannel,
-			message,
-			severityLevel,
-			embed,
-			isEdit,
-			perspectiveAttributes.map((a) => Math.round((tags.find((t) => t.key === a)?.score.value ?? 0) * 10000)),
-		);
+		const logMessage = await sendLog(logChannel, message, severityLevel, embed, isEdit);
 
 		if (!logMessage) return;
 
