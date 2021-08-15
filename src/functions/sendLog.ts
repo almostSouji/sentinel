@@ -23,8 +23,8 @@ export async function sendLog(
 	embed: MessageEmbed,
 	isEdit: boolean,
 	values: number[],
-) {
-	if (targetMessage.channel.type === 'DM' || targetMessage.partial) return;
+): Promise<Message | false> {
+	if (targetMessage.channel.type === 'DM' || targetMessage.partial) return false;
 	const {
 		client: { sql, user: clientUser },
 		channel: targetChannel,
@@ -41,10 +41,10 @@ export async function sendLog(
 			Permissions.FLAGS.EMBED_LINKS,
 			Permissions.FLAGS.READ_MESSAGE_HISTORY,
 		]);
-	if (!hasPerms) return;
+	if (!hasPerms) return false;
 	const settings = (await sql<GuildSettings[]>`select * from guild_settings where guild = ${guild.id}`)[0];
 
-	if (!settings) return;
+	if (!settings) return false;
 	const locale = settings.locale;
 	const logOverride = settings.flags.includes(FLAG_LOG_ALL);
 	const botPermissions = targetChannel.permissionsFor(clientUser!);
@@ -133,7 +133,7 @@ export async function sendLog(
 
 	truncateEmbed(embed);
 	if (severityLevel >= buttonLevel) {
-		void logChannel.send({
+		return logChannel.send({
 			content: newContent.length ? newContent : undefined,
 			embeds: [truncateEmbed(embed)],
 			allowedMentions: {
@@ -142,10 +142,9 @@ export async function sendLog(
 			},
 			components: [new MessageActionRow().addComponents(buttons)],
 		});
-		return;
 	}
 
-	void logChannel.send({
+	return logChannel.send({
 		content: newContent.length ? newContent : undefined,
 		embeds: [embed],
 		allowedMentions: {

@@ -213,25 +213,7 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 			);
 		}
 
-		await sql`insert into incidents (
-			message,
-			channel,
-			guild,
-			author,
-			attributes,
-			flags,
-			severity
-		) values (
-			${message.id},
-			${channel.id},
-			${guild.id},
-			${author.id},
-			${sql.array(high.map((t) => t.key))},
-			${sql.array([])},
-			${severityLevel}
-		)`;
-
-		void sendLog(
+		const logMessage = await sendLog(
 			logChannel,
 			message,
 			severityLevel,
@@ -239,6 +221,33 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 			isEdit,
 			perspectiveAttributes.map((a) => Math.round((tags.find((t) => t.key === a)?.score.value ?? 0) * 10000)),
 		);
+
+		if (!logMessage) return;
+
+		const [{ next_incident_id }] = await sql<[{ next_incident_id: number }]>`select next_incident_id();`;
+		await sql`insert into incidents (
+			id,
+			type,
+			message,
+			channel,
+			guild,
+			"user",
+			attributes,
+			severity,
+			logChannel,
+			logMessage
+		) values (
+			${next_incident_id},
+			'PERSPECTIVE',
+			${message.id},
+			${channel.id},
+			${guild.id},
+			${author.id},
+			${sql.array(high.map((t) => t.key))},
+			${severityLevel},
+			${logMessage.id},
+			${logMessage.channelId}
+		)`;
 	} catch (err) {
 		logger.error(err);
 	}

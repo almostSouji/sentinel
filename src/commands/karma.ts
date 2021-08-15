@@ -34,8 +34,11 @@ export async function handleKarmaCommand(
 	}
 	const incidents = await sql<
 		Incident[]
-	>`select * from incidents where guild = ${guild.id} and author = ${targetUser.id}`;
+	>`select * from incidents where guild = ${guild.id} and "user" = ${targetUser.id} and type = 'PERSPECTIVE'`;
 	const [stats] = await sql<UserStats[]>`select * from users where "user" = ${targetUser.id} and guild = ${guild.id}`;
+	const [{ count: spamIncidentAmount }] = await sql<
+		[{ count: number }]
+	>`select count(*) from incidents where guild = ${guild.id} and "user" = ${targetUser.id} and type = 'SPAM'`;
 
 	const [settings] = await sql<GuildSettings[]>`select * from guild_settings where guild = ${guild.id}`;
 
@@ -52,8 +55,8 @@ export async function handleKarmaCommand(
 	const severityCounts = new Map<number, number>();
 
 	for (const incident of incidents) {
-		const currentSeverityNumber = severityCounts.get(incident.severity) ?? 0;
-		severityCounts.set(incident.severity, currentSeverityNumber + 1);
+		const currentSeverityNumber = severityCounts.get(incident.severity ?? 0) ?? 0;
+		severityCounts.set(incident.severity ?? 0, currentSeverityNumber + 1);
 		for (const attribute of incident.attributes) {
 			const current = flagCounts.get(attribute) ?? 0;
 			flagCounts.set(attribute, current + 1);
@@ -82,8 +85,8 @@ export async function handleKarmaCommand(
 		.setAuthor(`${targetUser.tag} (${targetUser.id})`, targetUser.displayAvatarURL())
 		.setColor(COLOR_DARK);
 
-	if (settings?.spamthreshold && stats.antispam) {
-		embed.addField(i18next.t('command.karma.spam_fieldname', { lng: locale }), String(stats.antispam), true);
+	if (settings?.spamthreshold && spamIncidentAmount) {
+		embed.addField(i18next.t('command.karma.spam_fieldname', { lng: locale }), String(spamIncidentAmount), true);
 	}
 
 	void interaction.reply({

@@ -6,6 +6,7 @@ import { GUILD_HASH_LOGMESSAGE, GUILD_USER_MESSAGE_CHANNEL_COUNT } from '../../u
 import i18next from 'i18next';
 import { channelMention, inlineCode } from '@discordjs/builders';
 import { banSingleButton, reviewSingleButton } from '../buttons';
+import { logger } from '../logger';
 
 function spamColor(amount: number, threshold: number): ColorResolvable {
 	switch (amount) {
@@ -117,35 +118,64 @@ export async function messageSpam(message: Message) {
 	try {
 		const logMessageId = await redis.get(logkey);
 		if (!logMessageId) {
-			await sql`
-				insert into users ${sql({
-					user: author.id,
-					guild: guild.id,
-					antispam: 1,
-				})}
-				on conflict ("user", guild) do update
-				set antispam = users.antispam + 1
-			`;
+			const isBanned = Boolean(
+				((settings.flags.includes('SCAMBAN') && scamDomains.length && message.member?.bannable) ?? false) &&
+					// @ts-ignore
+					(await message.member
+						.ban({
+							reason: i18next.t('spam.spam_detected', { lng: locale, domains: scamDomains.join(',') }),
+							days: 1,
+						})
+						.catch(() => false)),
+			);
 
-			throw new Error('no log found');
+			const logMessage = await logChannel.send({
+				embeds: [
+					truncateEmbed(
+						buildEmbed(locale, author, message, channelSpam, threshold, hash, undefined, scamDomains, isBanned),
+					),
+				],
+				components: [
+					new MessageActionRow().addComponents(
+						banSingleButton(author.id, message.member?.bannable ?? false, locale),
+						reviewSingleButton(author.id, locale),
+					),
+				],
+				content: notificationParts.length ? notificationParts.join(', ') : null,
+				allowedMentions: {
+					users,
+					roles,
+				},
+			});
+
+			await redis.set('a', 'a');
+			await redis.set(logkey, logMessage.id);
+			await redis.expire(logkey, SPAM_EXPIRE_SECONDS);
+
+			await sql`
+				insert into incidents (
+					id,
+					type,
+					guild,
+					"user",
+					logChannel,
+					logMessage
+				) values (
+					next_incident_id(),
+					'SPAM',
+					${guild.id},
+					${author.id},
+					${logMessage.id},
+					${logMessage.channelId}
+				)
+			`;
+			return;
 		}
 		const logMessage = await logChannel.messages.fetch(logMessageId);
-		const isBanned = Boolean(
-			((settings.flags.includes('SCAMBAN') && scamDomains.length && message.member?.bannable) ?? false) &&
-				// @ts-ignore
-				(await message.member
-					.ban({
-						reason: i18next.t('spam.spam_detected', { lng: locale, domains: scamDomains.join(',') }),
-						days: 1,
-					})
-					.catch(() => false)),
-		);
 
 		await logMessage.edit({
 			embeds: [
-				truncateEmbed(
-					buildEmbed(locale, author, message, channelSpam, threshold, hash, logMessage, scamDomains, isBanned),
-				),
+				truncateEmbed(buildEmbed(locale, author, message, channelSpam, threshold, hash, logMessage, scamDomains)),
 			],
 			content: notificationParts.length ? notificationParts.join(', ') : null,
 			allowedMentions: {
@@ -157,38 +187,7 @@ export async function messageSpam(message: Message) {
 
 		return;
 	} catch (err) {
+		logger.error(err);
 		void redis.del(logkey);
 	}
-
-	const isBanned = Boolean(
-		((settings.flags.includes('SCAMBAN') && scamDomains.length && message.member?.bannable) ?? false) &&
-			// @ts-ignore
-			(await message.member
-				.ban({
-					reason: i18next.t('spam.spam_detected', { lng: locale, domains: scamDomains.join(',') }),
-					days: 1,
-				})
-				.catch(() => false)),
-	);
-
-	const logMessage = await logChannel.send({
-		embeds: [
-			truncateEmbed(
-				buildEmbed(locale, author, message, channelSpam, threshold, hash, undefined, scamDomains, isBanned),
-			),
-		],
-		components: [
-			new MessageActionRow().addComponents(
-				banSingleButton(author.id, message.member?.bannable ?? false, locale),
-				reviewSingleButton(author.id, locale),
-			),
-		],
-		content: notificationParts.length ? notificationParts.join(', ') : null,
-		allowedMentions: {
-			users,
-			roles,
-		},
-	});
-	await redis.set(logkey, logMessage.id);
-	await redis.expire(logkey, SPAM_EXPIRE_SECONDS);
 }

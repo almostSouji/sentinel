@@ -1,7 +1,7 @@
 import { config } from 'dotenv';
 import { resolve } from 'path';
 import { REST } from '@discordjs/rest';
-import { Routes, Snowflake } from 'discord-api-types/v8';
+import { Routes, Snowflake } from 'discord-api-types/v9';
 
 config({ path: resolve(__dirname, '../../.env') });
 
@@ -21,6 +21,7 @@ import { KarmaContextCommand } from '../interactions/karmacontext';
 /* eslint-enable @typescript-eslint/no-unused-vars */
 import { logger } from '../functions/logger';
 
+/*
 const commands = [
 	// ConfigCommand,
 	// WatchCommand,
@@ -35,22 +36,31 @@ const commands = [
 	// KarmaCommand, // 🔧 in-dev feature
 	KarmaContextCommand, // 🔧 in-dev feature
 ];
+*/
 
 async function main() {
 	const rest = new REST({ version: '9' }).setToken(process.env.DISCORD_TOKEN!);
 
 	try {
 		logger.info('Start refreshing interaction (/) commands');
-		await rest.put(
-			// @ts-ignore
+		await rest.post(
 			Routes.applicationGuildCommands(
 				process.env.DISCORD_CLIENT_ID as Snowflake,
 				process.env.DISCORD_GUILD_ID as Snowflake,
 			),
 			{
-				body: commands,
+				body: NotifyCommand,
 			},
 		);
+		// await rest.put(
+		// 	Routes.applicationGuildCommands(
+		// 		process.env.DISCORD_CLIENT_ID as Snowflake,
+		// 		process.env.DISCORD_GUILD_ID as Snowflake,
+		// 	),
+		// 	{
+		// 		body: commands,
+		// 	},
+		// );
 		logger.info('Successfully reloaded interaction (/) commands.');
 	} catch (e) {
 		logger.error(e);

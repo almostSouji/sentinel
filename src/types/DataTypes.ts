@@ -12,21 +12,26 @@ export enum Immunity {
 }
 
 export interface Incident {
-	message: string;
-	channel: string;
+	id: number;
+	type: string;
+	message: string | null;
+	channel: string | null;
 	guild: string;
-	author: string;
-	createdAt: number;
+	user: string;
 	attributes: string[];
 	flags: string[];
-	severity: number;
+	severity: number | null;
+	createdAt: number;
+	expiresAt: number;
+	logChannel: string | null;
+	logMessage: string | null;
+	expired: boolean;
 }
 
 export interface UserStats {
 	user: string;
 	guild: string;
 	messages: number;
-	antispam: number;
 }
 
 export interface GuildSettings {
