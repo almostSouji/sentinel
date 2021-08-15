@@ -9,6 +9,7 @@ import {
 	EMOJI_ID_SHIELD_GREEN_SMALL,
 	EMOJI_ID_SHIELD_BLUE_SMALL,
 	EMOJI_ID_SHIELD_ORANGE_SMALL,
+	EMOJI_ID_SHIELD_RAINBOW_SMALL,
 } from '../constants';
 import { nytAttributes, nsfwAtrributes, forcedAttributes } from '../functions/perspective';
 import { formatEmoji, inlineCode } from '@discordjs/builders';
@@ -49,7 +50,17 @@ export function formatSeverity(
 	level: number,
 ): string {
 	const word =
-		level === 4 ? 'SEVERE' : level === 3 ? 'VERY_HIGH' : level === 2 ? 'HIGH' : level === 1 ? 'LOW' : 'CUSTOM';
+		level === 4
+			? 'SEVERE'
+			: level === 3
+			? 'VERY_HIGH'
+			: level === 2
+			? 'HIGH'
+			: level === 1
+			? 'LOW'
+			: level === 999
+			? 'NONE'
+			: 'CUSTOM';
 	const emoji =
 		level === 4
 			? emojiOrFallback(channel, formatEmoji(EMOJI_ID_SHIELD_RED_SMALL), '🔴')
@@ -59,6 +70,8 @@ export function formatSeverity(
 			? emojiOrFallback(channel, formatEmoji(EMOJI_ID_SHIELD_YELLOW_SMALL), '🟡')
 			: level === 1
 			? emojiOrFallback(channel, formatEmoji(EMOJI_ID_SHIELD_GREEN_SMALL), '🟢')
+			: level === 999
+			? emojiOrFallback(channel, formatEmoji(EMOJI_ID_SHIELD_RAINBOW_SMALL), '⚪')
 			: emojiOrFallback(channel, formatEmoji(EMOJI_ID_SHIELD_BLUE_SMALL), '🔵');
 
 	return `${inlineCode(word)} ${emoji}`;

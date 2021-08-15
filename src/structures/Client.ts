@@ -1,4 +1,5 @@
 import { Client } from 'discord.js';
+import { readdir, readFile } from 'fs/promises';
 import i18next from 'i18next';
 import Backend from 'i18next-fs-backend';
 import * as Redis from 'ioredis';
@@ -10,6 +11,7 @@ declare module 'discord.js' {
 	export interface Client {
 		readonly redis: Redis.Redis;
 		readonly sql: postgres.Sql<Record<string, any>>;
+		readonly listDict: Map<string, string[]>;
 	}
 }
 
@@ -19,6 +21,8 @@ export default class extends Client {
 		onnotice: logger.info.bind(logger),
 		debug: true,
 	});
+
+	public readonly listDict = new Map<string, string[]>();
 
 	public async initDB() {
 		await this.sql.begin(async (sql) => {
@@ -67,6 +71,7 @@ export default class extends Client {
 					entity		text,
 					type		text not null,
 					level		smallint not null,
+					subjects	text[] not null default '{}'::text[],
 					primary key(guild, entity)
 				);
 			`;
@@ -74,6 +79,18 @@ export default class extends Client {
 	}
 
 	public async init() {
+		const lists = await readdir(join(__dirname, '../../lists'));
+		for (const listdoc of lists) {
+			const listname = listdoc.split('.txt')[0].trim();
+			const list = await readFile(join(__dirname, '../../lists', listdoc));
+			this.listDict.set(
+				listname,
+				list
+					.toString()
+					.split('\n')
+					.filter((words) => words.length),
+			);
+		}
 		await i18next.use(Backend).init({
 			backend: {
 				loadPath: join(__dirname, '../../locales/{{lng}}/{{ns}}.json'),

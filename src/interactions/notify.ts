@@ -31,14 +31,28 @@ export const NotifyCommand = {
 							value: 2,
 						},
 						{
-							name: 'Severe (red)',
+							name: 'Very High (yellow)',
 							value: 3,
 						},
 						{
-							name: 'Custom (purple)',
+							name: 'Severe (red)',
 							value: 4,
 						},
+						{
+							name: 'Custom (purple)',
+							value: 5,
+						},
+						{
+							name: 'No severity alert',
+							value: 999,
+						},
 					],
+				},
+				{
+					type: ApplicationCommandOptionType.Boolean,
+					name: 'spamalert',
+					description: 'Wheter the entity should be notified on spam',
+					required: false,
 				},
 			],
 		},

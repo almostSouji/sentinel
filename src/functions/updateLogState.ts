@@ -1,7 +1,7 @@
 import { Guild, MessageButton, MessageActionRow, Snowflake, MessageEmbed, Permissions } from 'discord.js';
 import { OpCodes } from '..';
 import { handleMemberAdd } from './logStateHandlers/handleMemberAdd';
-import { deserializeTargets, truncateEmbed } from '../utils';
+import { deserializeSingleTarget, deserializeTargets, truncateEmbed } from '../utils';
 import { GuildSettings } from '../types/DataTypes';
 
 type BanHandler = (
@@ -10,9 +10,9 @@ type BanHandler = (
 	button: MessageButton,
 	row: MessageActionRow,
 	target: Snowflake,
-	targetChannel: Snowflake,
-	targetMessage: Snowflake,
 	locale: string,
+	targetChannel?: Snowflake,
+	targetMessage?: Snowflake,
 	changedUser?: Snowflake,
 	isBanned?: boolean,
 ) => boolean | Promise<boolean>;
@@ -64,11 +64,37 @@ export async function updateLogState(
 		const buttons = row.components;
 
 		const banButton = buttons.find((c) => Buffer.from(c.customId ?? '', 'binary').readUInt16LE() === OpCodes.BAN);
+		const banSpamButton = buttons.find(
+			(c) => Buffer.from(c.customId ?? '', 'binary').readUInt16LE() === OpCodes.BAN_SPAM,
+		);
 		const deleteButton = buttons.find((c) => Buffer.from(c.customId ?? '', 'binary').readUInt16LE() === OpCodes.DELETE);
-		const reviewButton = buttons.find((c) => Buffer.from(c.customId ?? '', 'binary').readUInt16LE() === OpCodes.REVIEW);
+		const reviewButton = buttons.find((c) => {
+			const op = Buffer.from(c.customId ?? '', 'binary').readUInt16LE();
+			return [OpCodes.REVIEW, OpCodes.REVIEW_SPAM].includes(op);
+		});
 
 		let changed = false;
-		if (banButton) {
+		if (banSpamButton) {
+			const banB = banSpamButton as MessageButton;
+			const banBuffer = Buffer.from(banSpamButton.customId ?? '', 'binary');
+			const targetUserId = deserializeSingleTarget(banBuffer);
+			for (const handler of banHandlers) {
+				const res = handler(
+					guild,
+					embed,
+					banB,
+					row,
+					locale,
+					targetUserId,
+					undefined,
+					undefined,
+					changedStructures[0],
+					isBanned,
+				);
+				const change = res instanceof Promise ? await res : res;
+				changed = change || changed;
+			}
+		} else if (banButton) {
 			const banB = banButton as MessageButton;
 			const banBuffer = Buffer.from(banButton.customId ?? '', 'binary');
 			const { user: targetUserId, channel: targetChannelId, message: targetMessageId } = deserializeTargets(banBuffer);
@@ -78,10 +104,10 @@ export async function updateLogState(
 					embed,
 					banB,
 					row,
+					locale,
 					targetUserId,
 					targetChannelId,
 					targetMessageId,
-					locale,
 					changedStructures[0],
 					isBanned,
 				);

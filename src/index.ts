@@ -13,6 +13,7 @@ import {
 	Snowflake,
 	Guild,
 	MessageFlags,
+	TextChannel,
 } from 'discord.js';
 
 import {
@@ -25,7 +26,13 @@ import {
 import Client from './structures/Client';
 import { checkMessage } from './functions/checkMessage';
 import { logger } from './functions/logger';
-import { deserializeAttributes, deserializeTargets, emojiOrFallback, truncateEmbed } from './utils';
+import {
+	deserializeAttributes,
+	deserializeSingleTarget,
+	deserializeTargets,
+	emojiOrFallback,
+	truncateEmbed,
+} from './utils';
 import { updateLogState } from './functions/updateLogState';
 import { handleMemberGuildState } from './functions/logStateHandlers/handleMemberGuildState';
 import { handleMessageDeletableState } from './functions/logStateHandlers/handleMessageDeletableState';
@@ -56,6 +63,8 @@ export enum OpCodes {
 	REVIEW,
 	BAN,
 	DELETE,
+	BAN_SPAM,
+	REVIEW_SPAM,
 }
 
 async function main() {
@@ -169,9 +178,79 @@ async function main() {
 			const res = Buffer.from(interaction.customId, 'binary');
 			const op = res.readInt16LE();
 
+			if (op === OpCodes.BAN_SPAM) {
+				const labelBan = i18next.t('buttons.labels.ban', { lng: locale });
+				const labelForceBan = i18next.t('buttons.labels.forceban', { lng: locale });
+				const targetUserId = deserializeSingleTarget(res);
+
+				if (
+					!(interaction.channel as TextChannel)
+						.permissionsFor(interaction.member)
+						.has(Permissions.FLAGS.MANAGE_MESSAGES)
+				) {
+					return replyWithError(
+						interaction,
+						i18next.t('buttons.ban_no_permissions_spam', {
+							lng: locale,
+						}),
+					);
+				}
+
+				try {
+					const user = await interaction.guild.members.ban(targetUserId, {
+						days: 1,
+						reason: i18next.t('buttons.button_action_reason_spam', {
+							executor: `${executor.tag} (${executor.id})`,
+							lng: locale,
+						}),
+					});
+
+					messageParts.push(
+						`${LIST_BULLET} ${i18next.t('buttons.ban_success', {
+							executor: inlineCode(executor.tag),
+							target: inlineCode(user instanceof GuildMember ? user.user.tag : user instanceof User ? user.tag : user),
+							lng: locale,
+						})}`,
+					);
+					buttons = buttons.filter((b) => b.label !== labelBan && b.label !== labelForceBan);
+				} catch (error) {
+					logger.error(error);
+
+					if (error.code === ERROR_CODE_MISSING_PERMISSIONS) {
+						messageParts.push(
+							`${LIST_BULLET} ${i18next.t('buttons.ban_missing_permissions', {
+								executor: inlineCode(executor.tag),
+								target: inlineCode(targetUserId),
+								lng: locale,
+							})}`,
+						);
+
+						buttons.find((b) => b.label === labelBan)?.setDisabled(true);
+					} else if (error.code === ERROR_CODE_UNKNOWN_USER) {
+						messageParts.push(
+							`${LIST_BULLET} ${i18next.t('buttons.ban_unknown_user', {
+								executor: inlineCode(executor.tag),
+								target: inlineCode(targetUserId),
+								lng: locale,
+							})}`,
+						);
+						buttons = buttons.filter((b) => b.label !== labelBan && b.label !== labelForceBan);
+					} else {
+						messageParts.push(
+							`${LIST_BULLET} ${i18next.t('buttons.ban_unsuccessful', {
+								executor: inlineCode(executor.tag),
+								target: inlineCode(targetUserId),
+								lng: locale,
+							})}`,
+						);
+					}
+				}
+			}
+
 			if (op === OpCodes.BAN) {
 				const labelBan = i18next.t('buttons.labels.ban', { lng: locale });
 				const labelForceBan = i18next.t('buttons.labels.forceban', { lng: locale });
+				const labelDelete = i18next.t('buttons.labels.delete', { lng: locale });
 				const { user: targetUserId } = deserializeTargets(res);
 
 				if (!interaction.member.permissions.has(Permissions.FLAGS.BAN_MEMBERS)) {
@@ -186,7 +265,10 @@ async function main() {
 				try {
 					const user = await interaction.guild.members.ban(targetUserId, {
 						days: 1,
-						reason: `Button action by ${executor.tag}`,
+						reason: i18next.t('buttons.button_action_reason', {
+							executor: `${executor.tag} (${executor.id})`,
+							lng: locale,
+						}),
 					});
 
 					messageParts.push(
@@ -196,7 +278,7 @@ async function main() {
 							lng: locale,
 						})}`,
 					);
-					buttons = buttons.filter((b) => b.label !== labelBan && b.label !== labelForceBan);
+					buttons = buttons.filter((b) => b.label !== labelBan && b.label !== labelForceBan && b.label !== labelDelete);
 				} catch (error) {
 					logger.error(error);
 
@@ -294,6 +376,28 @@ async function main() {
 					);
 					buttons = buttons.filter((b) => b.label !== labelDelete);
 				}
+			}
+
+			if (op === OpCodes.REVIEW_SPAM) {
+				if (
+					!(interaction.channel as TextChannel)
+						.permissionsFor(interaction.member)
+						.has(Permissions.FLAGS.MANAGE_MESSAGES)
+				)
+					return replyWithError(
+						interaction,
+						i18next.t('buttons.review_no_permissions', {
+							lng: locale,
+						}),
+					);
+
+				messageParts.push(
+					`${LIST_BULLET} ${i18next.t('buttons.reviewed', {
+						executor: inlineCode(executor.tag),
+						lng: locale,
+					})}`,
+				);
+				buttons = [];
 			}
 
 			if (op === OpCodes.REVIEW) {

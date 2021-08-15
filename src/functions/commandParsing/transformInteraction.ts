@@ -19,6 +19,8 @@ export function transformInteraction<T extends Command>(
 		opts[top.name] = top.channel;
 	} else if (top.type === 'ROLE') {
 		opts[top.name] = top.role;
+	} else if (top.type === 'MENTIONABLE') {
+		opts[top.name] = top.user ? { user: top.user, member: top.member } : top.role;
 	} else {
 		opts[top.name] = top.value;
 	}

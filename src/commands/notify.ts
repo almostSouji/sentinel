@@ -41,6 +41,7 @@ export async function handleNotifyCommand(
 					guild: guild.id,
 					entity: entity instanceof Role ? entity.id : entity.user.id,
 					type: entity instanceof Role ? 'ROLE' : 'USER',
+					subjects: sql.array(args.add.spamalert ? ['SPAM'] : []),
 					level,
 				};
 
@@ -51,11 +52,17 @@ export async function handleNotifyCommand(
 				`;
 
 				messageParts.push(
-					`${successEmoji}${i18next.t('command.notify.notification_change', {
-						entity: entity instanceof Role ? roleMention(entity.id) : userMention(entity.user.id),
-						level: formatSeverity(channel, level),
-						lng: locale,
-					})}`,
+					args.add.spamalert
+						? `${successEmoji}${i18next.t('command.notify.notification_change_antispam', {
+								entity: entity instanceof Role ? roleMention(entity.id) : userMention(entity.user.id),
+								level: formatSeverity(channel, level),
+								lng: locale,
+						  })}`
+						: `${successEmoji}${i18next.t('command.notify.notification_change', {
+								entity: entity instanceof Role ? roleMention(entity.id) : userMention(entity.user.id),
+								level: formatSeverity(channel, level),
+								lng: locale,
+						  })}`,
 				);
 			}
 			break;
@@ -88,12 +95,19 @@ export async function handleNotifyCommand(
 
 				for (const notification of notifications) {
 					messageParts.push(
-						`${LIST_BULLET} ${i18next.t('command.notify.notification_show', {
-							entity:
-								notification.type === 'ROLE' ? roleMention(notification.entity) : userMention(notification.entity),
-							level: formatSeverity(channel, notification.level),
-							lng: locale,
-						})}`,
+						notification.subjects.includes('SPAM')
+							? `${LIST_BULLET} ${i18next.t('command.notify.notification_show_antispam', {
+									entity:
+										notification.type === 'ROLE' ? roleMention(notification.entity) : userMention(notification.entity),
+									level: formatSeverity(channel, notification.level),
+									lng: locale,
+							  })}`
+							: `${LIST_BULLET} ${i18next.t('command.notify.notification_show', {
+									entity:
+										notification.type === 'ROLE' ? roleMention(notification.entity) : userMention(notification.entity),
+									level: formatSeverity(channel, notification.level),
+									lng: locale,
+							  })}`,
 					);
 				}
 			}
@@ -103,5 +117,6 @@ export async function handleNotifyCommand(
 	return interaction.reply({
 		content: messageParts.join('\n'),
 		ephemeral: true,
+		allowedMentions: { parse: [] },
 	});
 }

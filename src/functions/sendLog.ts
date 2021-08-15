@@ -5,17 +5,16 @@ import {
 	Message,
 	PartialMessage,
 	MessageActionRow,
-	Snowflake,
 	Permissions,
 	ThreadChannel,
 } from 'discord.js';
 import { generateButtons, listButton } from './buttons';
 import { strictnessPick } from './checkMessage';
-import { truncate, truncateEmbed } from '../utils';
+import { resolveNotifications, truncate, truncateEmbed } from '../utils';
 import { GuildSettings, Notification } from '../types/DataTypes';
 import i18next from 'i18next';
 import { FLAG_LOG_ALL, LIST_BULLET } from '../constants';
-import { channelMention, roleMention, userMention } from '@discordjs/builders';
+import { channelMention } from '@discordjs/builders';
 
 export async function sendLog(
 	logChannel: TextChannel | NewsChannel | ThreadChannel,
@@ -115,22 +114,11 @@ export async function sendLog(
 		true,
 	);
 
-	const notificationParts = [];
-	const roles: Snowflake[] = [];
-	const users: Snowflake[] = [];
-
 	const notifications = await sql<Notification[]>`
 		select * from notifications where guild = ${guild.id}
 	`;
 
-	for (const notification of notifications) {
-		if (severityLevel >= notification.level) {
-			notificationParts.push(
-				notification.type === 'ROLE' ? roleMention(notification.entity) : userMention(notification.entity),
-			);
-			(notification.type === 'ROLE' ? roles : users).push(notification.entity);
-		}
-	}
+	const { roles, users, notificationParts } = resolveNotifications(notifications, severityLevel);
 
 	const newContent = notificationParts.join(', ');
 	const buttons = generateButtons(

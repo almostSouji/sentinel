@@ -2,7 +2,7 @@ import { MessageButton, Snowflake, Permissions, GuildMember } from 'discord.js';
 import i18next from 'i18next';
 import { OpCodes } from '..';
 import { EMOJI_ID_BAN_WHITE, EMOJI_ID_DELETE_WHITE, EMOJI_ID_LIST_WHITE, EMOJI_ID_REVIEW_WHITE } from '../constants';
-import { serializeAttributes, serializeTargets } from '../utils';
+import { serializeAttributes, serializeSingleTarget, serializeTargets } from '../utils';
 
 export interface ResponseData {
 	data: {
@@ -23,6 +23,31 @@ export interface Component {
 		id: string;
 	};
 	disabled?: boolean;
+}
+
+export function banSingleButton(targetUser: Snowflake, canBan: boolean, locale: string): MessageButton {
+	return new MessageButton({
+		type: 2,
+		style: 4,
+		customId: serializeSingleTarget(OpCodes.BAN_SPAM, targetUser),
+		label: i18next.t('buttons.labels.ban', {
+			lng: locale,
+		})!,
+		emoji: EMOJI_ID_BAN_WHITE,
+		disabled: !canBan,
+	});
+}
+
+export function reviewSingleButton(targetUser: Snowflake, locale: string): MessageButton {
+	return new MessageButton({
+		type: 2,
+		style: 1,
+		customId: serializeSingleTarget(OpCodes.REVIEW_SPAM, targetUser),
+		label: i18next.t('buttons.labels.review', {
+			lng: locale,
+		})!,
+		emoji: EMOJI_ID_REVIEW_WHITE,
+	});
 }
 
 export function banButton(

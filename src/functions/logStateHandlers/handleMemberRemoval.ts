@@ -7,19 +7,19 @@ export function handleMemberRemoval(
 	embed: MessageEmbed,
 	button: MessageButton,
 	row: MessageActionRow,
-	target: Snowflake,
-	targetChannel: Snowflake,
-	targetMessage: Snowflake,
 	locale: string,
+	target: Snowflake,
+	targetChannel?: Snowflake,
+	targetMessage?: Snowflake,
 	removedUser?: Snowflake,
 	isBanned?: boolean,
 ): Promise<boolean> {
 	if (isBanned && removedUser === target) {
 		row.components = row.components.filter((c) => {
 			const op = Buffer.from(c.customId ?? '', 'binary').readUInt16LE();
-			return ![OpCodes.BAN, OpCodes.REVIEW].includes(op);
+			return ![OpCodes.BAN, OpCodes.REVIEW, OpCodes.REVIEW_SPAM, OpCodes.BAN_SPAM].includes(op);
 		});
 		return Promise.resolve(true);
 	}
-	return handleMemberBanState(guild, embed, button, row, target, locale);
+	return handleMemberBanState(guild, embed, button, row, locale, target);
 }

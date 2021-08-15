@@ -6,6 +6,7 @@ export async function handleMemberGuildState(
 	embed: MessageEmbed,
 	button: MessageButton,
 	row: MessageActionRow,
+	locale: string,
 	target: Snowflake,
 ): Promise<boolean> {
 	try {
@@ -15,7 +16,7 @@ export async function handleMemberGuildState(
 			return true;
 		}
 	} catch (error) {
-		return handleMemberBanState(guild, embed, button, row, target, error);
+		return handleMemberBanState(guild, embed, button, row, locale, target, error);
 	}
 	return false;
 }

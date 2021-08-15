@@ -8,16 +8,17 @@ export async function handleMemberBanState(
 	embed: MessageEmbed,
 	button: MessageButton,
 	row: MessageActionRow,
-	target: Snowflake,
 	locale: string,
+	target: Snowflake,
 	error?: Error,
 ): Promise<boolean> {
 	if (guild.me?.permissions.has(Permissions.FLAGS.BAN_MEMBERS)) {
 		const bans = await guild.bans.fetch();
 		if (bans.has(target)) {
-			row.components = row.components.filter(
-				(c) => Buffer.from(c.customId ?? '', 'binary').readUInt16LE() !== OpCodes.BAN,
-			);
+			row.components = row.components.filter((c) => {
+				const op = Buffer.from(c.customId ?? '', 'binary').readUInt16LE();
+				return ![OpCodes.BAN, OpCodes.BAN_SPAM].includes(op);
+			});
 			return true;
 		}
 		button.setLabel(

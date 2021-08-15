@@ -47,4 +47,5 @@ export interface Notification {
 	entity: string;
 	type: string;
 	level: number;
+	subjects: string[];
 }

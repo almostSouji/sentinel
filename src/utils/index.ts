@@ -1,6 +1,8 @@
+import { roleMention, userMention } from '@discordjs/builders';
 import { createHash } from 'crypto';
 import { Snowflake, MessageEmbed, DMChannel, GuildChannel, ThreadChannel, PartialDMChannel } from 'discord.js';
 import { AttributeScoreMapEntry, perspectiveAttributes } from '../functions/perspective';
+import { Notification } from '../types/DataTypes';
 
 /**
  * Return a custom emoji or fallback string based on the everyone permissions in the provided channel
@@ -111,6 +113,28 @@ export interface DeserializedTargets {
 }
 
 /**
+ * Encode provided single target
+ * @param op - The OP-Code to use
+ * @param target - The target id
+ * @returns Encoded binary
+ */
+export function serializeSingleTarget(op: number, target: Snowflake): string {
+	const b = Buffer.alloc(2 + 8);
+	b.writeUInt16LE(op);
+	b.writeBigUInt64LE(BigInt(target), 2);
+	return b.toString('binary');
+}
+
+/**
+ * Deserialize a provided Buffer into a single target
+ * @param buffer - The Buffer to deserialize
+ * @returns The deserialized structure
+ */
+export function deserializeSingleTarget(buffer: Buffer): Snowflake {
+	return `${buffer.readBigInt64LE(2)}` as const;
+}
+
+/**
  * Deserialize a provided buffer into a target structure
  * @param buffer - The Buffer to deserialize
  * @returns The deserialized structure
@@ -190,4 +214,32 @@ export function transformHashset<T>(
 	transformer: (element: string) => T,
 ): Record<string, T> {
 	return Object.fromEntries(Object.entries(initial).map(([key, value]) => [key, transformer(value)]));
+}
+
+/**
+ * Resolves notification rows to role- and userId as well as notification string
+ * @param notifications - The Notification row entries to check
+ * @param severityLevel - The required severity level
+ * @param subjects - Subjects that should override severity
+ * @returns
+ */
+export function resolveNotifications(notifications: Notification[], severityLevel = -1, subjects: string[] = []) {
+	const notificationParts = [];
+	const roles: Snowflake[] = [];
+	const users: Snowflake[] = [];
+
+	for (const notification of notifications) {
+		if (severityLevel >= notification.level || notification.subjects.some((s) => subjects.includes(s))) {
+			notificationParts.push(
+				notification.type === 'ROLE' ? roleMention(notification.entity) : userMention(notification.entity),
+			);
+			(notification.type === 'ROLE' ? roles : users).push(notification.entity);
+		}
+	}
+
+	return {
+		notificationParts,
+		roles,
+		users,
+	};
 }
