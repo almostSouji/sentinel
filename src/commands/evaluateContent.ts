@@ -1,4 +1,4 @@
-import { CommandInteraction, DMChannel, MessageEmbed, ThreadChannel, User } from 'discord.js';
+import { CommandInteraction, DMChannel, MessageEmbed, MessageEmbedAuthor, ThreadChannel, User } from 'discord.js';
 import { ArgumentsOf } from '../types/ArgumentsOf';
 import { formatPerspectiveDetails } from '../functions/formatting/formatPerspective';
 import { checkContent } from '../functions/inspection/checkContent';
@@ -15,7 +15,7 @@ export async function handleTestCommand(
 	locale: string,
 ) {
 	const {
-		client: { sql },
+		client: { sql, user: clientUser },
 		guild,
 		channel,
 	} = interaction;
@@ -40,7 +40,12 @@ export async function handleTestCommand(
 	}
 
 	const message = interaction.options.getMessage('message');
-	const query = args.query ?? message?.content;
+	const query =
+		args.query ?? message?.content.length
+			? message?.content
+			: message?.embeds.length
+			? message.embeds[0].description
+			: '';
 
 	if (!query?.length) {
 		return replyWithError(interaction, i18next.t('command.evaluatecontent.empty_query', { lng: locale }));
@@ -73,7 +78,13 @@ export async function handleTestCommand(
 		.addField(i18next.t('command.evaluatecontent.perspective_fieldname', { lng: locale }), attributes);
 
 	if (message && message.author instanceof User) {
-		embed.setAuthor(`${message.author.tag} (${message.author.id})`, message.author.displayAvatarURL());
+		const logEmbed = message.embeds[0];
+		if (message.author.id === clientUser!.id && logEmbed.author) {
+			const author = logEmbed.author as MessageEmbedAuthor;
+			embed.setAuthor(author.name ?? 'no content', author.iconURL ?? '');
+		} else {
+			embed.setAuthor(`${message.author.tag} (${message.author.id})`, message.author.displayAvatarURL());
+		}
 	}
 
 	setSeverityColor(embed, perspectiveSeverity);
