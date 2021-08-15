@@ -122,7 +122,7 @@ export async function sendLog(
 
 	const newContent = notificationParts.join(', ');
 	const buttons = generateButtons(
-		targetMessage.channel.id,
+		targetChannel instanceof ThreadChannel ? targetChannel.parentId ?? targetChannel.id : targetChannel.id,
 		targetMessage.author.id,
 		targetMessage.id,
 		values,
