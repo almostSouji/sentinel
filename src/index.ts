@@ -8,7 +8,6 @@ import {
 	Message,
 	MessageActionRow,
 	Intents,
-	DMChannel,
 	Collection,
 	Snowflake,
 	Guild,
@@ -17,6 +16,7 @@ import {
 } from 'discord.js';
 
 import {
+	CID_SEPARATOR,
 	ERROR_CODE_MISSING_PERMISSIONS,
 	ERROR_CODE_UNKNOWN_MESSAGE,
 	ERROR_CODE_UNKNOWN_USER,
@@ -25,16 +25,9 @@ import {
 import Client from './structures/Client';
 import { checkMessage } from './functions/checkMessage';
 import { logger } from './functions/logger';
-import { deserializeSingleTarget, deserializeTargets, truncateEmbed } from './utils';
-import { updateLogState } from './functions/updateLogState';
-import { handleMemberGuildState } from './functions/logStateHandlers/handleMemberGuildState';
-import { handleMessageDeletableState } from './functions/logStateHandlers/handleMessageDeletableState';
-import { handleMemberRemoval } from './functions/logStateHandlers/handleMemberRemoval';
-import { handleMessageDelete } from './functions/logStateHandlers/handleMessageDelete';
-import { handleChannelDelete } from './functions/logStateHandlers/handleChannelDelete';
-import { handleMemberAdd } from './functions/logStateHandlers/handleMemberAdd';
+import { destructureIncidentButtonId, truncateEmbed } from './utils';
 import { handleCommands } from './functions/handleCommands';
-import { GuildSettings } from './types/DataTypes';
+import { GuildSettings, Incident } from './types/DataTypes';
 import i18next from 'i18next';
 import { replyWithError } from './utils/responses';
 import { inlineCode } from '@discordjs/builders';
@@ -54,8 +47,6 @@ export enum OpCodes {
 	REVIEW,
 	BAN,
 	DELETE,
-	BAN_SPAM,
-	REVIEW_SPAM,
 }
 
 async function main() {
@@ -166,83 +157,33 @@ async function main() {
 			)
 				return;
 
-			const res = Buffer.from(interaction.customId, 'binary');
-			const op = res.readInt16LE();
+			// handling old buttons without crash
+			if (!interaction.customId.includes(CID_SEPARATOR)) {
+				return replyWithError(interaction, i18next.t('buttons.no_incident', { lng: locale }));
+			}
 
-			if (op === OpCodes.BAN_SPAM) {
-				const labelBan = i18next.t('buttons.labels.ban', { lng: locale });
-				const labelForceBan = i18next.t('buttons.labels.forceban', { lng: locale });
-				const targetUserId = deserializeSingleTarget(res);
+			const [op, incidentId] = destructureIncidentButtonId(interaction.customId);
 
-				if (
-					!(interaction.channel as TextChannel)
-						.permissionsFor(interaction.member)
-						.has(Permissions.FLAGS.MANAGE_MESSAGES)
-				) {
-					return replyWithError(
-						interaction,
-						i18next.t('buttons.ban_no_permissions_spam', {
-							lng: locale,
-						}),
-					);
-				}
+			// handling old buttons without crash
+			if (Number.isNaN(incidentId)) {
+				return replyWithError(interaction, i18next.t('buttons.no_incident', { lng: locale }));
+			}
 
-				try {
-					const user = await interaction.guild.members.ban(targetUserId, {
-						days: 1,
-						reason: i18next.t('buttons.button_action_reason_spam', {
-							executor: `${executor.tag} (${executor.id})`,
-							lng: locale,
-						}),
-					});
+			const [incident] = await sql<Incident[]>`
+				select * from incidents where id = ${incidentId}
+			`;
 
-					messageParts.push(
-						`${LIST_BULLET} ${i18next.t('buttons.ban_success', {
-							executor: inlineCode(executor.tag),
-							target: inlineCode(user instanceof GuildMember ? user.user.tag : user instanceof User ? user.tag : user),
-							lng: locale,
-						})}`,
-					);
-					buttons = buttons.filter((b) => b.label !== labelBan && b.label !== labelForceBan);
-				} catch (error) {
-					logger.error(error);
+			if (!incident) {
+				return replyWithError(interaction, i18next.t('buttons.no_incident', { lng: locale }));
+			}
 
-					if (error.code === ERROR_CODE_MISSING_PERMISSIONS) {
-						messageParts.push(
-							`${LIST_BULLET} ${i18next.t('buttons.ban_missing_permissions', {
-								executor: inlineCode(executor.tag),
-								target: inlineCode(targetUserId),
-								lng: locale,
-							})}`,
-						);
-
-						buttons.find((b) => b.label === labelBan)?.setDisabled(true);
-					} else if (error.code === ERROR_CODE_UNKNOWN_USER) {
-						messageParts.push(
-							`${LIST_BULLET} ${i18next.t('buttons.ban_unknown_user', {
-								executor: inlineCode(executor.tag),
-								target: inlineCode(targetUserId),
-								lng: locale,
-							})}`,
-						);
-						buttons = buttons.filter((b) => b.label !== labelBan && b.label !== labelForceBan);
-					} else {
-						messageParts.push(
-							`${LIST_BULLET} ${i18next.t('buttons.ban_unsuccessful', {
-								executor: inlineCode(executor.tag),
-								target: inlineCode(targetUserId),
-								lng: locale,
-							})}`,
-						);
-					}
-				}
+			if (incident.expired) {
+				return replyWithError(interaction, i18next.t('buttons.incident_expired', { lng: locale }));
 			}
 
 			if (op === OpCodes.BAN) {
 				const labelBan = i18next.t('buttons.labels.ban', { lng: locale });
-				const labelForceBan = i18next.t('buttons.labels.forceban', { lng: locale });
-				const labelDelete = i18next.t('buttons.labels.delete', { lng: locale });
-				const { user: targetUserId } = deserializeTargets(res);
+				const targetUserId = incident.user;
 
 				if (!interaction.member.permissions.has(Permissions.FLAGS.BAN_MEMBERS)) {
 					return replyWithError(
@@ -269,7 +210,7 @@ async function main() {
 							lng: locale,
 						})}`,
 					);
-					buttons = buttons.filter((b) => b.label !== labelBan && b.label !== labelForceBan && b.label !== labelDelete);
+					buttons = [];
 				} catch (error) {
 					logger.error(error);
 
@@ -291,7 +232,11 @@ async function main() {
 								lng: locale,
 							})}`,
 						);
-						buttons = buttons.filter((b) => b.label !== labelBan && b.label !== labelForceBan);
+						buttons = buttons.filter((b) => {
+							if (!b.customId) return true;
+							const [op] = destructureIncidentButtonId(b.customId);
+							return op !== OpCodes.BAN;
+						});
 					} else {
 						messageParts.push(
 							`${LIST_BULLET} ${i18next.t('buttons.ban_unsuccessful', {
@@ -307,7 +252,8 @@ async function main() {
 			if (op === OpCodes.DELETE) {
 				const labelDelete = i18next.t('buttons.labels.delete', { lng: locale });
 
-				const { channel: targetChannelId, message: targetMessageId } = deserializeTargets(res);
+				const targetChannelId = incident.channel!;
+				const targetMessageId = incident.message!;
 				const channel = interaction.guild.channels.resolve(targetChannelId);
 				if (
 					!channel?.permissionsFor(executor)?.has([Permissions.FLAGS.VIEW_CHANNEL, Permissions.FLAGS.MANAGE_MESSAGES])
@@ -369,7 +315,7 @@ async function main() {
 				}
 			}
 
-			if (op === OpCodes.REVIEW_SPAM) {
+			if (op === OpCodes.REVIEW) {
 				if (
 					!(interaction.channel as TextChannel)
 						.permissionsFor(interaction.member)
@@ -391,27 +337,6 @@ async function main() {
 				buttons = [];
 			}
 
-			if (op === OpCodes.REVIEW) {
-				const labelList = i18next.t('buttons.labels.list', { lng: locale });
-				const { channel: targetChannelId } = deserializeTargets(res);
-				const channel = interaction.guild.channels.resolve(targetChannelId);
-				if (!channel?.permissionsFor(interaction.member).has(Permissions.FLAGS.MANAGE_MESSAGES))
-					return replyWithError(
-						interaction,
-						i18next.t('buttons.review_no_permissions', {
-							lng: locale,
-						}),
-					);
-
-				messageParts.push(
-					`${LIST_BULLET} ${i18next.t('buttons.reviewed', {
-						executor: inlineCode(executor.tag),
-						lng: locale,
-					})}`,
-				);
-				buttons = buttons.filter((b) => !b.label || b.label === labelList);
-			}
-
 			if (messageParts.length) {
 				const actionFieldIndex = embed.fields.findIndex((field: any) => field.name === 'Actions');
 				if (actionFieldIndex < 0) {
@@ -428,49 +353,6 @@ async function main() {
 				embeds: [truncateEmbed(embed)],
 				components: buttons.length ? [new MessageActionRow().addComponents(buttons)] : [],
 			});
-		});
-
-		client.on('messageDelete', (deletedMessage) => {
-			const { guild } = deletedMessage;
-			if (!guild) return;
-			void updateLogState(guild, [], [handleMessageDelete], [deletedMessage.id]);
-		});
-
-		client.on('channelDelete', (channel) => {
-			if (channel instanceof DMChannel || !channel.isText()) return;
-			void updateLogState(channel.guild, [], [handleChannelDelete], [channel.id]);
-		});
-
-		client.on('channelUpdate', (_, channel) => {
-			if (channel instanceof DMChannel || !channel.isText()) return;
-			void updateLogState(channel.guild, [handleMemberGuildState], [handleMessageDeletableState]);
-		});
-
-		client.on('roleUpdate', (oldRole) => {
-			void updateLogState(oldRole.guild, [handleMemberGuildState], [handleMessageDeletableState]);
-		});
-
-		client.on('messageDeleteBulk', (deletedMessages) => {
-			const first = deletedMessages.first();
-			if (!first?.guild) return;
-			void updateLogState(first.guild, [], [handleMessageDelete], [...deletedMessages.keys()]);
-		});
-
-		client.on('guildMemberAdd', (member) => {
-			void updateLogState(member.guild, [handleMemberAdd], [], [member.id]);
-		});
-
-		client.on('guildMemberRemove', (member) => {
-			void updateLogState(member.guild, [handleMemberRemoval], [], [member.id]);
-		});
-
-		client.on('guildBanAdd', (ban) => {
-			void updateLogState(ban.guild, [handleMemberRemoval], [], [ban.user.id], true);
-		});
-
-		client.on('guildMemberUpdate', (oldMember) => {
-			const { guild } = oldMember;
-			void updateLogState(guild, [handleMemberGuildState], [handleMessageDeletableState]);
 		});
 
 		void client.login(process.env.DISCORD_TOKEN);

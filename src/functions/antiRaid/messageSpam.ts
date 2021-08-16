@@ -5,8 +5,8 @@ import { hashString, resolveNotifications, transformHashset, truncateEmbed } fro
 import { GUILD_HASH_LOGMESSAGE, GUILD_USER_MESSAGE_CHANNEL_COUNT } from '../../utils/keys';
 import i18next from 'i18next';
 import { channelMention, inlineCode } from '@discordjs/builders';
-import { banSingleButton, reviewSingleButton } from '../buttons';
 import { logger } from '../logger';
+import { banButton, reviewButton } from '../buttons';
 
 function spamColor(amount: number, threshold: number): ColorResolvable {
 	switch (amount) {
@@ -129,6 +129,8 @@ export async function messageSpam(message: Message) {
 						.catch(() => false)),
 			);
 
+			const [{ next_incident_id: incidentId }] = await sql<[{ next_incident_id: number }]>`select next_incident_id()`;
+
 			const logMessage = await logChannel.send({
 				embeds: [
 					truncateEmbed(
@@ -137,8 +139,8 @@ export async function messageSpam(message: Message) {
 				],
 				components: [
 					new MessageActionRow().addComponents(
-						banSingleButton(author.id, message.member?.bannable ?? false, locale),
-						reviewSingleButton(author.id, locale),
+						banButton(incidentId, message.member?.bannable ?? false, locale),
+						reviewButton(incidentId, locale),
 					),
 				],
 				content: notificationParts.length ? notificationParts.join(', ') : null,
@@ -148,7 +150,6 @@ export async function messageSpam(message: Message) {
 				},
 			});
 
-			await redis.set('a', 'a');
 			await redis.set(logkey, logMessage.id);
 			await redis.expire(logkey, SPAM_EXPIRE_SECONDS);
 
@@ -158,10 +159,10 @@ export async function messageSpam(message: Message) {
 					type,
 					guild,
 					"user",
-					logChannel,
-					logMessage
+					logchannel,
+					logmessage
 				) values (
-					next_incident_id(),
+					${incidentId},
 					'SPAM',
 					${guild.id},
 					${author.id},

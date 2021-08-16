@@ -5,7 +5,7 @@ import { forcedAttributes } from './perspective';
 import { sendLog } from './sendLog';
 
 import { checkContent } from './inspection/checkContent';
-import { formatPerspectiveDetails, formatPerspectiveShort } from './formatting/formatPerspective';
+import { formatPerspectiveShort } from './formatting/formatPerspective';
 import { cleanContent } from '../utils';
 import {
 	COLOR_BLUE,
@@ -211,20 +211,13 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 				].join('\n'),
 				true,
 			);
-			embed.addField(
-				'@debug(perspective)',
-				formatPerspectiveDetails(
-					tags.map((t) => ({ key: t.key, value: t.score.value * 100 })),
-					locale,
-				),
-			);
 		}
 
-		const logMessage = await sendLog(logChannel, message, severityLevel, embed, isEdit);
+		const [{ next_incident_id }] = await sql<[{ next_incident_id: number }]>`select next_incident_id();`;
 
+		const logMessage = await sendLog(logChannel, message, severityLevel, embed, isEdit, next_incident_id);
 		if (!logMessage) return;
 
-		const [{ next_incident_id }] = await sql<[{ next_incident_id: number }]>`select next_incident_id();`;
 		await sql`insert into incidents (
 			id,
 			type,
@@ -234,8 +227,8 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 			"user",
 			attributes,
 			severity,
-			logChannel,
-			logMessage
+			logchannel,
+			logmessage
 		) values (
 			${next_incident_id},
 			'PERSPECTIVE',
@@ -245,8 +238,8 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 			${author.id},
 			${sql.array(high.map((t) => t.key))},
 			${severityLevel},
-			${logMessage.id},
-			${logMessage.channelId}
+			${logMessage.channelId},
+			${logMessage.id}
 		)`;
 	} catch (err) {
 		logger.error(err);

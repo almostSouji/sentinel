@@ -21,10 +21,10 @@ export interface Incident {
 	attributes: string[];
 	flags: string[];
 	severity: number | null;
-	createdAt: number;
-	expiresAt: number;
-	logChannel: string | null;
-	logMessage: string | null;
+	createdat: number;
+	expiresat: number;
+	logchannel: string | null;
+	logmessage: string | null;
 	expired: boolean;
 }
 

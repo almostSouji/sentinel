@@ -8,13 +8,13 @@ import {
 	Permissions,
 	ThreadChannel,
 } from 'discord.js';
-import { generateButtons } from './buttons';
 import { strictnessPick } from './checkMessage';
 import { resolveNotifications, truncate, truncateEmbed } from '../utils';
 import { GuildSettings, Notification } from '../types/DataTypes';
 import i18next from 'i18next';
 import { FLAG_LOG_ALL, LIST_BULLET } from '../constants';
 import { channelMention } from '@discordjs/builders';
+import { banButton, deleteButton, reviewButton } from './buttons';
 
 export async function sendLog(
 	logChannel: TextChannel | NewsChannel | ThreadChannel,
@@ -22,6 +22,7 @@ export async function sendLog(
 	severityLevel: number,
 	embed: MessageEmbed,
 	isEdit: boolean,
+	nextIncidentId: number,
 ): Promise<Message | false> {
 	if (targetMessage.channel.type === 'DM' || targetMessage.partial) return false;
 	const {
@@ -120,14 +121,15 @@ export async function sendLog(
 	const { roles, users, notificationParts } = resolveNotifications(notifications, severityLevel);
 
 	const newContent = notificationParts.join(', ');
-	const buttons = generateButtons(
-		targetChannel instanceof ThreadChannel ? targetChannel.parentId ?? targetChannel.id : targetChannel.id,
-		targetMessage.author.id,
-		targetMessage.id,
-		botPermissions,
-		targetMessage.member,
-		locale,
-	);
+	const buttons = [
+		banButton(nextIncidentId, targetMessage.member?.bannable ?? false, locale),
+		deleteButton(
+			nextIncidentId,
+			botPermissions?.has([Permissions.FLAGS.MANAGE_MESSAGES, Permissions.FLAGS.VIEW_CHANNEL]) ?? false,
+			locale,
+		),
+		reviewButton(nextIncidentId, locale),
+	];
 
 	truncateEmbed(embed);
 	if (severityLevel >= buttonLevel) {

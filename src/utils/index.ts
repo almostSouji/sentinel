@@ -1,6 +1,7 @@
 import { roleMention, userMention } from '@discordjs/builders';
 import { createHash } from 'crypto';
 import { Snowflake, MessageEmbed, DMChannel, GuildChannel, ThreadChannel, PartialDMChannel } from 'discord.js';
+import { CID_SEPARATOR } from '../constants';
 import { Notification } from '../types/DataTypes';
 
 /**
@@ -89,75 +90,6 @@ export function escapeRegex(str: string): string {
 }
 
 /**
- * Encode provided targets into a binary string
- * @param op - The OP-Code to use
- * @param user - The target user id
- * @param channel - The target channel id
- * @param message - The target message id
- * @returns Encoded binary
- */
-export function serializeTargets(op: number, user: Snowflake, channel: Snowflake, message: Snowflake): string {
-	const b = Buffer.alloc(2 + 24);
-	b.writeUInt16LE(op);
-	b.writeBigUInt64LE(BigInt(user), 2);
-	b.writeBigUInt64LE(BigInt(channel), 10);
-	b.writeBigUInt64LE(BigInt(message), 18);
-	return b.toString('binary');
-}
-
-export interface DeserializedTargets {
-	user: Snowflake;
-	channel: Snowflake;
-	message: Snowflake;
-}
-
-/**
- * Encode provided single target
- * @param op - The OP-Code to use
- * @param target - The target id
- * @returns Encoded binary
- */
-export function serializeSingleTarget(op: number, target: Snowflake): string {
-	const b = Buffer.alloc(2 + 8);
-	b.writeUInt16LE(op);
-	b.writeBigUInt64LE(BigInt(target), 2);
-	return b.toString('binary');
-}
-
-/**
- * Deserialize a provided Buffer into a single target
- * @param buffer - The Buffer to deserialize
- * @returns The deserialized structure
- */
-export function deserializeSingleTarget(buffer: Buffer): Snowflake {
-	return `${buffer.readBigInt64LE(2)}` as const;
-}
-
-/**
- * Deserialize a provided buffer into a target structure
- * @param buffer - The Buffer to deserialize
- * @returns The deserialized structure
- */
-export function deserializeTargets(buffer: Buffer): DeserializedTargets {
-	return {
-		user: `${buffer.readBigInt64LE(2)}` as const,
-		channel: `${buffer.readBigInt64LE(10)}` as const,
-		message: `${buffer.readBigInt64LE(18)}` as const,
-	};
-}
-
-/**
- * Encode an OP Code into binary
- * @param op - The OP Code to use
- * @returns Encoded binary
- */
-export function serializeOpCode(op: number): string {
-	const b = Buffer.alloc(2);
-	b.writeUInt16LE(op);
-	return b.toString('binary');
-}
-
-/**
  * Clean a text from common impactful words that cause unwarranted perspective scores
  * @param initial - Text to clean
  * @returns Cleaned text
@@ -214,4 +146,26 @@ export function resolveNotifications(notifications: Notification[], severityLeve
 		roles,
 		users,
 	};
+}
+
+/**
+ * Generate a custom ID from op and incident id
+ * @param op - The OP Code to attach to the button
+ * @param incidentId - The incident ID associated with this button
+ * @returns Custom ID for the button
+ */
+export function generateIncidentButtonId(op: number, incidentId: number) {
+	return `${op}${CID_SEPARATOR}${incidentId}`;
+}
+
+/**
+ * Destructure custom ID into OP Code and incident ID
+ * @param buttonId - The button custom ID to destructure
+ * @returns Tuple of OP Code and incident ID
+ */
+export function destructureIncidentButtonId(buttonId: string): [number, number] {
+	const [opString, incidentString] = buttonId.split(CID_SEPARATOR);
+	const op = parseInt(opString, 10);
+	const incidentId = parseInt(incidentString, 10);
+	return [op, incidentId];
 }
