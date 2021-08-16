@@ -1,10 +1,9 @@
-import { DMChannel, MessageActionRow, MessageButton, Permissions } from 'discord.js';
+import { DMChannel, MessageActionRow, MessageButton, Permissions, Client } from 'discord.js';
 import i18next from 'i18next';
-import { destructureIncidentButtonId } from '.';
+import { destructureIncidentButtonId } from '../utils';
 import { OpCodes } from '..';
 import { CID_SEPARATOR } from '../constants';
 import { logger } from '../functions/logger';
-import Client from '../structures/Client';
 import { Incident, GuildSettings } from '../types/DataTypes';
 
 export async function incidentCheck(client: Client) {
@@ -35,6 +34,10 @@ export async function incidentCheck(client: Client) {
 			if (!settings) continue;
 
 			const rows = [];
+			if (!message.components.length) {
+				sql`update incidents set expired = true where id = ${incident.id}`;
+				continue;
+			}
 			for (const row of message.components) {
 				const newRow = new MessageActionRow();
 				for (const component of row.components) {
@@ -157,7 +160,8 @@ export async function incidentCheck(client: Client) {
 				rows.push(newRow);
 			}
 			await message.edit({ components: rows });
-		} catch {
+		} catch (error) {
+			logger.error(error);
 			sql`update incidents set expired = true where id = ${incident.id}`;
 		}
 	}
