@@ -89,15 +89,35 @@ export async function incidentCheck(client: Client) {
 								}
 							} catch {
 								//* member not on guild
-								newRow.addComponents(
-									component
-										.setLabel(
-											i18next.t('buttons.labels.forceban', {
-												lng: settings.locale,
-											}),
-										)
-										.setDisabled(!canBan),
-								);
+								if (canBan) {
+									//* can ban, fetch bans
+									const banned = await guild.bans.fetch();
+									if (banned.has(incident.user)) {
+										//* is banned
+										continue;
+									} else {
+										//* is not banned
+										newRow.addComponents(
+											component
+												.setLabel(
+													i18next.t('buttons.labels.forceban', {
+														lng: settings.locale,
+													}),
+												)
+												.setDisabled(false),
+										);
+									}
+								} else {
+									newRow.addComponents(
+										component
+											.setLabel(
+												i18next.t('buttons.labels.forceban', {
+													lng: settings.locale,
+												}),
+											)
+											.setDisabled(!canBan),
+									);
+								}
 							}
 							continue;
 						} else if (op === OpCodes.DELETE) {
