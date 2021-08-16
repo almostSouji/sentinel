@@ -149,7 +149,8 @@
 			"result": "Result: {{amount}}",
 			"immunity": "Immunity: {{immunity}}",
 			"strictness": "Strictness: {{strictness}}",
-			"severity": "Severity: {{-severity}}"
+			"severity": "Severity: {{-severity}}",
+			"incident": "Incident ID: {{-incident}}"
 		},
 		"format_perspective_no_attributes": "No attributes tracked.",
 		"format_perspective_none": "Not flagged with any significant attributes."

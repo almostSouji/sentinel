@@ -138,6 +138,8 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 			formatPerspectiveShort(perspective, locale),
 		);
 
+		const [{ next_incident_id }] = await sql<[{ next_incident_id: number }]>`select next_incident_id();`;
+
 		if (debug) {
 			embed.addField(
 				'@debug(attribute)',
@@ -208,12 +210,14 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 						severity: `${formatSeverity(logChannel, severityLevel)} ${inlineCode(`(${severityLevel})`)}`,
 						lng: locale,
 					})}`,
+					`${LIST_BULLET} ${i18next.t('checks.debug.incident', {
+						incident: inlineCode(String(next_incident_id)),
+						lng: locale,
+					})}`,
 				].join('\n'),
 				true,
 			);
 		}
-
-		const [{ next_incident_id }] = await sql<[{ next_incident_id: number }]>`select next_incident_id();`;
 
 		const logMessage = await sendLog(logChannel, message, severityLevel, embed, isEdit, next_incident_id);
 		if (!logMessage) return;
