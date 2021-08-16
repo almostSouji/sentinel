@@ -20,6 +20,8 @@
 	"dependencies": {
 		"@discordjs/builders": "^0.5.0",
 		"@discordjs/rest": "^0.1.0-canary.0",
+		"@types/cron": "^1.7.3",
+		"cron": "^1.8.2",
 		"discord-api-types": "^0.23.0-next.8fcd0f2.1628685220",
 		"discord.js": "^13.1.0-dev.1628683680.75b48d8",
 		"dotenv": "^10.0.0",
