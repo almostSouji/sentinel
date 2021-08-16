@@ -166,8 +166,8 @@ export async function messageSpam(message: Message) {
 					'SPAM',
 					${guild.id},
 					${author.id},
-					${logMessage.id},
-					${logMessage.channelId}
+					${logMessage.channelId},
+					${logMessage.id}
 				)
 			`;
 			return;
