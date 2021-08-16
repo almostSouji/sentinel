@@ -40,6 +40,7 @@ export interface ProcessEnv {
 	DEPLOY_GUILD_ID?: string;
 	ESHOST: string;
 	ESPORT: string;
+	SCAM_URL_REMOTE_URL: string;
 }
 
 export enum OpCodes {

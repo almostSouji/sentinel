@@ -7,7 +7,8 @@ import * as Redis from 'ioredis';
 import { join } from 'path';
 import postgres from 'postgres';
 import { logger } from '../functions/logger';
-import { incidentCheck } from '../utils/incidentCheck';
+import { incidentCheck } from '../tasks/incidentCheck';
+import { updateScamList } from '../tasks/updateScamList';
 
 declare module 'discord.js' {
 	export interface Client {
@@ -109,9 +110,13 @@ export default class extends Client {
 		});
 		await this.initDB();
 
-		const job = new CronJob('* * * * *', () => {
+		const incidentCheckJob = new CronJob('* * * * *', () => {
 			void incidentCheck(this);
 		});
-		job.start();
+		const updateScamListJob = new CronJob('*/5 * * * *', () => {
+			void updateScamList(this as Client);
+		});
+		incidentCheckJob.start();
+		updateScamListJob.start();
 	}
 }
