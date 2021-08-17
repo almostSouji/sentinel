@@ -221,6 +221,7 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 
 		const logMessage = await sendLog(logChannel, message, severityLevel, embed, isEdit, next_incident_id);
 		if (!logMessage) return;
+		const buttonLevel = strictnessPick(strictness, 1, 2, 3);
 
 		await sql`insert into incidents (
 			id,
@@ -232,7 +233,8 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 			attributes,
 			severity,
 			logchannel,
-			logmessage
+			logmessage,
+			expired
 		) values (
 			${next_incident_id},
 			'PERSPECTIVE',
@@ -243,7 +245,8 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 			${sql.array(high.map((t) => t.key))},
 			${severityLevel},
 			${logMessage.channelId},
-			${logMessage.id}
+			${logMessage.id},
+			${severityLevel < buttonLevel}
 		)`;
 	} catch (err) {
 		logger.error(err);
