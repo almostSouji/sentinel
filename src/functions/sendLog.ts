@@ -12,7 +12,7 @@ import { strictnessPick } from './checkMessage';
 import { resolveNotifications, truncate, truncateEmbed } from '../utils';
 import { GuildSettings, Notification } from '../types/DataTypes';
 import i18next from 'i18next';
-import { FLAG_LOG_ALL, LIST_BULLET } from '../constants';
+import { LIST_BULLET } from '../constants';
 import { channelMention } from '@discordjs/builders';
 import { banButton, deleteButton, reviewButton } from './buttons';
 
@@ -46,10 +46,9 @@ export async function sendLog(
 
 	if (!settings) return false;
 	const locale = settings.locale;
-	const logOverride = settings.flags.includes(FLAG_LOG_ALL);
 	const botPermissions = targetChannel.permissionsFor(clientUser!);
 	const strictness = settings.strictness;
-	const buttonLevel = logOverride ? 0 : strictnessPick(strictness, 1, 2, 3);
+	const buttonLevel = strictnessPick(strictness, 1, 2, 3);
 
 	const metaDataParts: string[] = [];
 
