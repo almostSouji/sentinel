@@ -336,6 +336,7 @@ async function main() {
 					})}`,
 				);
 				buttons = [];
+				await sql`update incidents set expired = true where id = ${incidentId}`;
 			}
 
 			if (messageParts.length) {
