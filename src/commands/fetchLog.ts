@@ -40,7 +40,7 @@ export async function handleFetchLogCommand(
 				return replyWithError(interaction, i18next.t('commands.fetchlog.not_a_log', { lng: locale }));
 			}
 			const { content, components, embeds } = message;
-			return void interaction.reply({
+			return interaction.reply({
 				content: content.length ? content : undefined,
 				components,
 				embeds,

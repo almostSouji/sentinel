@@ -63,20 +63,28 @@ async function main() {
 	try {
 		await client.init();
 
-		client.on('messageCreate', (message) => {
-			if (message.author.bot || !message.content.length) return;
-			void checkMessage(message);
-			void messageSpam(message);
+		client.on('messageCreate', async (message) => {
+			try {
+				if (message.author.bot || !message.content.length) return;
+				await checkMessage(message);
+				await messageSpam(message);
+			} catch (err) {
+				logger.error(err);
+			}
 		});
 
-		client.on('messageUpdate', (oldMessage, newMessage) => {
+		client.on('messageUpdate', async (oldMessage, newMessage) => {
 			if (
 				oldMessage.content === newMessage.content ||
 				newMessage.author?.bot ||
 				newMessage.channel.type !== 'GUILD_TEXT'
 			)
 				return;
-			void checkMessage(newMessage, true);
+			try {
+				await checkMessage(newMessage, true);
+			} catch (error) {
+				logger.error(error);
+			}
 		});
 
 		client.on('ready', async () => {
@@ -357,7 +365,7 @@ async function main() {
 			});
 		});
 
-		void client.login(process.env.DISCORD_TOKEN);
+		await client.login(process.env.DISCORD_TOKEN);
 	} catch (error) {
 		logger.error(error);
 	}
