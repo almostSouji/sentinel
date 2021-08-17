@@ -95,7 +95,7 @@ export function escapeRegex(str: string): string {
  * @returns Cleaned text
  */
 export function cleanContent(initial: string): string {
-	return initial.replace(/\b(?:fuck(?:ing)?|shi+t|(?:am|is|'m).*gay)\b/g, '').trim();
+	return initial.replace(/\b(?:fuck(?:ing)?|shi+t)\b/g, '').trim();
 }
 
 /**
