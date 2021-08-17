@@ -163,9 +163,9 @@
 		"hash_fieldname": "Hash",
 		"messages_in": "{{bullet}} {{-formattedCount}} message in {{-channel}}",
 		"messages_in_plural": "{{bullet}} {{-formattedCount}} messages in {{-channel}}",
-		"scam_found": "Found scam domain:",
-		"scam_found_plural": "Found scam domains:",
-		"scam_found_banned": "Message author was banned.",
-		"scam_ban_reason": "Scam spam detected | {{-domains}}"
+		"scam_found": "Found scam domain",
+		"scam_found_plural": "Found scam domains",
+		"scam_found_banned": "Message author was automatically banned.",
+		"scam_ban_reason": "Scam detected"
 	}
 }

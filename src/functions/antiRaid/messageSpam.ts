@@ -1,5 +1,13 @@
 import { ColorResolvable, Message, MessageActionRow, MessageEmbed, ThreadChannel, User } from 'discord.js';
-import { COLOR_GREEN, COLOR_ORANGE, COLOR_RED, COLOR_YELLOW, LIST_BULLET, SPAM_EXPIRE_SECONDS } from '../../constants';
+import {
+	FLAG_BAN_SCAM,
+	COLOR_GREEN,
+	COLOR_ORANGE,
+	COLOR_RED,
+	COLOR_YELLOW,
+	LIST_BULLET,
+	SPAM_EXPIRE_SECONDS,
+} from '../../constants';
 import { GuildSettings, Notification } from '../../types/DataTypes';
 import { hashString, resolveNotifications, transformHashset, truncateEmbed } from '../../utils';
 import { GUILD_HASH_LOGMESSAGE, GUILD_USER_MESSAGE_CHANNEL_COUNT } from '../../utils/keys';
@@ -63,18 +71,16 @@ function buildEmbed(
 		});
 
 	if (scamDomains?.length) {
-		const parts = [i18next.t('spam.scam_found', { lng: locale, count: scamDomains.length })];
-		if (isBanned) {
-			parts.push(i18next.t('spam.scam_found_banned', { lng: locale }));
-		}
 		embed.addFields({
-			name: parts.join('\n'),
+			name: i18next.t('spam.scam_found', { lng: locale, count: scamDomains.length }),
 			value: scamDomains.map((d) => inlineCode(d)).join('\n'),
 		});
-	}
 
-	if (isBanned) {
-		embed.addField;
+		if (isBanned) {
+			embed
+				.setFooter(i18next.t('spam.scam_found_banned', { lng: locale }), author.client.user!.displayAvatarURL())
+				.setTimestamp();
+		}
 	}
 
 	return embed;
@@ -119,11 +125,11 @@ export async function messageSpam(message: Message) {
 		const logMessageId = await redis.get(logkey);
 		if (!logMessageId) {
 			const isBanned = Boolean(
-				((settings.flags.includes('SCAMBAN') && scamDomains.length && message.member?.bannable) ?? false) &&
+				((settings.flags.includes(FLAG_BAN_SCAM) && scamDomains.length && message.member?.bannable) ?? false) &&
 					// @ts-ignore
 					(await message.member
 						.ban({
-							reason: i18next.t('spam.spam_detected', { lng: locale, domains: scamDomains.join(',') }),
+							reason: i18next.t('spam.scam_ban_reason', { lng: locale }),
 							days: 1,
 						})
 						.catch(() => false)),
@@ -137,12 +143,14 @@ export async function messageSpam(message: Message) {
 						buildEmbed(locale, author, message, channelSpam, threshold, hash, undefined, scamDomains, isBanned),
 					),
 				],
-				components: [
-					new MessageActionRow().addComponents(
-						banButton(incidentId, message.member?.bannable ?? false, locale),
-						reviewButton(incidentId, locale),
-					),
-				],
+				components: isBanned
+					? []
+					: [
+							new MessageActionRow().addComponents(
+								banButton(incidentId, message.member?.bannable ?? false, locale),
+								reviewButton(incidentId, locale),
+							),
+					  ],
 				content: notificationParts.length ? notificationParts.join(', ') : null,
 				allowedMentions: {
 					users,
@@ -160,14 +168,16 @@ export async function messageSpam(message: Message) {
 					guild,
 					"user",
 					logchannel,
-					logmessage
+					logmessage,
+					expired
 				) values (
 					${incidentId},
 					'SPAM',
 					${guild.id},
 					${author.id},
 					${logMessage.channelId},
-					${logMessage.id}
+					${logMessage.id},
+					${isBanned}
 				)
 			`;
 			return;

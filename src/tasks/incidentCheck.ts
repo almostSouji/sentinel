@@ -177,7 +177,9 @@ export async function incidentCheck(client: Client) {
 						}
 					}
 				}
-				rows.push(newRow);
+				if (newRow.components.length) {
+					rows.push(newRow);
+				}
 			}
 			await message.edit({ components: rows });
 		} catch (error) {
