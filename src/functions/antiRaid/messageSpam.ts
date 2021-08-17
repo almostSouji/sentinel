@@ -41,6 +41,7 @@ function buildEmbed(
 	oldMessage?: Message,
 	scamDomains?: string[],
 	isBanned = false,
+	incident_id?: number,
 ): MessageEmbed {
 	const parts = oldMessage?.embeds[0]?.description?.split('\n') ?? [];
 	const newParts = [];
@@ -69,6 +70,16 @@ function buildEmbed(
 			name: i18next.t('spam.hash_fieldname', { lng: locale }),
 			value: inlineCode(hash),
 		});
+
+	if (incident_id) {
+		embed.addField(
+			'@debug(misc)',
+			`${LIST_BULLET} ${i18next.t('checks.debug.incident', {
+				incident: inlineCode(String(incident_id)),
+				lng: locale,
+			})}`,
+		);
+	}
 
 	if (scamDomains?.length) {
 		embed.addFields({
@@ -140,7 +151,18 @@ export async function messageSpam(message: Message) {
 			const logMessage = await logChannel.send({
 				embeds: [
 					truncateEmbed(
-						buildEmbed(locale, author, message, channelSpam, threshold, hash, undefined, scamDomains, isBanned),
+						buildEmbed(
+							locale,
+							author,
+							message,
+							channelSpam,
+							threshold,
+							hash,
+							undefined,
+							scamDomains,
+							isBanned,
+							incidentId,
+						),
 					),
 				],
 				components: isBanned
@@ -183,10 +205,15 @@ export async function messageSpam(message: Message) {
 			return;
 		}
 		const logMessage = await logChannel.messages.fetch(logMessageId);
+		const [{ id: incidentId }] = await sql<
+			[{ id: number }]
+		>`select id from incidents where logmessage = ${logMessageId}`;
 
 		await logMessage.edit({
 			embeds: [
-				truncateEmbed(buildEmbed(locale, author, message, channelSpam, threshold, hash, logMessage, scamDomains)),
+				truncateEmbed(
+					buildEmbed(locale, author, message, channelSpam, threshold, hash, logMessage, scamDomains, false, incidentId),
+				),
 			],
 			content: notificationParts.length ? notificationParts.join(', ') : null,
 			allowedMentions: {
