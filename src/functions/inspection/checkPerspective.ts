@@ -1,5 +1,4 @@
-import { FLAG_LOG_ALL } from '../../constants';
-import { GuildSettings } from '../../types/DataTypes';
+import { GuildSettings, GuildSettingFlags } from '../../types/DataTypes';
 import { PerspectiveAttribute, Scores } from '../../types/perspective';
 import { STRICTNESS_LEVELS, AttributeHit } from '../checkMessage';
 import { analyzeText, forcedAttributes, nsfwAtrributes, perspectiveAttributes } from '../perspective';
@@ -21,7 +20,7 @@ export async function checkPerspective(
 	communityId?: string,
 ): Promise<PerspectiveResult> {
 	const attributes = [...new Set([...settings.attributes, ...forcedAttributes])];
-	const logOverride = settings.flags.includes(FLAG_LOG_ALL);
+	const logOverride = settings.flags.includes(GuildSettingFlags.LOG_ALL);
 
 	const res = await analyzeText(
 		content,

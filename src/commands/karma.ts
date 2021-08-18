@@ -3,7 +3,7 @@ import i18next from 'i18next';
 import { COLOR_DARK, LIST_BULLET } from '../constants';
 import { KarmaCommand } from '../interactions/karma';
 import { ArgumentsOf } from '../types/ArgumentsOf';
-import { GuildSettings, Incident, UserStats } from '../types/DataTypes';
+import { GuildSettings, Incident, IncidentTypes, UserStats } from '../types/DataTypes';
 import { truncateEmbed } from '../utils';
 import { replyWithError } from '../utils/responses';
 import { userMention, inlineCode } from '@discordjs/builders';
@@ -34,11 +34,11 @@ export async function handleKarmaCommand(
 	}
 	const incidents = await sql<
 		Incident[]
-	>`select * from incidents where guild = ${guild.id} and "user" = ${targetUser.id} and type = 'PERSPECTIVE'`;
+	>`select * from incidents where guild = ${guild.id} and "user" = ${targetUser.id} and type = ${IncidentTypes.PERSPECTIVE}`;
 	const [stats] = await sql<UserStats[]>`select * from users where "user" = ${targetUser.id} and guild = ${guild.id}`;
 	const [{ count: spamIncidentAmount }] = await sql<
 		[{ count: number }]
-	>`select count(*) from incidents where guild = ${guild.id} and "user" = ${targetUser.id} and type = 'SPAM'`;
+	>`select count(*) from incidents where guild = ${guild.id} and "user" = ${targetUser.id} and type = ${IncidentTypes.SPAM}`;
 
 	const [settings] = await sql<GuildSettings[]>`select * from guild_settings where guild = ${guild.id}`;
 

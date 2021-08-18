@@ -105,13 +105,7 @@ export async function sendLog(
 		);
 	}
 
-	embed.addField(
-		i18next.t('logstate.info_metadata_fieldname', {
-			lng: locale,
-		}),
-		metaDataParts.join('\n'),
-		true,
-	);
+	embed.addField('\u200B', metaDataParts.join('\n'), true);
 
 	const notifications = await sql<Notification[]>`
 		select * from notifications where guild = ${guild.id}

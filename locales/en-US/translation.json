@@ -101,27 +101,27 @@
 	},
 	"buttons": {
 		"labels": {
-			"ban": "Cleanban",
+			"ban": "Ban",
 			"forceban": "Ban (force)",
 			"delete": "Delete",
 			"review": "Review",
 			"list": ""
 		},
 		"no_incident": "Cannot find an incident associated with this button.",
-		"incident_expired": "The target incident is expired.",
+		"incident_resolved": "The target incident is resolved.",
 		"ban_no_permissions": "To use the ban button you need permissions to ban members!",
 		"delete_no_permissions": "To use the delete button you need permissions to delete messages in the channel this was flagged in!",
 		"review_no_permissions": "To use the review button you need permissions to manage messages in the channel this was flagged in!",
-		"ban_success": "{{-executor}} banned {{-target}} and cleaned their messages.",
-		"ban_missing_permissions": "{{-executor}} could not ban {{target}} (missing permissions).",
-		"ban_unknown_user": "{{-executor}} could not ban {{target}} (unknown user).",
-		"ban_unsuccessful": "{{-executor}} could not ban {{target}}.",
-		"delete_success": "{{-executor}} deleted the message.",
-		"delete_unknown_message": "{{-executor}} could not delete the message (unknown message).",
-		"delete_unknown_channel": "{{-executor}} could not delete the message (unknown channel).",
-		"delete_missing_permissions": "{{-executor}} could not delete the message (missing permissions).",
-		"delete_unsuccessful": "{{-executor}} could not delete the message.",
-		"reviewed": "{{-executor}} reviewed this incident.",
+		"ban_success": "{{-executor}} banned {{-target}}",
+		"ban_missing_permissions": "{{-executor}} could not ban {{target}} (missing permissions)",
+		"ban_unknown_user": "{{-executor}} could not ban {{target}} (unknown user)",
+		"ban_unsuccessful": "{{-executor}} could not ban {{target}}",
+		"delete_success": "{{-executor}} deleted the message",
+		"delete_unknown_message": "{{-executor}} could not delete the message (unknown message)",
+		"delete_unknown_channel": "{{-executor}} could not delete the message (unknown channel)",
+		"delete_missing_permissions": "{{-executor}} could not delete the message (missing permissions)",
+		"delete_unsuccessful": "{{-executor}} could not delete the message",
+		"reviewed": "{{-executor}} reviewed this incident",
 		"button_action_reason": "button action (toxicity) by {{-executor}}"
 	},
 	"attributes": {
@@ -181,7 +181,7 @@
 		"messages_in_plural": "{{bullet}} {{-formattedCount}} messages in {{-channel}}",
 		"scam_found": "Found scam domain",
 		"scam_found_plural": "Found scam domains",
-		"scam_found_banned": "Message author was automatically banned.",
+		"scam_found_banned": "Message author was automatically banned",
 		"scam_ban_reason": "Scam detected"
 	}
 }

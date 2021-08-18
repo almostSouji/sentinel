@@ -35,8 +35,4 @@ export const LIST_BULLET = '•';
 export const MAX_MESSAGE_LEN = 2000 as const;
 export const SPAM_EXPIRE_SECONDS = 20 as const;
 
-export const FLAG_LOG_ALL = 'LOG_ALL';
-export const FLAG_DEBUG = 'DEBUG';
-export const FLAG_BAN_SCAM = 'SCAMBAN';
-
 export const CID_SEPARATOR = ':';

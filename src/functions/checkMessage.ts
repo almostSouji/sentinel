@@ -7,17 +7,15 @@ import { sendLog } from './sendLog';
 import { checkContent } from './inspection/checkContent';
 import { formatPerspectiveShort } from './formatting/formatPerspective';
 import { cleanContent } from '../utils';
+import { COLOR_BLUE, COLOR_GREEN, COLOR_RED, COLOR_YELLOW, COLOR_DARK, LIST_BULLET, COLOR_ORANGE } from '../constants';
 import {
-	COLOR_BLUE,
-	COLOR_GREEN,
-	COLOR_RED,
-	COLOR_YELLOW,
-	COLOR_DARK,
-	LIST_BULLET,
-	FLAG_DEBUG,
-	COLOR_ORANGE,
-} from '../constants';
-import { GuildSettings, Immunity, Strictness } from '../types/DataTypes';
+	GuildSettings,
+	GuildSettingFlags,
+	Immunity,
+	Strictness,
+	IncidentTypes,
+	IncidentResolvedBy,
+} from '../types/DataTypes';
 import { formatSeverity } from '../utils/formatting';
 import i18next from 'i18next';
 import { inlineCode } from '@discordjs/builders';
@@ -98,7 +96,7 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 		const strictness = settings.strictness;
 		const embed = new MessageEmbed();
 
-		const debug = settings.flags.includes(FLAG_DEBUG);
+		const debug = settings.flags.includes(GuildSettingFlags.DEBUG);
 		const attributes = settings.attributes.concat(forcedAttributes);
 
 		const attributeThreshold = strictnessPick(strictness, 90, 93, 95);
@@ -131,13 +129,7 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 
 		setSeverityColor(embed, severityLevel);
 
-		embed.addField(
-			i18next.t('logstate.info_flags_fieldname', {
-				amount: perspective.high.length,
-				lng: locale,
-			}),
-			formatPerspectiveShort(perspective, locale),
-		);
+		embed.addField('\u200B', formatPerspectiveShort(perspective, locale), true);
 
 		const [{ next_incident_id }] = await sql<[{ next_incident_id: number }]>`select next_incident_id();`;
 
@@ -235,10 +227,10 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 			severity,
 			logchannel,
 			logmessage,
-			expired
+			resolvedby
 		) values (
 			${next_incident_id},
-			'PERSPECTIVE',
+			${IncidentTypes.PERSPECTIVE},
 			${message.id},
 			${channel.id},
 			${guild.id},
@@ -247,7 +239,7 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 			${severityLevel},
 			${logMessage.channelId},
 			${logMessage.id},
-			${severityLevel < buttonLevel}
+			${severityLevel < buttonLevel ? IncidentResolvedBy.BELOW_BUTTON_LVL : null}
 		)`;
 	} catch (err) {
 		logger.error(err);

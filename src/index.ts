@@ -20,17 +20,15 @@ import {
 	ERROR_CODE_MISSING_PERMISSIONS,
 	ERROR_CODE_UNKNOWN_MESSAGE,
 	ERROR_CODE_UNKNOWN_USER,
-	LIST_BULLET,
 } from './constants';
 import Client from './structures/Client';
 import { checkMessage } from './functions/checkMessage';
 import { logger } from './functions/logger';
 import { destructureIncidentButtonId, truncateEmbed } from './utils';
 import { handleCommands } from './functions/handleCommands';
-import { GuildSettings, Incident } from './types/DataTypes';
+import { GuildSettings, Incident, IncidentResolvedBy } from './types/DataTypes';
 import i18next from 'i18next';
 import { replyWithError } from './utils/responses';
-import { inlineCode } from '@discordjs/builders';
 import { messageSpam } from './functions/antiRaid/messageSpam';
 
 export interface ProcessEnv {
@@ -149,7 +147,6 @@ async function main() {
 
 			const embed = new MessageEmbed(interactionEmbed);
 			const executor = interaction.user;
-			const messageParts = [];
 
 			let buttons: MessageButton[] = [
 				// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -186,8 +183,8 @@ async function main() {
 				return replyWithError(interaction, i18next.t('buttons.no_incident', { lng: locale }));
 			}
 
-			if (incident.expired) {
-				return replyWithError(interaction, i18next.t('buttons.incident_expired', { lng: locale }));
+			if (incident.resolvedby) {
+				return replyWithError(interaction, i18next.t('buttons.incident_resolved', { lng: locale }));
 			}
 
 			if (op === OpCodes.BAN) {
@@ -212,47 +209,53 @@ async function main() {
 						}),
 					});
 
-					messageParts.push(
-						`${LIST_BULLET} ${i18next.t('buttons.ban_success', {
-							executor: inlineCode(executor.tag),
-							target: inlineCode(user instanceof GuildMember ? user.user.tag : user instanceof User ? user.tag : user),
+					embed.setFooter(
+						i18next.t('buttons.ban_success', {
+							executor: executor.tag,
+							target: user instanceof GuildMember ? user.user.tag : user instanceof User ? user.tag : user,
 							lng: locale,
-						})}`,
+						}),
+						executor.displayAvatarURL(),
 					);
+
 					buttons = [];
 				} catch (error) {
 					logger.error(error);
 
 					if (error.code === ERROR_CODE_MISSING_PERMISSIONS) {
-						messageParts.push(
-							`${LIST_BULLET} ${i18next.t('buttons.ban_missing_permissions', {
-								executor: inlineCode(executor.tag),
-								target: inlineCode(targetUserId),
+						embed.setFooter(
+							i18next.t('buttons.ban_missing_permissions', {
+								executor: executor.tag,
+								target: targetUserId,
 								lng: locale,
-							})}`,
+							}),
+							executor.displayAvatarURL(),
 						);
 
 						buttons.find((b) => b.label === labelBan)?.setDisabled(true);
 					} else if (error.code === ERROR_CODE_UNKNOWN_USER) {
-						messageParts.push(
-							`${LIST_BULLET} ${i18next.t('buttons.ban_unknown_user', {
-								executor: inlineCode(executor.tag),
-								target: inlineCode(targetUserId),
+						embed.setFooter(
+							i18next.t('buttons.ban_unknown_user', {
+								executor: executor.tag,
+								target: targetUserId,
 								lng: locale,
-							})}`,
+							}),
+							executor.displayAvatarURL(),
 						);
+
 						buttons = buttons.filter((b) => {
 							if (!b.customId) return true;
 							const [op] = destructureIncidentButtonId(b.customId);
 							return op !== OpCodes.BAN;
 						});
 					} else {
-						messageParts.push(
-							`${LIST_BULLET} ${i18next.t('buttons.ban_unsuccessful', {
-								executor: inlineCode(executor.tag),
-								target: inlineCode(targetUserId),
+						embed.setFooter(
+							i18next.t('buttons.ban_unsuccessful', {
+								executor: executor.tag,
+								target: targetUserId,
 								lng: locale,
-							})}`,
+							}),
+							executor.displayAvatarURL(),
 						);
 					}
 				}
@@ -278,48 +281,63 @@ async function main() {
 				if (channel.isText()) {
 					try {
 						await channel.messages.delete(targetMessageId);
-						messageParts.push(
-							`${LIST_BULLET} ${i18next.t('buttons.delete_success', {
-								executor: inlineCode(executor.tag),
+						embed.setFooter(
+							i18next.t('buttons.delete_success', {
+								executor: executor.tag,
 								lng: locale,
-							})}`,
+							}),
+							executor.displayAvatarURL(),
 						);
-						buttons = buttons.filter((b) => b.label !== labelDelete);
+
+						buttons = [];
+
+						logger.debug({
+							msg: `incident ${incident.id} resolved. (l.319)`,
+							reason: 'delete button',
+						});
+						await sql`update incidents set resolvedby = ${IncidentResolvedBy.BUTTON_DELETE} where id = ${incidentId}`;
 					} catch (error) {
 						logger.error(error);
 
 						if (error.code === ERROR_CODE_UNKNOWN_MESSAGE) {
-							messageParts.push(
-								`${LIST_BULLET} ${i18next.t('buttons.delete_unknown_message', {
-									executor: inlineCode(executor.tag),
+							embed.setFooter(
+								i18next.t('buttons.delete_unknown_message', {
+									executor: executor.tag,
 									lng: locale,
-								})}`,
+								}),
+								executor.displayAvatarURL(),
 							);
+
 							buttons = buttons.filter((b) => b.label !== labelDelete);
 						} else if (error.code === ERROR_CODE_MISSING_PERMISSIONS) {
-							messageParts.push(
-								`${LIST_BULLET} ${i18next.t('buttons.delete_missing_permissions', {
-									executor: inlineCode(executor.tag),
+							embed.setFooter(
+								i18next.t('buttons.delete_missing_permissions', {
+									executor: executor.tag,
 									lng: locale,
-								})}`,
+								}),
+								executor.displayAvatarURL(),
 							);
+
 							buttons = buttons.filter((b) => b.label !== labelDelete);
 						} else {
-							messageParts.push(
-								`${LIST_BULLET} ${i18next.t('buttons.delete_unsuccesful', {
-									executor: inlineCode(executor.tag),
+							embed.setFooter(
+								i18next.t('buttons.delete_unsuccesful', {
+									executor: executor.tag,
 									lng: locale,
-								})}`,
+								}),
+								executor.displayAvatarURL(),
 							);
 						}
 					}
 				} else {
-					messageParts.push(
-						`${LIST_BULLET} ${i18next.t('buttons.delete_unknown_channel', {
-							executor: inlineCode(executor.tag),
+					embed.setFooter(
+						i18next.t('buttons.delete_unknown_channel', {
+							executor: executor.tag,
 							lng: locale,
-						})}`,
+						}),
+						executor.displayAvatarURL(),
 					);
+
 					buttons = buttons.filter((b) => b.label !== labelDelete);
 				}
 			}
@@ -337,26 +355,21 @@ async function main() {
 						}),
 					);
 
-				messageParts.push(
-					`${LIST_BULLET} ${i18next.t('buttons.reviewed', {
-						executor: inlineCode(executor.tag),
+				embed.setFooter(
+					i18next.t('buttons.reviewed', {
+						executor: executor.tag,
 						lng: locale,
-					})}`,
+					}),
+					executor.displayAvatarURL(),
 				);
-				buttons = [];
-				await sql`update incidents set expired = true where id = ${incidentId}`;
-			}
 
-			if (messageParts.length) {
-				const actionFieldIndex = embed.fields.findIndex((field: any) => field.name === 'Actions');
-				if (actionFieldIndex < 0) {
-					embed.addField('Actions', messageParts.join('\n'));
-				} else {
-					embed.spliceFields(actionFieldIndex, 1, {
-						name: 'Actions',
-						value: `${embed.fields[actionFieldIndex].value}\n${messageParts.join('\n')}`,
-					});
-				}
+				buttons = [];
+
+				logger.debug({
+					msg: `incident ${incident.id} resolved. (l.319)`,
+					reason: 'review button',
+				});
+				await sql`update incidents set reyolvedby = ${IncidentResolvedBy.BUTTON_REVIEW} where id = ${incidentId}`;
 			}
 
 			await interaction.update({

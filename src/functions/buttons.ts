@@ -1,7 +1,6 @@
 import { MessageButton } from 'discord.js';
 import i18next from 'i18next';
 import { OpCodes } from '..';
-import { EMOJI_ID_BAN_WHITE, EMOJI_ID_DELETE_WHITE, EMOJI_ID_REVIEW_WHITE } from '../constants';
 import { generateIncidentButtonId } from '../utils';
 
 export interface ResponseData {
@@ -33,7 +32,6 @@ export function banButton(incidentId: number, canBan: boolean, locale: string): 
 		label: i18next.t('buttons.labels.ban', {
 			lng: locale,
 		})!,
-		emoji: EMOJI_ID_BAN_WHITE,
 		disabled: !canBan,
 	});
 }
@@ -46,7 +44,6 @@ export function deleteButton(incidentId: number, canDelete: boolean, locale: str
 		label: i18next.t('buttons.labels.delete', {
 			lng: locale,
 		})!,
-		emoji: EMOJI_ID_DELETE_WHITE,
 		disabled: !canDelete,
 	});
 }
@@ -59,6 +56,5 @@ export function reviewButton(incidentId: number, locale: string): MessageButton 
 		label: i18next.t('buttons.labels.review', {
 			lng: locale,
 		})!,
-		emoji: EMOJI_ID_REVIEW_WHITE,
 	});
 }

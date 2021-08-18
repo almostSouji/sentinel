@@ -5,7 +5,6 @@ import { ArgumentsOf } from '../types/ArgumentsOf';
 import { forcedAttributes, nsfwAtrributes, nytAttributes } from '../functions/perspective';
 import {
 	COLOR_DARK,
-	FLAG_LOG_ALL,
 	EMOJI_ID_SHIELD_GREEN_SMALL,
 	EMOJI_ID_SHIELD_RAINBOW_SMALL,
 	EMOJI_ID_SHIELD_RED_SMALL,
@@ -17,7 +16,7 @@ import {
 	PREFIX_NYT,
 } from '../constants';
 import i18next from 'i18next';
-import { GuildSettings, Immunity, Strictness } from '../types/DataTypes';
+import { GuildSettings, GuildSettingFlags, Immunity, Strictness } from '../types/DataTypes';
 import { emojiOrFallback, truncateEmbed } from '../utils';
 import { replyWithError } from '../utils/responses';
 import { channelMention, formatEmoji, inlineCode } from '@discordjs/builders';
@@ -319,7 +318,7 @@ export async function handleConfigCommand(
 			);
 
 			const attributes = [...forcedAttributes, ...settings.attributes];
-			if (settings.flags.includes(FLAG_LOG_ALL)) {
+			if (settings.flags.includes(GuildSettingFlags.LOG_ALL)) {
 				embed.addField(
 					i18next.t('command.config.show_attributes_fieldname', {
 						count: 99,

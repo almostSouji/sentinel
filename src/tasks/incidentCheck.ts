@@ -4,19 +4,26 @@ import { destructureIncidentButtonId } from '../utils';
 import { OpCodes } from '..';
 import { CID_SEPARATOR } from '../constants';
 import { logger } from '../functions/logger';
-import { Incident, GuildSettings } from '../types/DataTypes';
+import { Incident, GuildSettings, IncidentResolvedBy } from '../types/DataTypes';
 
 export async function incidentCheck(client: Client) {
 	const { sql, channels } = client;
-	logger.info('Starting scheduled incident check');
-	const incidents = await sql<Incident[]>`select * from incidents where not expired`;
+	const incidents = await sql<Incident[]>`select * from incidents where resolvedby is null`;
+	logger.info(`Starting scheduled incident check with ${incidents.length} unresolved incidents`);
 
 	for (const incident of incidents) {
 		const now = Date.now();
 		const logChannel = channels.resolve(incident.logchannel ?? '');
 
 		if (!logChannel || !logChannel.isText() || logChannel instanceof DMChannel || !incident.logmessage) {
-			sql`update incidents set expired = true where id = ${incident.id}`;
+			logger.debug({
+				msg: `incident ${incident.id} resolved (l.18)`,
+				noLogC: !logChannel,
+				notTextC: !logChannel?.isText(),
+				isDMC: logChannel instanceof DMChannel,
+				noLogM: !incident.logmessage,
+			});
+			sql`update incidents set resolvedby = ${IncidentResolvedBy.LOGCHANNEL_INVALID} where id = ${incident.id}`;
 			continue;
 		}
 
@@ -24,7 +31,13 @@ export async function incidentCheck(client: Client) {
 			const message = await logChannel.messages.fetch(incident.logmessage);
 
 			if (now >= incident.expiresat) {
-				sql`update incidents set expired = true where id = ${incident.id}`;
+				logger.debug({
+					msg: `incident ${incident.id} resolved. (l.33)`,
+					now,
+					expAt: incident.expiresat,
+					check: now >= incident.expiresat,
+				});
+				sql`update incidents set resolvedby = ${IncidentResolvedBy.ACTION_EXPIRED} where id = ${incident.id}`;
 				await message.edit({ components: [] });
 				continue;
 			}
@@ -35,7 +48,11 @@ export async function incidentCheck(client: Client) {
 
 			const rows = [];
 			if (!message.components.length) {
-				sql`update incidents set expired = true where id = ${incident.id}`;
+				logger.debug({
+					msg: `incident ${incident.id} resolved. (l.50)`,
+					reason: 'msg had no components',
+				});
+				sql`update incidents set resolvedby = ${IncidentResolvedBy.NO_BUTTONS_LEFT} true where id = ${incident.id}`;
 				continue;
 			}
 			for (const row of message.components) {
@@ -184,7 +201,11 @@ export async function incidentCheck(client: Client) {
 			await message.edit({ components: rows });
 		} catch (error) {
 			logger.error(error);
-			sql`update incidents set expired = true where id = ${incident.id}`;
+			logger.debug({
+				msg: `incident ${incident.id} resolved. (l.204)`,
+				reason: 'cought error',
+			});
+			sql`update incidents set resolvedby = ${IncidentResolvedBy.TASK_ERROR} true where id = ${incident.id}`;
 		}
 	}
 }

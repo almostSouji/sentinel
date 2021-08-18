@@ -1,20 +1,19 @@
-import { ColorResolvable, Message, MessageActionRow, MessageEmbed, ThreadChannel, User } from 'discord.js';
+import { COLOR_GREEN, COLOR_ORANGE, COLOR_RED, COLOR_YELLOW, LIST_BULLET, SPAM_EXPIRE_SECONDS } from '../../constants';
 import {
-	FLAG_BAN_SCAM,
-	COLOR_GREEN,
-	COLOR_ORANGE,
-	COLOR_RED,
-	COLOR_YELLOW,
-	LIST_BULLET,
-	SPAM_EXPIRE_SECONDS,
-} from '../../constants';
-import { GuildSettings, Notification } from '../../types/DataTypes';
+	GuildSettings,
+	GuildSettingFlags,
+	IncidentTypes,
+	Notification,
+	NotificationTopics,
+	IncidentResolvedBy,
+} from '../../types/DataTypes';
 import { hashString, resolveNotifications, transformHashset, truncateEmbed } from '../../utils';
 import { GUILD_HASH_LOGMESSAGE, GUILD_USER_MESSAGE_CHANNEL_COUNT } from '../../utils/keys';
 import i18next from 'i18next';
 import { channelMention, inlineCode } from '@discordjs/builders';
 import { logger } from '../logger';
 import { banButton, reviewButton } from '../buttons';
+import { ColorResolvable, Message, MessageActionRow, MessageEmbed, ThreadChannel, User } from 'discord.js';
 
 function spamColor(amount: number, threshold: number): ColorResolvable {
 	switch (amount) {
@@ -130,13 +129,14 @@ export async function messageSpam(message: Message) {
 	const notifications = await sql<Notification[]>`
 	select * from notifications where guild = ${guild.id}
 `;
-	const { roles, users, notificationParts } = resolveNotifications(notifications, -1, ['SPAM']);
+	const { roles, users, notificationParts } = resolveNotifications(notifications, -1, [NotificationTopics.SPAM]);
 
 	try {
 		const logMessageId = await redis.get(logkey);
 		if (!logMessageId) {
 			const isBanned = Boolean(
-				((settings.flags.includes(FLAG_BAN_SCAM) && scamDomains.length && message.member?.bannable) ?? false) &&
+				((settings.flags.includes(GuildSettingFlags.SCAMBAN) && scamDomains.length && message.member?.bannable) ??
+					false) &&
 					// @ts-ignore
 					(await message.member
 						.ban({
@@ -191,15 +191,15 @@ export async function messageSpam(message: Message) {
 					"user",
 					logchannel,
 					logmessage,
-					expired
+					resolvedby
 				) values (
 					${incidentId},
-					'SPAM',
+					${IncidentTypes.SPAM},
 					${guild.id},
 					${author.id},
 					${logMessage.channelId},
 					${logMessage.id},
-					${isBanned}
+					${IncidentResolvedBy.AUTO_BAN_SCAM}
 				)
 			`;
 			return;
