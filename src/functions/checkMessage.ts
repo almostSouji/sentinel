@@ -7,18 +7,8 @@ import { sendLog } from './sendLog';
 import { checkContent } from './inspection/checkContent';
 import { formatPerspectiveShort } from './formatting/formatPerspective';
 import { cleanContent } from '../utils';
-import { COLOR_BLUE, COLOR_GREEN, COLOR_RED, COLOR_YELLOW, COLOR_DARK, LIST_BULLET, COLOR_ORANGE } from '../constants';
-import {
-	GuildSettings,
-	GuildSettingFlags,
-	Immunity,
-	Strictness,
-	IncidentTypes,
-	IncidentResolvedBy,
-} from '../types/DataTypes';
-import { formatSeverity } from '../utils/formatting';
-import i18next from 'i18next';
-import { inlineCode } from '@discordjs/builders';
+import { COLOR_BLUE, COLOR_GREEN, COLOR_RED, COLOR_YELLOW, COLOR_DARK, COLOR_ORANGE } from '../constants';
+import { GuildSettings, GuildSettingFlags, Immunity, IncidentTypes, IncidentResolvedBy } from '../types/DataTypes';
 
 const colors = [COLOR_DARK, COLOR_GREEN, COLOR_YELLOW, COLOR_ORANGE, COLOR_RED, COLOR_BLUE] as const;
 
@@ -134,82 +124,29 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 		const [{ next_incident_id }] = await sql<[{ next_incident_id: number }]>`select next_incident_id();`;
 
 		if (debug) {
-			embed.addField(
-				'@debug(attribute)',
-				[
-					`${LIST_BULLET} ${i18next.t('checks.debug.amount', {
-						amount: attributeAmount,
-						lng: locale,
-					})}`,
-					`${LIST_BULLET} ${i18next.t('checks.debug.threshold', {
-						threshold: attributeThreshold,
-						lng: locale,
-					})}`,
-					`${LIST_BULLET} ${i18next.t('checks.debug.result', {
-						amount: tags.length,
-						lng: locale,
-					})}`,
-				].join('\n'),
-				true,
-			);
-			embed.addField(
-				'@debug(high)',
-				[
-					`${LIST_BULLET} ${i18next.t('checks.debug.amount', {
-						amount: highAmount,
-						lng: locale,
-					})}`,
-					`${LIST_BULLET} ${i18next.t('checks.debug.threshold', {
-						threshold: highThreshold,
-						lng: locale,
-					})}`,
-					`${LIST_BULLET} ${i18next.t('checks.debug.result', {
-						amount: high.length,
-						lng: locale,
-					})}`,
-				].join('\n'),
-				true,
-			);
-			embed.addField(
-				'@debug(severe)',
-				[
-					`${LIST_BULLET} ${i18next.t('checks.debug.amount', {
-						amount: severeAmount,
-						lng: locale,
-					})}`,
-					`${LIST_BULLET} ${i18next.t('checks.debug.threshold', {
-						threshold: severeThreshold,
-						lng: locale,
-					})}`,
-					`${LIST_BULLET} ${i18next.t('checks.debug.result', {
-						amount: severe.length,
-						lng: locale,
-					})}`,
-				].join('\n'),
-				true,
-			);
-			embed.addField(
-				'@debug(misc)',
-				[
-					`${LIST_BULLET} ${i18next.t('checks.debug.immunity', {
-						immunity: inlineCode(immunityValue),
-						lng: locale,
-					})}`,
-					`${LIST_BULLET} ${i18next.t('checks.debug.strictness', {
-						strictness: `${inlineCode(Strictness[strictness] ?? 'NONE')} ${inlineCode(`(${strictness})`)}`,
-						lng: locale,
-					})}`,
-					`${LIST_BULLET} ${i18next.t('checks.debug.severity', {
-						severity: `${formatSeverity(logChannel, severityLevel)} ${inlineCode(`(${severityLevel})`)}`,
-						lng: locale,
-					})}`,
-					`${LIST_BULLET} ${i18next.t('checks.debug.incident', {
-						incident: inlineCode(String(next_incident_id)),
-						lng: locale,
-					})}`,
-				].join('\n'),
-				true,
-			);
+			logger.debug({
+				attribute: {
+					amount: attributeAmount,
+					threshold: attributeThreshold,
+					result: tags.length,
+				},
+				high: {
+					amount: highAmount,
+					threshold: highThreshold,
+					result: high.length,
+				},
+				severe: {
+					amount: severeAmount,
+					threshold: severeThreshold,
+					result: severe.length,
+				},
+				misc: {
+					immunity: immunityValue,
+					strictness,
+					severity: severityLevel,
+					incident: next_incident_id,
+				},
+			});
 		}
 
 		const logMessage = await sendLog(logChannel, message, severityLevel, embed, isEdit, next_incident_id);
