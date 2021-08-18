@@ -1,17 +1,23 @@
-import { Snowflake, CommandInteraction, DMChannel } from 'discord.js';
+import { Snowflake, CommandInteraction, DMChannel, MessageEmbed } from 'discord.js';
 import { ArgumentsOf } from '../types/ArgumentsOf';
 import { FetchLogCommand } from '../interactions/fetchLog';
 import i18next from 'i18next';
 import { replyWithError } from '../utils/responses';
 import { truncate } from '../utils';
 import { codeBlock, inlineCode } from '@discordjs/builders';
+import { GuildSettings, Incident } from '../types/DataTypes';
+import { inspect } from 'util';
+import { COLOR_DARK } from '../constants';
 
 export async function handleFetchLogCommand(
 	interaction: CommandInteraction,
 	args: ArgumentsOf<typeof FetchLogCommand>,
 	locale: string,
 ) {
-	const { client } = interaction;
+	const {
+		client,
+		client: { sql },
+	} = interaction;
 
 	const regex = /https?:\/\/(?:canary\.|ptb\.)?discord(?:app)?\.com\/channels\/(\d{17,19})\/(\d{17,19})\/(\d{17,19})/gi;
 	const link = args.link;
@@ -40,10 +46,43 @@ export async function handleFetchLogCommand(
 				return replyWithError(interaction, i18next.t('commands.fetchlog.not_a_log', { lng: locale }));
 			}
 			const { content, components, embeds } = message;
+
+			const dataEmbeds: MessageEmbed[] = [];
+
+			if (args.incident) {
+				const [incident] = await sql<Incident[]>`select * from incidents where logmessage = ${message.id}`;
+
+				dataEmbeds.push(
+					new MessageEmbed()
+						.setTitle('Incident data')
+						.setColor(COLOR_DARK)
+						.setDescription(codeBlock('js', truncate(inspect(incident, { depth: null }), 3000, '\n'))),
+				);
+			}
+
+			if (args.settings) {
+				const [settings] = await sql<GuildSettings[]>`select * from guild_settings where guild = ${guildId}`;
+
+				dataEmbeds.push(
+					new MessageEmbed()
+						.setTitle('Guild settings')
+						.setColor(COLOR_DARK)
+						.setDescription(codeBlock('js', truncate(inspect(settings, { depth: null }), 3000, '\n'))),
+				);
+			}
+
+			if (args.components) {
+				dataEmbeds.push(
+					new MessageEmbed()
+						.setTitle('Components')
+						.setColor(COLOR_DARK)
+						.setDescription(codeBlock('js', truncate(inspect(components, { depth: 4 }), 3000, '\n'))),
+				);
+			}
+
 			return interaction.reply({
 				content: content.length ? content : undefined,
-				components,
-				embeds,
+				embeds: [...embeds, ...dataEmbeds],
 				ephemeral: true,
 			});
 		} catch (error) {
