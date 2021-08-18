@@ -98,6 +98,7 @@ export default class extends Client {
 					.filter((words) => words.length),
 			);
 		}
+		void updateScamList(this as Client);
 		await i18next.use(Backend).init({
 			backend: {
 				loadPath: join(__dirname, '../../locales/{{lng}}/{{ns}}.json'),
