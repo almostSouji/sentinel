@@ -369,7 +369,7 @@ async function main() {
 					msg: `incident ${incident.id} resolved. (l.319)`,
 					reason: 'review button',
 				});
-				await sql`update incidents set reyolvedby = ${IncidentResolvedBy.BUTTON_REVIEW} where id = ${incidentId}`;
+				await sql`update incidents set resolvedby = ${IncidentResolvedBy.BUTTON_REVIEW} where id = ${incidentId}`;
 			}
 
 			await interaction.update({

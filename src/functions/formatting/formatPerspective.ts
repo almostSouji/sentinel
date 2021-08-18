@@ -101,7 +101,7 @@ export function formatPerspectiveDetails(data: AttributeScoreMapEntry[], locale:
 			})}`,
 		);
 	disclaimers.push(
-		`${PREFIX_LOCKED} ${i18next.t('flags.attributes.explain_forced', {
+		`${PREFIX_LOCKED} ${i18next.t('attributes.explain_forced', {
 			lng: locale,
 		})}`,
 	);
