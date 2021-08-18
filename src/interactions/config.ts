@@ -36,25 +36,6 @@ export const ConfigCommand = {
 				},
 				{
 					type: ApplicationCommandOptionType.Integer,
-					name: 'prefetch',
-					description: 'Amount of messages to cache after a restart in the log channel',
-					choices: [
-						{
-							name: '0 (default)',
-							value: 0,
-						},
-						{
-							name: '100',
-							value: 100,
-						},
-						{
-							name: '200',
-							value: 200,
-						},
-					],
-				},
-				{
-					type: ApplicationCommandOptionType.Integer,
 					name: 'immunity',
 					description: 'Ignore members with this permission',
 					choices: [

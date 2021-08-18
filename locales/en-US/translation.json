@@ -30,8 +30,6 @@
 			"logchannel_no_permissions": "The bot needs permissions to embed links, read messages and message history in the provided log channel {{-channel}}.",
 			"logchannel_already": "Logchannel is already set to {{-channel}}.",
 			"logchannel_set": "Logchannel set to {{-channel}}.",
-			"prefetch_already": "Prefetch setting is already {{number}}.",
-			"prefetch_updated": "Fetching {{number}} messages in the log channel after restart *(enables dynamic button adaptation based on member state and permissions)*.",
 			"strictness_already": "Strictness level is already {{level}}.",
 			"strictness_updated": "Strictness level updated to {{level}}.",
 			"removed_invalid_channels": "Cleaned up deleted and invalid channels: {{channels}}.",
@@ -43,7 +41,6 @@
 			"show_watching_none": "Not watching any channels (required).",
 			"show_strictness_fieldname": "Strictness Level",
 			"show_immunity_fieldname": "Immunity Permission",
-			"show_prefetch_fieldname": "Prefetch Messages",
 			"show_attributes_fieldname": "Attribute",
 			"show_attributes_fieldname_plural": "Attributes",
 			"show_attributes_nyt_fieldname": "NYTimes Attribute",
@@ -56,9 +53,9 @@
 			"no_changes": "Nothing changed!"
 		},
 		"fetchlog": {
-			"invalid_channel_type": "Channel type invalid.",
-			"guild_id_forged": "Guild Id is forged. Is: {{-actual}} should be {{-should}}",
-			"not_a_log": "Provided message does not resolve to a log message"
+			"no_incident": "Provided message does not resolve to an incident.",
+			"invalid_channel_type": "Invalid log channel.",
+			"not_a_log": "Provided message does not resolve to a log message."
 		},
 		"karma": {
 			"no_data": "Cannot find any data on {{-user}}.",
@@ -105,7 +102,7 @@
 			"forceban": "Ban (force)",
 			"delete": "Delete",
 			"review": "Review",
-			"list": ""
+			"link": "Message"
 		},
 		"no_incident": "Cannot find an incident associated with this button.",
 		"incident_resolved": "The target incident is resolved.",
@@ -130,37 +127,35 @@
 		"explain_forced": "Attributes cannot be unwatched."
 	},
 	"logstate": {
-		"info_channel": "Channel: {{-channel}}",
-		"info_channel_thread": "Thread: {{-channel}} in channel {{-parent}}",
-		"info_link": "[message ➔](<{{-link}}>)",
-		"info_edit": "Message Edit",
-		"info_attachments": "Attachments ({{count}}): {{-links}}",
-		"info_attachments_plural": "Attachments ({{count}}) {{-links}}",
-		"info_embeds:": "Embed: {{count}}",
-		"info_embeds_plural:": "Embeds: {{count}}"
+		"attributes_fieldname": "Attributes"
 	},
 	"flags": {
 		"verbose": {
-			"toxicity": "toxic",
-			"severe_toxicity": "severely toxic",
-			"identity_attack": "identity attack",
-			"insult": "insulting",
-			"profanity": "profane",
-			"threat": "threatening",
-			"sexually_explicit": "sexually explicit",
-			"flirtation": "flirtatious",
-			"attack_on": "attacking someone",
-			"incoherent": "incoherent",
-			"inflammatory": "inflammatory",
-			"likely_to_reject": "likely rejected",
-			"obscene": "obscene",
-			"spam": "spam",
-			"unsubstantial": "unsubstantial"
+			"toxicity": "Toxic",
+			"severe_toxicity": "Severely toxic",
+			"identity_attack": "Identity attack",
+			"insult": "Insulting",
+			"profanity": "Profane",
+			"threat": "Threatening",
+			"sexually_explicit": "Sexually explicit",
+			"flirtation": "Flirtatious",
+			"attack_on": "Attacking someone",
+			"incoherent": "Incoherent",
+			"inflammatory": "Inflammatory",
+			"likely_to_reject": "Likely rejected",
+			"obscene": "Obscene",
+			"spam": "Spam",
+			"unsubstantial": "Unsubstantial"
 		}
 	},
 	"checks": {
 		"format_perspective_no_attributes": "No attributes tracked.",
 		"format_perspective_none": "Not flagged with any significant attributes."
+	},
+	"tasks": {
+		"incidentcheck": {
+			"expired": "Incident is expired, buttons have been cleared"
+		}
 	},
 	"commandexecution": {
 		"no_handler": "No handler found for command {{command}} {{id}}"

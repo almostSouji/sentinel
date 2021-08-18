@@ -6,7 +6,7 @@ import { replyWithError } from '../utils/responses';
 import { EMOJI_ID_SHIELD_GREEN_SMALL, LIST_BULLET } from '../constants';
 import { emojiOrFallback } from '../utils';
 import { formatSeverity } from '../utils/formatting';
-import { Notification, NotificationTopics } from '../types/DataTypes';
+import { Notification, NotificationTargets, NotificationTopics } from '../types/DataTypes';
 import { formatEmoji, userMention, roleMention } from '@discordjs/builders';
 
 export async function handleNotifyCommand(
@@ -40,7 +40,7 @@ export async function handleNotifyCommand(
 				const newData = {
 					guild: guild.id,
 					entity: entity instanceof Role ? entity.id : entity.user.id,
-					type: entity instanceof Role ? 'ROLE' : 'USER',
+					type: entity instanceof Role ? NotificationTargets.ROLE : NotificationTargets.USER,
 					subjects: sql.array(args.add.spamalert ? [NotificationTopics.SPAM] : []),
 					level,
 				};

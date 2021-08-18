@@ -1,16 +1,7 @@
-import { MessageButton } from 'discord.js';
+import { Constants, MessageButton } from 'discord.js';
 import i18next from 'i18next';
 import { OpCodes } from '..';
 import { generateIncidentButtonId } from '../utils';
-
-export interface ResponseData {
-	data: {
-		content: string | null;
-		embed: any;
-		components: Component[];
-		allowed_mentions: any;
-	};
-}
 
 export interface Component {
 	type: number;
@@ -26,8 +17,7 @@ export interface Component {
 
 export function banButton(incidentId: number, canBan: boolean, locale: string): MessageButton {
 	return new MessageButton({
-		type: 2,
-		style: 4,
+		style: Constants.MessageButtonStyles.DANGER,
 		customId: generateIncidentButtonId(OpCodes.BAN, incidentId),
 		label: i18next.t('buttons.labels.ban', {
 			lng: locale,
@@ -38,8 +28,7 @@ export function banButton(incidentId: number, canBan: boolean, locale: string): 
 
 export function deleteButton(incidentId: number, canDelete: boolean, locale: string): MessageButton {
 	return new MessageButton({
-		type: 2,
-		style: 4,
+		style: Constants.MessageButtonStyles.DANGER,
 		customId: generateIncidentButtonId(OpCodes.DELETE, incidentId),
 		label: i18next.t('buttons.labels.delete', {
 			lng: locale,
@@ -50,11 +39,20 @@ export function deleteButton(incidentId: number, canDelete: boolean, locale: str
 
 export function reviewButton(incidentId: number, locale: string): MessageButton {
 	return new MessageButton({
-		type: 2,
-		style: 1,
+		style: Constants.MessageButtonStyles.SECONDARY,
 		customId: generateIncidentButtonId(OpCodes.REVIEW, incidentId),
 		label: i18next.t('buttons.labels.review', {
 			lng: locale,
 		})!,
+	});
+}
+
+export function linkButton(url: string, locale: string): MessageButton {
+	return new MessageButton({
+		style: Constants.MessageButtonStyles.LINK,
+		label: i18next.t('buttons.labels.link', {
+			lng: locale,
+		})!,
+		url,
 	});
 }

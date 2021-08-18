@@ -40,7 +40,6 @@ export interface GuildSettings {
 	strictness: number;
 	watching: string[];
 	attributes: string[];
-	prefetch: number;
 	immunity: string;
 	flags: string[];
 	locale: string;
@@ -60,16 +59,12 @@ export enum IncidentResolvedBy {
 	BUTTON_BAN = 'BUTTON_BAN',
 	BUTTON_REVIEW = 'BUTTON_REVIEW',
 	ACTION_EXPIRED = 'ACTION_EXPIRED',
-	MESSAGE_DELETED = 'MESSAGE_DELETED',
-	CHANNEL_DELETED = 'CHANNEL_DELETED',
-	LOGCHANNEL_DELETED = 'LOGCHANNEL_DELETED',
-	LOGMESSAGE_DELETED = 'LOGMESSAGE_DELETED',
-	NO_BUTTONS_LEFT = 'NO_BUTTONS_LEFT',
 	TASK_ERROR = 'TASK_ERROR',
 	LOGCHANNEL_INVALID = 'LOGCHANNEL_INVALID',
 	BELOW_BUTTON_LVL = 'BELOW_BUTTON_LVL',
 	AUTO_BAN_SCAM = 'AUTO_BAN_SCAM',
 	LEGACY = 'LEGACY',
+	NO_LOGEMBED = 'NO_LOGEMBED',
 }
 
 export enum GuildSettingFlags {
@@ -85,4 +80,9 @@ export enum NotificationTopics {
 export enum IncidentTypes {
 	PERSPECTIVE = 'PERSPECTIVE',
 	SPAM = 'SPAM',
+}
+
+export enum NotificationTargets {
+	USER = 'USER',
+	ROLE = 'ROLE',
 }

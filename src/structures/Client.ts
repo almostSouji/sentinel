@@ -64,7 +64,6 @@ export default class extends Client {
 					strictness		smallint not null default 1,
 					watching		text[] not null default '{}'::text[],
 					attributes		text[] not null default '{}'::text[],
-					prefetch		smallint not null default 0,
 					immunity		text not null default 'NONE',
 					flags			text[] not null default '{}'::text[],
 					locale			text not null default 'en-US',

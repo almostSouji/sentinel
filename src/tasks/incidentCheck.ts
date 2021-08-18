@@ -10,10 +10,16 @@ export async function incidentCheck(client: Client) {
 	const { sql, channels } = client;
 	const incidents = await sql<Incident[]>`select * from incidents where resolvedby is null`;
 	logger.info(`Starting scheduled incident check with ${incidents.length} unresolved incidents`);
+	logger.debug({
+		msg: 'unresolved incidents',
+		iid: incidents.map((i) => i.id),
+	});
 
 	for (const incident of incidents) {
 		const now = Date.now();
 		const logChannel = channels.resolve(incident.logchannel ?? '');
+
+		const [settings] = await sql<[GuildSettings]>`select * from guild_settings where guild = ${incident.guild}`;
 
 		if (!logChannel || !logChannel.isText() || logChannel instanceof DMChannel || !incident.logmessage) {
 			logger.debug({
@@ -29,6 +35,17 @@ export async function incidentCheck(client: Client) {
 
 		try {
 			const message = await logChannel.messages.fetch(incident.logmessage);
+			const {
+				client: { user: clientUser },
+			} = message;
+			const logEmbed = message.embeds[0];
+			if (!logEmbed) {
+				sql`update incidents set resolvedby = ${IncidentResolvedBy.NO_LOGEMBED} where id = ${incident.id}`;
+				continue;
+			}
+
+			const row = new MessageActionRow();
+			const linkButton = message.components[0]?.components.find((c) => c.type === 'BUTTON' && c.style === 'LINK');
 
 			if (now >= incident.expiresat) {
 				logger.debug({
@@ -37,24 +54,31 @@ export async function incidentCheck(client: Client) {
 					expAt: incident.expiresat,
 					check: now >= incident.expiresat,
 				});
-				sql`update incidents set resolvedby = ${IncidentResolvedBy.ACTION_EXPIRED} where id = ${incident.id}`;
-				await message.edit({ components: [] });
+
+				logEmbed.setFooter(
+					i18next.t('tasks.incidentcheck.expired', { lng: settings.locale }),
+					clientUser?.displayAvatarURL(),
+				);
+
+				if (linkButton) {
+					row.addComponents(linkButton);
+					await message.edit({
+						components: [row],
+						embeds: [logEmbed],
+					});
+				} else {
+					await message.edit({
+						components: [],
+						embeds: [logEmbed],
+					});
+				}
+				await sql`update incidents set resolvedby = ${IncidentResolvedBy.ACTION_EXPIRED} where id = ${incident.id}`;
 				continue;
 			}
 
-			const { guild, guildId } = logChannel;
-			const [settings] = await sql<GuildSettings[]>`select * from guild_settings where guild = ${guildId}`;
-			if (!settings) continue;
+			const { guild } = logChannel;
 
 			const rows = [];
-			if (!message.components.length) {
-				logger.debug({
-					msg: `incident ${incident.id} resolved. (l.50)`,
-					reason: 'msg had no components',
-				});
-				sql`update incidents set resolvedby = ${IncidentResolvedBy.NO_BUTTONS_LEFT} true where id = ${incident.id}`;
-				continue;
-			}
 			for (const row of message.components) {
 				const newRow = new MessageActionRow();
 				for (const component of row.components) {
@@ -67,8 +91,8 @@ export async function incidentCheck(client: Client) {
 						if (!component.customId.includes(CID_SEPARATOR)) continue;
 
 						const [op] = destructureIncidentButtonId(component.customId);
-
 						if (isNaN(op)) continue;
+
 						if (op === OpCodes.BAN) {
 							const canBan = guild.me?.permissions.has(Permissions.FLAGS.BAN_MEMBERS);
 							try {
@@ -110,10 +134,10 @@ export async function incidentCheck(client: Client) {
 									//* can ban, fetch bans
 									const banned = await guild.bans.fetch();
 									if (banned.has(incident.user)) {
-										//* is banned
+										//* is banned, skip ban button
 										continue;
 									} else {
-										//* is not banned
+										//* is not banned, add button, set forceBan
 										newRow.addComponents(
 											component
 												.setLabel(
@@ -125,6 +149,7 @@ export async function incidentCheck(client: Client) {
 										);
 									}
 								} else {
+									//* cannot ban, set disabled forceban
 									newRow.addComponents(
 										component
 											.setLabel(
@@ -175,11 +200,12 @@ export async function incidentCheck(client: Client) {
 								}
 								continue;
 							} catch {
-								//* message no longer exists
+								//* message no longer exists, don't set delete button
 								continue;
 							}
 						} else if (op === OpCodes.REVIEW) {
-							if (newRow.components.length) {
+							if (newRow.components.length > 1) {
+								//* has link + ban or delete or ban and delete, add review
 								newRow.addComponents(
 									component
 										.setLabel(
@@ -205,7 +231,7 @@ export async function incidentCheck(client: Client) {
 				msg: `incident ${incident.id} resolved. (l.204)`,
 				reason: 'cought error',
 			});
-			sql`update incidents set resolvedby = ${IncidentResolvedBy.TASK_ERROR} true where id = ${incident.id}`;
+			await sql`update incidents set resolvedby = ${IncidentResolvedBy.TASK_ERROR} where id = ${incident.id}`;
 		}
 	}
 }

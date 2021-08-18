@@ -9,6 +9,7 @@ import { formatPerspectiveShort } from './formatting/formatPerspective';
 import { cleanContent } from '../utils';
 import { COLOR_BLUE, COLOR_GREEN, COLOR_RED, COLOR_YELLOW, COLOR_DARK, COLOR_ORANGE } from '../constants';
 import { GuildSettings, GuildSettingFlags, Immunity, IncidentTypes, IncidentResolvedBy } from '../types/DataTypes';
+import i18next from 'i18next';
 
 const colors = [COLOR_DARK, COLOR_GREEN, COLOR_YELLOW, COLOR_ORANGE, COLOR_RED, COLOR_BLUE] as const;
 
@@ -119,7 +120,11 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 
 		setSeverityColor(embed, severityLevel);
 
-		embed.addField('\u200B', formatPerspectiveShort(perspective, locale), true);
+		embed.addField(
+			i18next.t('logstate.attributes_fieldname', { lng: locale }),
+			formatPerspectiveShort(perspective, locale),
+			true,
+		);
 
 		const [{ next_incident_id }] = await sql<[{ next_incident_id: number }]>`select next_incident_id();`;
 

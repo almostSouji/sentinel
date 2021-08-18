@@ -11,10 +11,7 @@ import {
 import { strictnessPick } from './checkMessage';
 import { resolveNotifications, truncate, truncateEmbed } from '../utils';
 import { GuildSettings, Notification } from '../types/DataTypes';
-import i18next from 'i18next';
-import { LIST_BULLET } from '../constants';
-import { channelMention } from '@discordjs/builders';
-import { banButton, deleteButton, reviewButton } from './buttons';
+import { banButton, deleteButton, linkButton, reviewButton } from './buttons';
 
 export async function sendLog(
 	logChannel: TextChannel | NewsChannel | ThreadChannel,
@@ -50,62 +47,10 @@ export async function sendLog(
 	const strictness = settings.strictness;
 	const buttonLevel = strictnessPick(strictness, 1, 2, 3);
 
-	const metaDataParts: string[] = [];
-
 	embed.setDescription(
 		truncate(targetContent ? targetContent.replace(/\n+/g, '\n').replace(/\s+/g, ' ') : 'no content', 1_990),
 	);
 	embed.setAuthor(`${targetUser.tag} (${targetUser.id})`, targetUser.displayAvatarURL());
-
-	metaDataParts.push(
-		targetChannel instanceof ThreadChannel
-			? `${LIST_BULLET} ${i18next.t('logstate.info_channel_thread', {
-					channel: channelMention(targetChannel.id),
-					parent: targetChannel.parentId ? channelMention(targetChannel.parentId) : 'not found',
-					lng: locale,
-			  })}`
-			: `${LIST_BULLET} ${i18next.t('logstate.info_channel', {
-					channel: channelMention(targetChannel.id),
-					lng: locale,
-			  })}`,
-	);
-
-	metaDataParts.push(
-		`${LIST_BULLET} ${i18next.t('logstate.info_link', {
-			link: targetMessage.url,
-			lng: locale,
-		})}`,
-	);
-
-	if (isEdit) {
-		metaDataParts.push(
-			`${LIST_BULLET} ${i18next.t('logstate.info_edit', {
-				lng: locale,
-			})}`,
-		);
-	}
-
-	const attachments = targetMessage.attachments;
-	if (attachments.size) {
-		let counter = 1;
-		metaDataParts.push(
-			`${LIST_BULLET} ${i18next.t('logstate.info_attachments', {
-				count: attachments.size,
-				links: attachments.map((a) => `[${counter++}](${a.proxyURL})`).join(', '),
-				lng: locale,
-			})}`,
-		);
-	}
-	if (targetMessage.embeds.length) {
-		metaDataParts.push(
-			`${LIST_BULLET} ${i18next.t('logstate.info_attachments', {
-				count: targetMessage.embeds.length,
-				lng: locale,
-			})}`,
-		);
-	}
-
-	embed.addField('\u200B', metaDataParts.join('\n'), true);
 
 	const notifications = await sql<Notification[]>`
 		select * from notifications where guild = ${guild.id}
@@ -122,6 +67,7 @@ export async function sendLog(
 			locale,
 		),
 		reviewButton(nextIncidentId, locale),
+		linkButton(targetMessage.url, locale),
 	];
 
 	truncateEmbed(embed);
@@ -144,5 +90,6 @@ export async function sendLog(
 			users,
 			roles,
 		},
+		components: [new MessageActionRow().addComponents(linkButton(targetMessage.url, locale))],
 	});
 }

@@ -7,8 +7,8 @@ export const FetchLogCommand = {
 	options: [
 		{
 			type: ApplicationCommandOptionType.String,
-			name: 'link',
-			description: 'Link to the log message that should be fetched',
+			name: 'logmessage',
+			description: 'Link to or ID of the log message to fetch',
 			required: true,
 		},
 		{

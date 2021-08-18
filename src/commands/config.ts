@@ -132,25 +132,6 @@ export async function handleConfigCommand(
 				}
 			}
 
-			if (args.edit.prefetch) {
-				if (args.edit.prefetch === settings.prefetch) {
-					messageParts.push(
-						`${warnEmoji}${i18next.t('command.config.prefetch_already', {
-							number: inlineCode(String(args.edit.prefetch)),
-							lng: locale,
-						})}`,
-					);
-				} else {
-					settings.prefetch = args.edit.prefetch;
-					messageParts.push(
-						`${successEmoji}${i18next.t('command.config.prefetch_updated', {
-							number: inlineCode(String(args.edit.prefetch)),
-							lng: locale,
-						})}`,
-					);
-				}
-			}
-
 			if (args.edit.immunity) {
 				if (Immunity[args.edit.immunity] === settings.immunity) {
 					messageParts.push(
@@ -226,7 +207,6 @@ export async function handleConfigCommand(
 				update guild_settings set 
 					logchannel = ${settings.logchannel},
 					strictness = ${settings.strictness},
-					prefetch = ${settings.prefetch},
 					immunity = ${settings.immunity},
 					watching = ${sql.array(settings.watching)},
 					spamthreshold = ${settings.spamthreshold}
@@ -291,14 +271,6 @@ export async function handleConfigCommand(
 					lng: locale,
 				}),
 				settings.immunity,
-				true,
-			);
-
-			embed.addField(
-				i18next.t('command.config.show_prefetch_fieldname', {
-					lng: locale,
-				}),
-				String(settings.prefetch),
 				true,
 			);
 

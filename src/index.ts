@@ -8,8 +8,6 @@ import {
 	Message,
 	MessageActionRow,
 	Intents,
-	Collection,
-	Snowflake,
 	Guild,
 	MessageFlags,
 	TextChannel,
@@ -85,33 +83,7 @@ async function main() {
 			}
 		});
 
-		client.on('ready', async () => {
-			for (const guild of client.guilds.cache.values()) {
-				const [settings] = await client.sql<GuildSettings[]>`select * from guild_settings where guild = ${guild.id}`;
-				if (!settings) continue;
-				let amount = settings.prefetch;
-				let last: Snowflake | null = null;
-				let b = false;
-
-				const channel = guild.channels.resolve(settings.logchannel as Snowflake);
-				if (!channel || !channel.isText()) continue;
-				if (
-					!channel
-						.permissionsFor(client.user!)
-						?.has([Permissions.FLAGS.READ_MESSAGE_HISTORY, Permissions.FLAGS.VIEW_CHANNEL])
-				)
-					continue;
-				while (amount > 0 && !b) {
-					const messages: Collection<Snowflake, Message> = await channel.messages.fetch({
-						before: last ?? undefined,
-						limit: Math.min(amount, 100),
-					});
-
-					b = last === messages.last()?.id;
-					last = messages.last()?.id ?? null;
-					amount -= messages.size;
-				}
-			}
+		client.on('ready', () => {
 			logger.info(
 				i18next.t('ready.ready_log', {
 					user: client.user!.tag,
@@ -218,7 +190,8 @@ async function main() {
 						executor.displayAvatarURL(),
 					);
 
-					buttons = [];
+					buttons = buttons.filter((b) => b.style === 'LINK');
+					await sql`update incidents set resolvedby = ${IncidentResolvedBy.BUTTON_BAN} where id = ${incidentId}`;
 				} catch (error) {
 					logger.error(error);
 
@@ -289,7 +262,7 @@ async function main() {
 							executor.displayAvatarURL(),
 						);
 
-						buttons = [];
+						buttons = buttons.filter((b) => b.style === 'LINK');
 
 						logger.debug({
 							msg: `incident ${incident.id} resolved. (l.319)`,
@@ -363,7 +336,7 @@ async function main() {
 					executor.displayAvatarURL(),
 				);
 
-				buttons = [];
+				buttons = buttons.filter((b) => b.style === 'LINK');
 
 				logger.debug({
 					msg: `incident ${incident.id} resolved. (l.319)`,
