@@ -132,15 +132,31 @@
 	"logstate": {
 		"info_channel": "Channel: {{-channel}}",
 		"info_channel_thread": "Thread: {{-channel}} in channel {{-parent}}",
-		"info_link": "Message link: [jump ➔](<{{-link}}>)",
+		"info_link": "[message ➔](<{{-link}}>)",
 		"info_edit": "Message Edit",
 		"info_attachments": "Attachments ({{count}}): {{-links}}",
 		"info_attachments_plural": "Attachments ({{count}}) {{-links}}",
-		"info_metadata_fieldname": "Metadata",
-		"info_flags_fieldname": "Flag",
-		"info_flags_fieldname_plural": "Flags",
 		"info_embeds:": "Embed: {{count}}",
 		"info_embeds_plural:": "Embeds: {{count}}"
+	},
+	"flags": {
+		"verbose": {
+			"toxicity": "toxic",
+			"severe_toxicity": "severely toxic",
+			"identity_attack": "identity attack",
+			"insult": "insulting",
+			"profanity": "profane",
+			"threat": "threatening",
+			"sexually_explicit": "sexually explicit",
+			"flirtation": "flirtatious",
+			"attack_on": "attacking someone",
+			"incoherent": "incoherent",
+			"inflammatory": "inflammatory",
+			"likely_to_reject": "likely rejected",
+			"obscene": "obscene",
+			"spam": "spam",
+			"unsubstantial": "unsubstantial"
+		}
 	},
 	"checks": {
 		"debug": {
