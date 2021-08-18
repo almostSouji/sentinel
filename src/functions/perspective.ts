@@ -40,7 +40,11 @@ export interface AttributeScoreMapEntry {
 	key: string;
 }
 
-export async function analyzeText(text: string, attributes: PerspectiveAttribute[]): Promise<PerspectiveResponseData> {
+export async function analyzeText(
+	text: string,
+	attributes: PerspectiveAttribute[],
+	communityId?: string,
+): Promise<PerspectiveResponseData> {
 	const client = await google.discoverAPI('https://commentanalyzer.googleapis.com/$discovery/rest?version=v1alpha1');
 	const requestedAttributes = Object.fromEntries(attributes.map((a) => [a, {}]));
 	const cleaned = cleanContent(text);
@@ -50,7 +54,7 @@ export async function analyzeText(text: string, attributes: PerspectiveAttribute
 			text: cleaned.length ? cleaned : ' ',
 		},
 		requestedAttributes,
-		doNotStore: true,
+		communityId: communityId,
 		languages: ['en'],
 	};
 

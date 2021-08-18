@@ -18,6 +18,7 @@ export async function checkPerspective(
 	content: string,
 	settings: GuildSettings,
 	nsfw = false,
+	communityId?: string,
 ): Promise<PerspectiveResult> {
 	const attributes = [...new Set([...settings.attributes, ...forcedAttributes])];
 	const logOverride = settings.flags.includes(FLAG_LOG_ALL);
@@ -29,6 +30,7 @@ export async function checkPerspective(
 			: nsfw
 			? attributes.filter((a) => !nsfwAtrributes.includes(a))
 			: attributes) as PerspectiveAttribute[],
+		communityId,
 	);
 
 	const tags: AttributeHit[] = [];

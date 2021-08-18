@@ -51,7 +51,12 @@ export async function handleTestCommand(
 		return replyWithError(interaction, i18next.t('command.evaluatecontent.empty_query', { lng: locale }));
 	}
 
-	const { perspective } = await checkContent(query, settings, channel instanceof ThreadChannel ? false : channel.nsfw);
+	const { perspective } = await checkContent(
+		query,
+		settings,
+		channel instanceof ThreadChannel ? false : channel.nsfw,
+		channel.guildId,
+	);
 	const attributes = formatPerspectiveDetails(
 		perspective.tags.map(({ key, score }) => ({
 			key,

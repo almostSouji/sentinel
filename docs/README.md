@@ -38,11 +38,10 @@ In the current state, the project uses the [Perspective API](https://perspective
 ## Privacy Policy
 
 1. If a message is logged the incident is persistently saved with authorId, guildId, messageId, severity level the content triggered, and attributes it triggered above the log threshold (depending on configured strictness applied to the guild)
-2. Messages per user and guild are counted in watched channels and associated with Ids
-3. Configuration data is saved persistently and indefinitely. The application uses Ids whenever possible.
-4. Perspective API is used with the `doNotStore` parameter, preventing any data retention by third parties.
-5. Debug logs to improve the flow of the app may be employed temporarily and may log any data necessary. Log entries of any kind do not persist.
-6. Sentinel does not log or otherwise make data visible outside of the application's purpose.
+2. Messages per user and guild are counted in watched channels and associated with IDs
+3. Configuration data is saved persistently and indefinitely. The application uses IDs whenever possible.
+4. Debug logs to improve the flow of the app may be employed temporarily and may log any data necessary. Log entries of any kind do not persist.
+5. Sentinel does not log or otherwise make data visible outside of the application's purpose.
 
 # Cell
 

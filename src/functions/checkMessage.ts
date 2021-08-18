@@ -119,6 +119,7 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 			content,
 			settings,
 			channel instanceof ThreadChannel ? false : channel.nsfw,
+			channel.guildId,
 		);
 		const { severe, high, tags } = perspective;
 
