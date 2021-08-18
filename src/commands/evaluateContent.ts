@@ -73,10 +73,19 @@ export async function handleTestCommand(
 			attributes.length * 0.25,
 		),
 	);
+	const veryHighAmount = Math.ceil(
+		strictnessPick(settings.strictness, attributes.length * 0.3, attributes.length * 0.4, attributes.length * 0.5),
+	);
 	const severeAmount = 1;
 
 	const perspectiveSeverity =
-		perspective.severe.length >= severeAmount ? 3 : perspective.high.length >= highAmount ? 2 : 1;
+		perspective.severe.length >= severeAmount
+			? 4
+			: perspective.high.length >= veryHighAmount
+			? 3
+			: perspective.high.length >= highAmount
+			? 2
+			: 1;
 
 	const embed = new MessageEmbed()
 		.setDescription(query)
