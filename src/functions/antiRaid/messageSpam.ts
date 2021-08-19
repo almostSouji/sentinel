@@ -7,7 +7,14 @@ import {
 	NotificationTopics,
 	IncidentResolvedBy,
 } from '../../types/DataTypes';
-import { hashString, resolveNotifications, transformHashset, truncateEmbed } from '../../utils';
+import {
+	hashString,
+	LIMIT_EMBED_DESCRIPTION,
+	LIMIT_EMBED_FIELD_VALUE,
+	resolveNotifications,
+	transformHashset,
+	truncate,
+} from '../../utils';
 import { GUILD_HASH_LOGMESSAGE, GUILD_USER_MESSAGE_CHANNEL_COUNT } from '../../utils/keys';
 import i18next from 'i18next';
 import { channelMention, inlineCode } from '@discordjs/builders';
@@ -62,7 +69,7 @@ function buildEmbed(
 		.setColor(spamColor(total, threshold))
 		.setAuthor(`${author.tag} (${author.id})`, author.displayAvatarURL())
 		.setTitle(i18next.t('spam.spam_detected', { lng: locale }))
-		.setDescription(newParts.join('\n'));
+		.setDescription(truncate(newParts.join('\n'), LIMIT_EMBED_DESCRIPTION, '\n'));
 
 	if (scamDomains?.length) {
 		embed.addFields({
@@ -77,9 +84,12 @@ function buildEmbed(
 		}
 	}
 
-	embed.addField(i18next.t('spam.spam_content_fieldname', { lng: locale }), tripMessage.content);
+	embed.addField(
+		i18next.t('spam.spam_content_fieldname', { lng: locale }),
+		truncate(tripMessage.content, LIMIT_EMBED_FIELD_VALUE, ''),
+	);
 
-	return truncateEmbed(embed);
+	return embed;
 }
 
 export async function messageSpam(message: Message) {

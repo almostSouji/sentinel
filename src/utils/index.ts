@@ -44,13 +44,13 @@ export function truncate(text: string, len: number, splitChar = ' '): string {
 	return resText.length === text.length ? resText : `${resText.trim()}...`;
 }
 
-const LIMIT_EMBED_DESCRIPTION = 4048 as const;
-const LIMIT_EMBED_TITLE = 256 as const;
-const LIMIT_EMBED_FIELDS = 25 as const;
-const LIMIT_EMBED_FIELD_NAME = 256 as const;
-const LIMIT_EMBED_FIELD_VALUE = 1024 as const;
-const LIMIT_EMBED_AUTHOR_NAME = 256 as const;
-const LIMIT_EMBED_FOOTER_TEXT = 2048 as const;
+export const LIMIT_EMBED_DESCRIPTION = 4048 as const;
+export const LIMIT_EMBED_TITLE = 256 as const;
+export const LIMIT_EMBED_FIELDS = 25 as const;
+export const LIMIT_EMBED_FIELD_NAME = 256 as const;
+export const LIMIT_EMBED_FIELD_VALUE = 1024 as const;
+export const LIMIT_EMBED_AUTHOR_NAME = 256 as const;
+export const LIMIT_EMBED_FOOTER_TEXT = 2048 as const;
 
 /**
  * Truncate the provided embed
