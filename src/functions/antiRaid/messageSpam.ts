@@ -36,7 +36,6 @@ function buildEmbed(
 	tripMessage: Message,
 	channelSpam: Record<string, number>,
 	threshold: number,
-	hash: string,
 	oldMessage?: Message,
 	scamDomains?: string[],
 	isBanned = false,
@@ -63,11 +62,7 @@ function buildEmbed(
 		.setColor(spamColor(total, threshold))
 		.setAuthor(`${author.tag} (${author.id})`, author.displayAvatarURL())
 		.setTitle(i18next.t('spam.spam_detected', { lng: locale }))
-		.setDescription(newParts.join('\n'))
-		.addFields({
-			name: i18next.t('spam.hash_fieldname', { lng: locale }),
-			value: inlineCode(hash),
-		});
+		.setDescription(newParts.join('\n'));
 
 	if (scamDomains?.length) {
 		embed.addFields({
@@ -82,7 +77,9 @@ function buildEmbed(
 		}
 	}
 
-	return embed;
+	embed.addField(i18next.t('spam.spam_content_fieldname', { lng: locale }), tripMessage.content);
+
+	return truncateEmbed(embed);
 }
 
 export async function messageSpam(message: Message) {
@@ -93,7 +90,7 @@ export async function messageSpam(message: Message) {
 		content,
 		channelId,
 	} = message;
-	if (!guild || !message.content.length) return;
+	if (!guild || !content.length) return;
 	const [settings] = await sql<GuildSettings[]>`select * from guild_settings where guild = ${guild.id}`;
 	const threshold = settings.spamthreshold;
 	if (!settings || !threshold) return;
@@ -138,11 +135,7 @@ export async function messageSpam(message: Message) {
 			const [{ next_incident_id: incidentId }] = await sql<[{ next_incident_id: number }]>`select next_incident_id()`;
 
 			const logMessage = await logChannel.send({
-				embeds: [
-					truncateEmbed(
-						buildEmbed(locale, author, message, channelSpam, threshold, hash, undefined, scamDomains, isBanned),
-					),
-				],
+				embeds: [buildEmbed(locale, author, message, channelSpam, threshold, undefined, scamDomains, isBanned)],
 				components: isBanned
 					? []
 					: [
@@ -184,11 +177,7 @@ export async function messageSpam(message: Message) {
 		}
 		const logMessage = await logChannel.messages.fetch(logMessageId);
 		await logMessage.edit({
-			embeds: [
-				truncateEmbed(
-					buildEmbed(locale, author, message, channelSpam, threshold, hash, logMessage, scamDomains, false),
-				),
-			],
+			embeds: [buildEmbed(locale, author, message, channelSpam, threshold, logMessage, scamDomains, false)],
 			content: notificationParts.length ? notificationParts.join(', ') : null,
 			allowedMentions: {
 				users,

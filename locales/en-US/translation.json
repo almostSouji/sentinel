@@ -162,7 +162,7 @@
 	},
 	"spam": {
 		"spam_detected": "Spam detected",
-		"hash_fieldname": "Hash",
+		"spam_content_fieldname": "Message content",
 		"messages_in": "{{bullet}} {{-formattedCount}} message in {{-channel}}",
 		"messages_in_plural": "{{bullet}} {{-formattedCount}} messages in {{-channel}}",
 		"scam_found": "Found scam domain",

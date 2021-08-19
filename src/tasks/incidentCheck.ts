@@ -204,8 +204,11 @@ export async function incidentCheck(client: Client) {
 								continue;
 							}
 						} else if (op === OpCodes.REVIEW) {
-							if (newRow.components.length > 1) {
-								//* has link + ban or delete or ban and delete, add review
+							const componentsWithoutLink = newRow.components.filter(
+								(c) => !(c.type === 'BUTTON' && c.style === 'LINK'),
+							).length;
+							if (componentsWithoutLink) {
+								//* has action button, add review
 								newRow.addComponents(
 									component
 										.setLabel(
