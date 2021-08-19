@@ -155,10 +155,6 @@ async function main() {
 				return replyWithError(interaction, i18next.t('buttons.no_incident', { lng: locale }));
 			}
 
-			if (incident.resolvedby) {
-				return replyWithError(interaction, i18next.t('buttons.incident_resolved', { lng: locale }));
-			}
-
 			if (op === OpCodes.BAN) {
 				const labelBan = i18next.t('buttons.labels.ban', { lng: locale });
 				const targetUserId = incident.user;

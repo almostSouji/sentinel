@@ -105,7 +105,6 @@
 			"link": "Message"
 		},
 		"no_incident": "Cannot find an incident associated with this button.",
-		"incident_resolved": "The target incident is resolved.",
 		"ban_no_permissions": "To use the ban button you need permissions to ban members!",
 		"delete_no_permissions": "To use the delete button you need permissions to delete messages in the channel this was flagged in!",
 		"review_no_permissions": "To use the review button you need permissions to manage messages in the channel this was flagged in!",
