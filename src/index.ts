@@ -117,7 +117,7 @@ async function main() {
 						?.has([Permissions.FLAGS.VIEW_CHANNEL, Permissions.FLAGS.MANAGE_MESSAGES])
 				) {
 					// - no permissions to handle incidents
-					await replyWithError(interaction, i18next.t('buttons.incident_handling_not_allowed', { lng }));
+					return replyWithError(interaction, i18next.t('buttons.incident_handling_not_allowed', { lng }));
 				}
 
 				if (!interaction.customId.includes(CID_SEPARATOR)) {
