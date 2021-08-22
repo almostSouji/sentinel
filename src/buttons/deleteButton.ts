@@ -37,7 +37,12 @@ export async function handleDeleteButton(
 			)
 			.setTimestamp();
 
-		await sql`update incidents set resolvedby = ${IncidentResolvedBy.BUTTON_DELETE}, resolvedat = now() where id = ${incident.id}`;
+		await sql`
+			update incidents set
+				resolvedby = ${IncidentResolvedBy.BUTTON_DELETE},
+				resolvedat = now(),
+				resolvedbyuser = ${interaction.user.id}
+			where id = ${incident.id}`;
 		const newRows = clearButtons(interaction.message.components as MessageActionRow[]);
 		const content = interaction.message.content.length ? interaction.message.content : null;
 

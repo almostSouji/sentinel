@@ -27,6 +27,7 @@ export interface Incident {
 	logmessage: string | null;
 	resolvedby: boolean;
 	resolvedat: number;
+	resolvedbyuser: string | null;
 }
 
 export interface UserStats {

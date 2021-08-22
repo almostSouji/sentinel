@@ -172,7 +172,8 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 				logchannel,
 				logmessage,
 				resolvedby,
-				resolvedat
+				resolvedat,
+				resolvedbyuser
 			) values (
 				${incidentId},
 				${IncidentTypes.PERSPECTIVE},
@@ -185,7 +186,8 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 				${logMessage.channelId},
 				${logMessage.id},
 				${severityLevel < buttonLevel ? IncidentResolvedBy.BELOW_BUTTON_LVL : null},
-				${severityLevel < buttonLevel ? new Date() : null}
+				${severityLevel < buttonLevel ? new Date() : null},
+				${severityLevel < buttonLevel ? client.user!.id : null}
 			)
 			on conflict do nothing
 		`;

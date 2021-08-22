@@ -33,21 +33,22 @@ export default class extends Client {
 		await this.sql.begin(async (sql) => {
 			await sql`
 				create table if not exists incidents(
-					id			integer primary key,
-					type		text not null,
-					message		text,
-					channel		text,
-					guild		text not null,
-					"user"		text not null,
-					attributes	text[] not null default '{}'::text[],
-					flags		text[] not null default '{}'::text[],
-					severity	smallint,
-					createdat	timestamp not null default now(),
-					expiresat	timestamp not null default now() + interval '1 day',
-					logchannel	text,
-					logmessage	text,
-					resolvedby	text,
-					resolvedat	timestamp
+					id				integer primary key,
+					type			text not null,
+					message			text,
+					channel			text,
+					guild			text not null,
+					"user"			text not null,
+					attributes		text[] not null default '{}'::text[],
+					flags			text[] not null default '{}'::text[],
+					severity		smallint,
+					createdat		timestamp not null default now(),
+					expiresat		timestamp not null default now() + interval '1 day',
+					logchannel		text,
+					logmessage		text,
+					resolvedby		text,
+					resolvedat		timestamp,
+					resolvedbyuser	text
 				);
 			`;
 
