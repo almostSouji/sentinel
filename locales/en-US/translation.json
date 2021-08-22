@@ -104,21 +104,20 @@
 			"review": "Review",
 			"link": "Message"
 		},
+		"incident_handling_not_allowed": "To handle the queue you need permissions to manage messages in the log channel!",
+		"legacy": "Old buttons are no longer supported",
 		"no_incident": "Cannot find an incident associated with this button.",
-		"ban_no_permissions": "To use the ban button you need permissions to ban members!",
-		"delete_no_permissions": "To use the delete button you need permissions to delete messages in the channel this was flagged in!",
-		"review_no_permissions": "To use the review button you need permissions to manage messages in the channel this was flagged in!",
 		"ban_success": "{{-executor}} banned {{-target}}",
 		"ban_missing_permissions": "{{-executor}} could not ban {{target}} (missing permissions)",
 		"ban_unknown_user": "{{-executor}} could not ban {{target}} (unknown user)",
 		"ban_unsuccessful": "{{-executor}} could not ban {{target}}",
 		"delete_success": "{{-executor}} deleted the message",
 		"delete_unknown_message": "{{-executor}} could not delete the message (unknown message)",
-		"delete_unknown_channel": "{{-executor}} could not delete the message (unknown channel)",
 		"delete_missing_permissions": "{{-executor}} could not delete the message (missing permissions)",
 		"delete_unsuccessful": "{{-executor}} could not delete the message",
-		"reviewed": "{{-executor}} reviewed this incident",
-		"button_action_reason": "button action (toxicity) by {{-executor}}"
+		"reviewed": "{{-executor}} handled this incident",
+		"button_action_reason": "button action by {{-executor}}",
+		"unknown_button": "Unknown button!"
 	},
 	"attributes": {
 		"explain_nsfw": "Attributes are not considered in NSFW channels.",
@@ -126,7 +125,9 @@
 		"explain_forced": "Attributes cannot be unwatched."
 	},
 	"logstate": {
-		"attributes_fieldname": "Attributes"
+		"attributes_fieldname": "Attributes",
+		"ban": "Author has been banned from the guild",
+		"expired": "Incident is expired"
 	},
 	"flags": {
 		"verbose": {
@@ -148,13 +149,7 @@
 		}
 	},
 	"checks": {
-		"format_perspective_no_attributes": "No attributes tracked.",
-		"format_perspective_none": "Not flagged with any significant attributes."
-	},
-	"tasks": {
-		"incidentcheck": {
-			"expired": "Incident is expired, buttons have been cleared"
-		}
+		"format_perspective_no_attributes": "No attributes tracked."
 	},
 	"commandexecution": {
 		"no_handler": "No handler found for command {{command}} {{id}}"

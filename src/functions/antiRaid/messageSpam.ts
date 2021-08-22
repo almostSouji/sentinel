@@ -47,7 +47,8 @@ function buildEmbed(
 	scamDomains?: string[],
 	isBanned = false,
 ): MessageEmbed {
-	const parts = oldMessage?.embeds[0]?.description?.split('\n') ?? [];
+	const oldEmbed = oldMessage?.embeds[0];
+	const parts = oldEmbed?.description?.split('\n') ?? [];
 	const newParts = [];
 	let total = 0;
 
@@ -84,6 +85,10 @@ function buildEmbed(
 		}
 	}
 
+	if (oldEmbed?.footer?.text) {
+		embed.setFooter(oldEmbed.footer.text, oldEmbed.footer.iconURL).setTimestamp(embed.timestamp ?? undefined);
+	}
+
 	embed.addField(
 		i18next.t('spam.spam_content_fieldname', { lng: locale }),
 		truncate(tripMessage.content, LIMIT_EMBED_FIELD_VALUE, ''),
@@ -95,6 +100,7 @@ function buildEmbed(
 export async function messageSpam(message: Message) {
 	const {
 		client: { redis, sql, listDict },
+		client,
 		guild,
 		author,
 		content,
@@ -142,7 +148,7 @@ export async function messageSpam(message: Message) {
 						.catch(() => false)),
 			);
 
-			const [{ next_incident_id: incidentId }] = await sql<[{ next_incident_id: number }]>`select next_incident_id()`;
+			const incidentId = await client.incrIncident();
 
 			const logMessage = await logChannel.send({
 				embeds: [buildEmbed(locale, author, message, channelSpam, threshold, undefined, scamDomains, isBanned)],
@@ -182,6 +188,7 @@ export async function messageSpam(message: Message) {
 					${logMessage.id},
 					${isBanned ? IncidentResolvedBy.AUTO_BAN_SCAM : null}
 				)
+				on conflict do nothing
 			`;
 			return;
 		}

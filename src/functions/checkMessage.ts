@@ -36,6 +36,7 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 	try {
 		const {
 			client: { sql },
+			client,
 			content,
 			channel,
 			guild,
@@ -126,7 +127,7 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 			true,
 		);
 
-		const [{ next_incident_id }] = await sql<[{ next_incident_id: number }]>`select next_incident_id();`;
+		const incidentId = await client.incrIncident();
 
 		if (debug) {
 			logger.debug({
@@ -149,40 +150,43 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 					immunity: immunityValue,
 					strictness,
 					severity: severityLevel,
-					incident: next_incident_id,
+					incident: incidentId,
 				},
 			});
 		}
 
-		const logMessage = await sendLog(logChannel, message, severityLevel, embed, isEdit, next_incident_id);
+		const logMessage = await sendLog(logChannel, message, severityLevel, embed, isEdit, incidentId);
 		if (!logMessage) return;
 		const buttonLevel = strictnessPick(strictness, 1, 2, 3);
 
-		await sql`insert into incidents (
-			id,
-			type,
-			message,
-			channel,
-			guild,
-			"user",
-			attributes,
-			severity,
-			logchannel,
-			logmessage,
-			resolvedby
-		) values (
-			${next_incident_id},
-			${IncidentTypes.PERSPECTIVE},
-			${message.id},
-			${channel.id},
-			${guild.id},
-			${author.id},
-			${sql.array(high.map((t) => t.key))},
-			${severityLevel},
-			${logMessage.channelId},
-			${logMessage.id},
-			${severityLevel < buttonLevel ? IncidentResolvedBy.BELOW_BUTTON_LVL : null}
-		)`;
+		await sql`
+			insert into incidents (
+				id,
+				type,
+				message,
+				channel,
+				guild,
+				"user",
+				attributes,
+				severity,
+				logchannel,
+				logmessage,
+				resolvedby
+			) values (
+				${incidentId},
+				${IncidentTypes.PERSPECTIVE},
+				${message.id},
+				${channel.id},
+				${guild.id},
+				${author.id},
+				${sql.array(high.map((t) => t.key))},
+				${severityLevel},
+				${logMessage.channelId},
+				${logMessage.id},
+				${severityLevel < buttonLevel ? IncidentResolvedBy.BELOW_BUTTON_LVL : null}
+			)
+			on conflict do nothing
+		`;
 	} catch (err) {
 		logger.error(err);
 	}

@@ -9,12 +9,14 @@ import postgres from 'postgres';
 import { logger } from '../functions/logger';
 import { incidentCheck } from '../tasks/incidentCheck';
 import { updateScamList } from '../tasks/updateScamList';
+import { LAST_INCIDENT } from '../utils/keys';
 
 declare module 'discord.js' {
 	export interface Client {
 		readonly redis: Redis.Redis;
 		readonly sql: postgres.Sql<Record<string, any>>;
 		readonly listDict: Map<string, string[]>;
+		incrIncident(): Promise<number>;
 	}
 }
 
@@ -82,6 +84,12 @@ export default class extends Client {
 				);
 			`;
 		});
+		const [{ next_incident_id }] = await this.sql<[{ next_incident_id: number }]>`select next_incident_id();`;
+		await this.redis.set(LAST_INCIDENT, next_incident_id - 1);
+	}
+
+	public async incrIncident(): Promise<number> {
+		return this.redis.incr(LAST_INCIDENT);
 	}
 
 	public async init() {

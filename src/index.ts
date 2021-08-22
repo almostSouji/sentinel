@@ -1,33 +1,20 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
-import {
-	MessageEmbed,
-	Permissions,
-	User,
-	GuildMember,
-	MessageButton,
-	Message,
-	MessageActionRow,
-	Intents,
-	Guild,
-	MessageFlags,
-	TextChannel,
-} from 'discord.js';
-
-import {
-	CID_SEPARATOR,
-	ERROR_CODE_MISSING_PERMISSIONS,
-	ERROR_CODE_UNKNOWN_MESSAGE,
-	ERROR_CODE_UNKNOWN_USER,
-} from './constants';
+import { Intents, GuildChannel, Permissions } from 'discord.js';
+import { CID_SEPARATOR } from './constants';
 import Client from './structures/Client';
 import { checkMessage } from './functions/checkMessage';
 import { logger } from './functions/logger';
-import { destructureIncidentButtonId, truncateEmbed } from './utils';
+import { destructureIncidentButtonId } from './utils';
 import { handleCommands } from './functions/handleCommands';
-import { GuildSettings, Incident, IncidentResolvedBy } from './types/DataTypes';
+import { GuildSettings, Incident } from './types/DataTypes';
 import i18next from 'i18next';
 import { replyWithError } from './utils/responses';
 import { messageSpam } from './functions/antiRaid/messageSpam';
+import { handleBanButton } from './buttons/banButton';
+import { handleDeleteButton } from './buttons/deleteButton';
+import { handleReviewButton } from './buttons/reviewButton';
+import { handleMessageDeleteLogstate } from './logState/messageDelete';
+import { handleGuildBanAddLogstate } from './logState/guildBanAdd';
 
 export interface ProcessEnv {
 	DISCORD_TOKEN: string;
@@ -45,6 +32,8 @@ export enum OpCodes {
 	BAN,
 	DELETE,
 }
+
+export type ActionOpCodes = OpCodes.REVIEW | OpCodes.BAN | OpCodes.DELETE;
 
 async function main() {
 	const client = new Client({
@@ -102,249 +91,101 @@ async function main() {
 					logger.error(error);
 					await replyWithError(interaction, i18next.t('common.errors.during_command'));
 				}
-			}
-
-			if (!interaction.isMessageComponent()) return;
-			if (!(interaction.member instanceof GuildMember)) return;
-			const { guild } = interaction;
-			const { sql } = client;
-			if (!guild) return;
-			const [settings] = await sql<GuildSettings[]>`select * from guild_settings where guild = ${guild.id}`;
-			if (!settings) return;
-			const locale = settings.locale;
-			const interactionMessage = interaction.message as Message;
-
-			const interactionEmbed = interactionMessage.embeds[0];
-			if (!(interaction.guild instanceof Guild)) return;
-
-			const embed = new MessageEmbed(interactionEmbed);
-			const executor = interaction.user;
-
-			let buttons: MessageButton[] = [
-				// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-				...(interactionMessage.components?.[0]?.components.filter((c) => c instanceof MessageButton) ?? []),
-			] as MessageButton[];
-
-			if (
-				!interactionMessage.flags.has(MessageFlags.FLAGS.EPHEMERAL) &&
-				!interactionMessage.components.some((row) => {
-					return row.components.some((button) => {
-						return button.customId === interaction.customId;
-					});
-				})
-			)
 				return;
-
-			// handling old buttons without crash
-			if (!interaction.customId.includes(CID_SEPARATOR)) {
-				return replyWithError(interaction, i18next.t('buttons.no_incident', { lng: locale }));
 			}
 
-			const [op, incidentId] = destructureIncidentButtonId(interaction.customId);
+			if (interaction.isMessageComponent()) {
+				const { sql } = client;
 
-			// handling old buttons without crash
-			if (Number.isNaN(incidentId)) {
-				return replyWithError(interaction, i18next.t('buttons.no_incident', { lng: locale }));
-			}
+				if (
+					!interaction.guild ||
+					!(interaction.channel instanceof GuildChannel) ||
+					interaction.channel.isThread() ||
+					!interaction.channel.isText()
+				)
+					return;
 
-			const [incident] = await sql<Incident[]>`
+				const [settings] = await sql<
+					GuildSettings[]
+				>`select * from guild_settings where guild = ${interaction.guild.id}`;
+				if (!settings) return;
+				const lng = settings.locale;
+
+				if (
+					!interaction.channel
+						.permissionsFor(interaction.user)
+						?.has([Permissions.FLAGS.VIEW_CHANNEL, Permissions.FLAGS.MANAGE_MESSAGES])
+				) {
+					// - no permissions to handle incidents
+					await replyWithError(interaction, i18next.t('buttons.incident_handling_not_allowed', { lng }));
+				}
+
+				if (!interaction.customId.includes(CID_SEPARATOR)) {
+					// - legacy button
+					return replyWithError(interaction, i18next.t('buttons.legacy', { lng }));
+				}
+
+				const [op, incidentId] = destructureIncidentButtonId(interaction.customId);
+				if (Number.isNaN(incidentId)) {
+					// - legacy button
+					return replyWithError(interaction, i18next.t('buttons.legacy', { lng }));
+				}
+
+				const [incident] = await sql<Incident[]>`
 				select * from incidents where id = ${incidentId}
 			`;
 
-			if (!incident) {
-				return replyWithError(interaction, i18next.t('buttons.no_incident', { lng: locale }));
-			}
-
-			if (op === OpCodes.BAN) {
-				const labelBan = i18next.t('buttons.labels.ban', { lng: locale });
-				const targetUserId = incident.user;
-
-				if (!interaction.member.permissions.has(Permissions.FLAGS.BAN_MEMBERS)) {
-					return replyWithError(
-						interaction,
-						i18next.t('buttons.ban_no_permissions', {
-							lng: locale,
-						}),
-					);
+				if (!incident) {
+					// - no incident found in db
+					return replyWithError(interaction, i18next.t('buttons.no_incident', { lng }));
 				}
 
+				switch (op) {
+					case OpCodes.BAN:
+						return handleBanButton(interaction, settings, incident);
+					case OpCodes.DELETE:
+						return handleDeleteButton(interaction, settings, incident);
+					case OpCodes.REVIEW:
+						return handleReviewButton(interaction, settings, incident);
+					default:
+						// - unknown button
+						return replyWithError(interaction, i18next.t('common.errors.unknown_button', { lng }));
+				}
+			}
+
+			// ~ unhandled interaction
+			logger.debug({
+				msg: 'unknown interaction',
+				interaction,
+			});
+		});
+
+		client.on('messageDelete', async (message) => {
+			if (message.author?.bot || message.channel.type !== 'GUILD_TEXT' || message.partial) return;
+			try {
+				await handleMessageDeleteLogstate(client, message);
+			} catch (error) {
+				logger.error(error);
+			}
+		});
+
+		client.on('messageDeleteBulk', async (messages) => {
+			for (const message of messages.values()) {
+				if (message.author?.bot || message.channel.type !== 'GUILD_TEXT' || message.partial) return;
 				try {
-					const user = await interaction.guild.members.ban(targetUserId, {
-						days: 1,
-						reason: i18next.t('buttons.button_action_reason', {
-							executor: `${executor.tag} (${executor.id})`,
-							lng: locale,
-						}),
-					});
-
-					embed.setFooter(
-						i18next.t('buttons.ban_success', {
-							executor: executor.tag,
-							target: user instanceof GuildMember ? user.user.tag : user instanceof User ? user.tag : user,
-							lng: locale,
-						}),
-						executor.displayAvatarURL(),
-					);
-
-					buttons = buttons.filter((b) => b.style === 'LINK');
-					await sql`update incidents set resolvedby = ${IncidentResolvedBy.BUTTON_BAN} where id = ${incidentId}`;
+					await handleMessageDeleteLogstate(client, message);
 				} catch (error) {
 					logger.error(error);
-
-					if (error.code === ERROR_CODE_MISSING_PERMISSIONS) {
-						embed.setFooter(
-							i18next.t('buttons.ban_missing_permissions', {
-								executor: executor.tag,
-								target: targetUserId,
-								lng: locale,
-							}),
-							executor.displayAvatarURL(),
-						);
-
-						buttons.find((b) => b.label === labelBan)?.setDisabled(true);
-					} else if (error.code === ERROR_CODE_UNKNOWN_USER) {
-						embed.setFooter(
-							i18next.t('buttons.ban_unknown_user', {
-								executor: executor.tag,
-								target: targetUserId,
-								lng: locale,
-							}),
-							executor.displayAvatarURL(),
-						);
-
-						buttons = buttons.filter((b) => {
-							if (!b.customId) return true;
-							const [op] = destructureIncidentButtonId(b.customId);
-							return op !== OpCodes.BAN;
-						});
-					} else {
-						embed.setFooter(
-							i18next.t('buttons.ban_unsuccessful', {
-								executor: executor.tag,
-								target: targetUserId,
-								lng: locale,
-							}),
-							executor.displayAvatarURL(),
-						);
-					}
 				}
 			}
+		});
 
-			if (op === OpCodes.DELETE) {
-				const labelDelete = i18next.t('buttons.labels.delete', { lng: locale });
-
-				const targetChannelId = incident.channel!;
-				const targetMessageId = incident.message!;
-				const channel = interaction.guild.channels.resolve(targetChannelId);
-				if (
-					!channel?.permissionsFor(executor)?.has([Permissions.FLAGS.VIEW_CHANNEL, Permissions.FLAGS.MANAGE_MESSAGES])
-				) {
-					return replyWithError(
-						interaction,
-						i18next.t('buttons.delete_no_permissions', {
-							lng: locale,
-						}),
-					);
-				}
-
-				if (channel.isText()) {
-					try {
-						await channel.messages.delete(targetMessageId);
-						embed.setFooter(
-							i18next.t('buttons.delete_success', {
-								executor: executor.tag,
-								lng: locale,
-							}),
-							executor.displayAvatarURL(),
-						);
-
-						buttons = buttons.filter((b) => b.style === 'LINK');
-
-						logger.debug({
-							msg: `incident ${incident.id} resolved. (l.319)`,
-							reason: 'delete button',
-						});
-						await sql`update incidents set resolvedby = ${IncidentResolvedBy.BUTTON_DELETE} where id = ${incidentId}`;
-					} catch (error) {
-						logger.error(error);
-
-						if (error.code === ERROR_CODE_UNKNOWN_MESSAGE) {
-							embed.setFooter(
-								i18next.t('buttons.delete_unknown_message', {
-									executor: executor.tag,
-									lng: locale,
-								}),
-								executor.displayAvatarURL(),
-							);
-
-							buttons = buttons.filter((b) => b.label !== labelDelete);
-						} else if (error.code === ERROR_CODE_MISSING_PERMISSIONS) {
-							embed.setFooter(
-								i18next.t('buttons.delete_missing_permissions', {
-									executor: executor.tag,
-									lng: locale,
-								}),
-								executor.displayAvatarURL(),
-							);
-
-							buttons = buttons.filter((b) => b.label !== labelDelete);
-						} else {
-							embed.setFooter(
-								i18next.t('buttons.delete_unsuccesful', {
-									executor: executor.tag,
-									lng: locale,
-								}),
-								executor.displayAvatarURL(),
-							);
-						}
-					}
-				} else {
-					embed.setFooter(
-						i18next.t('buttons.delete_unknown_channel', {
-							executor: executor.tag,
-							lng: locale,
-						}),
-						executor.displayAvatarURL(),
-					);
-
-					buttons = buttons.filter((b) => b.label !== labelDelete);
-				}
+		client.on('guildBanAdd', async (ban) => {
+			try {
+				await handleGuildBanAddLogstate(client, ban);
+			} catch (error) {
+				logger.error(error);
 			}
-
-			if (op === OpCodes.REVIEW) {
-				if (
-					!(interaction.channel as TextChannel)
-						.permissionsFor(interaction.member)
-						.has(Permissions.FLAGS.MANAGE_MESSAGES)
-				)
-					return replyWithError(
-						interaction,
-						i18next.t('buttons.review_no_permissions', {
-							lng: locale,
-						}),
-					);
-
-				embed.setFooter(
-					i18next.t('buttons.reviewed', {
-						executor: executor.tag,
-						lng: locale,
-					}),
-					executor.displayAvatarURL(),
-				);
-
-				buttons = buttons.filter((b) => b.style === 'LINK');
-
-				logger.debug({
-					msg: `incident ${incident.id} resolved. (l.319)`,
-					reason: 'review button',
-				});
-				await sql`update incidents set resolvedby = ${IncidentResolvedBy.BUTTON_REVIEW} where id = ${incidentId}`;
-			}
-
-			await interaction.update({
-				embeds: [truncateEmbed(embed)],
-				components: buttons.length ? [new MessageActionRow().addComponents(buttons)] : [],
-			});
 		});
 
 		await client.login(process.env.DISCORD_TOKEN);

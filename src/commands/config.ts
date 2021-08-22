@@ -81,7 +81,7 @@ export async function handleConfigCommand(
 					) {
 						if (channel.id === settings.logchannel) {
 							messageParts.push(
-								`${warnEmoji}${i18next.t('command.config.lochannel_already', {
+								`${warnEmoji}${i18next.t('command.config.logchannel_already', {
 									channel: channelMention(channel.id),
 									lng: locale,
 								})}`,
