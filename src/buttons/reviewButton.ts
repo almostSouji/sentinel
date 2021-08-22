@@ -30,7 +30,7 @@ export async function handleReviewButton(
 			)
 			.setTimestamp();
 
-		await sql`update incidents set resolvedby = ${IncidentResolvedBy.BUTTON_REVIEW} where id = ${incident.id}`;
+		await sql`update incidents set resolvedby = ${IncidentResolvedBy.BUTTON_REVIEW}, resolvedat = now() where id = ${incident.id}`;
 		const newRows = clearButtons(interaction.message.components as MessageActionRow[]);
 		const content = interaction.message.content.length ? interaction.message.content : null;
 		await interaction.update({

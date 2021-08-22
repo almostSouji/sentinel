@@ -39,7 +39,7 @@ export async function handleBanButton(
 			)
 			.setTimestamp();
 
-		await sql`update incidents set resolvedby = ${IncidentResolvedBy.BUTTON_BAN} where id = ${incident.id}`;
+		await sql`update incidents set resolvedby = ${IncidentResolvedBy.BUTTON_BAN}, resolvedat = now() where id = ${incident.id}`;
 		const newRows = clearButtons(interaction.message.components as MessageActionRow[]);
 		const content = interaction.message.content.length ? interaction.message.content : null;
 

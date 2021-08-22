@@ -10,7 +10,7 @@ export async function incidentCheck(client: Client) {
 
 	const now = new Date();
 	const incidents = await sql<Incident[]>`select * from incidents where resolvedby is null and expiresat <= ${now}`;
-	await sql`update incidents set resolvedby = ${IncidentResolvedBy.ACTION_EXPIRED} where resolvedby is null and expiresat <= ${now}`;
+	await sql`update incidents set resolvedby = ${IncidentResolvedBy.ACTION_EXPIRED}, resolvedat = now() where resolvedby is null and expiresat <= ${now}`;
 	if (incidents.length) {
 		logger.debug({
 			msg: 'incidents resolved',

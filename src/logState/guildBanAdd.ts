@@ -10,7 +10,7 @@ export async function handleGuildBanAddLogstate(client: Client, ban: GuildBan) {
 	const incidents = await sql<Incident[]>`select * from incidents where "user" = ${ban.user.id} and resolvedby is null`;
 	const [settings] = await sql<GuildSettings[]>`select * from guild_settings where guild = ${ban.guild.id}`;
 	if (!settings) return;
-	await sql`update incidents set resolvedby = ${IncidentResolvedBy.GUILD_MEMBER_BAN} where "user" =  ${ban.user.id} and resolvedby is null`;
+	await sql`update incidents set resolvedby = ${IncidentResolvedBy.GUILD_MEMBER_BAN}, resolvedat = now() where "user" =  ${ban.user.id} and resolvedby is null`;
 	logger.debug({
 		msg: 'incidents resolved',
 		incidents: incidents.map((i) => i.id),

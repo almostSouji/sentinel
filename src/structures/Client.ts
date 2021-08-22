@@ -46,7 +46,8 @@ export default class extends Client {
 					expiresat	timestamp not null default now() + interval '1 day',
 					logchannel	text,
 					logmessage	text,
-					resolvedby	text
+					resolvedby	text,
+					resolvedat	timestamp
 				);
 			`;
 

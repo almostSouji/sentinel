@@ -185,7 +185,8 @@ export async function messageSpam(message: Message) {
 					"user",
 					logchannel,
 					logmessage,
-					resolvedby
+					resolvedby,
+					resolvedat
 				) values (
 					${incidentId},
 					${IncidentTypes.SPAM},
@@ -193,7 +194,8 @@ export async function messageSpam(message: Message) {
 					${author.id},
 					${logMessage.channelId},
 					${logMessage.id},
-					${isBanned ? IncidentResolvedBy.AUTO_BAN_SCAM : null}
+					${isBanned ? IncidentResolvedBy.AUTO_BAN_SCAM : null},
+					${isBanned ? new Date() : null}
 				)
 				on conflict do nothing
 			`;

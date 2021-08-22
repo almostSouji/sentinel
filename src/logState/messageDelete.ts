@@ -16,7 +16,7 @@ export async function handleMessageDeleteLogstate(client: Client, message: Messa
 	if (incident.logmessage === message.id) {
 		//* deleted message is logmessage
 		//* resolve the log
-		await sql`update incidents set resolvedby = ${IncidentResolvedBy.LOGMESSAGE_DELETED} where logmessage = ${message.id}`;
+		await sql`update incidents set resolvedby = ${IncidentResolvedBy.LOGMESSAGE_DELETED}, resolvedat = now() where logmessage = ${message.id}`;
 		logger.debug({
 			msg: 'incident resolved',
 			incident: incident.id,

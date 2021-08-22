@@ -10,7 +10,7 @@ export async function fetchLog(
 	const { sql } = client;
 	if (!logChannelId && !logMessageId) return null;
 	if (!logChannelId || !logMessageId) {
-		await sql`update incidents set resolvedby = ${IncidentResolvedBy.LOGCHANNEL_INVALID} where (logmessage = ${logMessageId} or logchannel = ${logChannelId}) and resolvedby is null`;
+		await sql`update incidents set resolvedby = ${IncidentResolvedBy.LOGCHANNEL_INVALID}, resolvedat = now() where (logmessage = ${logMessageId} or logchannel = ${logChannelId}) and resolvedby is null`;
 		logger.debug({
 			msg: 'incidents resolved',
 			logChannel: logChannelId,
@@ -21,7 +21,7 @@ export async function fetchLog(
 	}
 	const logChannel = client.channels.resolve(logChannelId);
 	if (!logChannel || !(logChannel instanceof GuildChannel) || !logChannel.isText() || logChannel.isThread()) {
-		await sql`update incidents set resolvedby = ${IncidentResolvedBy.LOGCHANNEL_INVALID} where logchannel = ${logChannelId} and resolvedby is null`;
+		await sql`update incidents set resolvedby = ${IncidentResolvedBy.LOGCHANNEL_INVALID}, resolvedat = now() where logchannel = ${logChannelId} and resolvedby is null`;
 		logger.debug({
 			msg: 'incidents resolved',
 			channel: logChannelId,
@@ -33,7 +33,7 @@ export async function fetchLog(
 		const logMessage = await logChannel.messages.fetch(logMessageId);
 		return logMessage;
 	} catch {
-		await sql`update incidents set resolvedby = ${IncidentResolvedBy.LOGMESSAGE_DELETED} where logmessage = ${logMessageId} and resolvedby is null`;
+		await sql`update incidents set resolvedby = ${IncidentResolvedBy.LOGMESSAGE_DELETED}, resolvedat = now() where logmessage = ${logMessageId} and resolvedby is null`;
 		logger.debug({
 			msg: 'incident resolved',
 			logMessage: logMessageId,

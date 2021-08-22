@@ -26,6 +26,7 @@ export interface Incident {
 	logchannel: string | null;
 	logmessage: string | null;
 	resolvedby: boolean;
+	resolvedat: number;
 }
 
 export interface UserStats {
