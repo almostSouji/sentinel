@@ -1,11 +1,11 @@
 import { CommandInteraction, DMChannel } from 'discord.js';
-import { logger } from '../functions/logger';
-import { truncate } from '../utils';
+import { logger } from '../../../utils/logger';
+import { truncate } from '../../../utils';
 
-import { ArgumentsOf } from '../types/ArgumentsOf';
+import { ArgumentsOf } from '../../../types/ArgumentsOf';
 import i18next from 'i18next';
-import { replyWithError } from '../utils/responses';
-import { SQLCommand } from '../interactions/sql';
+import { replyWithError } from '../../../utils/responses';
+import { SQLCommand } from '../../../interactions/sql';
 import { inspect } from 'util';
 import { codeBlock } from '@discordjs/builders';
 

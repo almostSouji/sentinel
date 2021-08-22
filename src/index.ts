@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import { Intents, GuildChannel, Permissions } from 'discord.js';
-import { CID_SEPARATOR } from './constants';
+import { CID_SEPARATOR } from './utils/constants';
 import Client from './structures/Client';
-import { checkMessage } from './functions/checkMessage';
-import { logger } from './functions/logger';
+import { checkMessage } from './functions/inspection/checkMessage';
+import { logger } from './utils/logger';
 import { destructureIncidentButtonId } from './utils';
-import { handleCommands } from './functions/handleCommands';
+import { handleCommands } from './functions/commandHandling/handleCommands';
 import { GuildSettings, Incident } from './types/DataTypes';
 import i18next from 'i18next';
 import { replyWithError } from './utils/responses';

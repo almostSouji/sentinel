@@ -1,6 +1,6 @@
 import { google } from 'googleapis';
-import { PerspectiveResponseData, PerspectiveResponse, PerspectiveAttribute } from '../types/perspective';
-import { cleanContent } from '../utils';
+import { PerspectiveResponseData, PerspectiveResponse, PerspectiveAttribute } from '../../types/perspective';
+import { cleanContent } from '../../utils';
 
 export const perspectiveAttributes = [
 	'SEVERE_TOXICITY',

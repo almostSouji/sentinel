@@ -1,14 +1,14 @@
 import { Message, PartialMessage, Permissions, MessageEmbed, Snowflake, ThreadChannel } from 'discord.js';
-import { Score } from '../types/perspective';
-import { logger } from './logger';
+import { Score } from '../../types/perspective';
+import { logger } from '../../utils/logger';
 import { forcedAttributes } from './perspective';
-import { sendLog } from './sendLog';
+import { sendLog } from '../sendLog';
 
-import { checkContent } from './inspection/checkContent';
-import { formatPerspectiveShort } from './formatting/formatPerspective';
-import { cleanContent } from '../utils';
-import { COLOR_BLUE, COLOR_GREEN, COLOR_RED, COLOR_YELLOW, COLOR_DARK, COLOR_ORANGE } from '../constants';
-import { GuildSettings, GuildSettingFlags, Immunity, IncidentTypes, IncidentResolvedBy } from '../types/DataTypes';
+import { checkContent } from './checkContent';
+import { formatPerspectiveShort } from '../formatting/formatPerspective';
+import { cleanContent } from '../../utils';
+import { COLOR_BLUE, COLOR_GREEN, COLOR_RED, COLOR_YELLOW, COLOR_DARK, COLOR_ORANGE } from '../../utils/constants';
+import { GuildSettings, GuildSettingFlags, Immunity, IncidentTypes, IncidentResolvedBy } from '../../types/DataTypes';
 import i18next from 'i18next';
 
 const colors = [COLOR_DARK, COLOR_GREEN, COLOR_YELLOW, COLOR_ORANGE, COLOR_RED, COLOR_BLUE] as const;

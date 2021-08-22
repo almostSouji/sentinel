@@ -1,5 +1,5 @@
 import { MessageActionRow, MessageButton, Client, MessageEmbed } from 'discord.js';
-import { logger } from '../functions/logger';
+import { logger } from '../utils/logger';
 import { GuildSettings, Incident, IncidentResolvedBy } from '../types/DataTypes';
 import { fetchLog } from '../logState/fetchLog';
 import i18next from 'i18next';

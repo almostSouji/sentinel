@@ -1,10 +1,10 @@
 import { CommandInteraction, DMChannel } from 'discord.js';
-import { logger } from '../functions/logger';
-import { truncate } from '../utils';
-import { RedisCommand } from '../interactions/redis';
-import { ArgumentsOf } from '../types/ArgumentsOf';
+import { logger } from '../../../utils/logger';
+import { truncate } from '../../../utils';
+import { RedisCommand } from '../../../interactions/redis';
+import { ArgumentsOf } from '../../../types/ArgumentsOf';
 import i18next from 'i18next';
-import { replyWithError } from '../utils/responses';
+import { replyWithError } from '../../../utils/responses';
 import { codeBlock } from '@discordjs/builders';
 
 export async function handleRedisCommand(

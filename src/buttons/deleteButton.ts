@@ -1,9 +1,9 @@
 import { MessageComponentInteraction, GuildMember, MessageActionRow, MessageEmbed } from 'discord.js';
 import i18next from 'i18next';
 import { OpCodes } from '..';
-import { ERROR_CODE_MISSING_PERMISSIONS, ERROR_CODE_UNKNOWN_MESSAGE } from '../constants';
+import { ERROR_CODE_MISSING_PERMISSIONS, ERROR_CODE_UNKNOWN_MESSAGE } from '../utils/constants';
 import { clearButtons, flipButtons } from '../functions/buttons';
-import { logger } from '../functions/logger';
+import { logger } from '../utils/logger';
 import { GuildSettings, Incident, IncidentResolvedBy } from '../types/DataTypes';
 import { truncateEmbed } from '../utils';
 

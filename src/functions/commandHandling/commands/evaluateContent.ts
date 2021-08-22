@@ -1,13 +1,13 @@
 import { CommandInteraction, DMChannel, MessageEmbed, MessageEmbedAuthor, ThreadChannel, User } from 'discord.js';
-import { ArgumentsOf } from '../types/ArgumentsOf';
-import { formatPerspectiveDetails } from '../functions/formatting/formatPerspective';
-import { checkContent } from '../functions/inspection/checkContent';
-import { EvaluateContentCommand } from '../interactions/evaluateContent';
-import { setSeverityColor, strictnessPick } from '../functions/checkMessage';
+import { ArgumentsOf } from '../../../types/ArgumentsOf';
+import { formatPerspectiveDetails } from '../../formatting/formatPerspective';
+import { checkContent } from '../../inspection/checkContent';
+import { EvaluateContentCommand } from '../../../interactions/evaluateContent';
+import { setSeverityColor, strictnessPick } from '../../inspection/checkMessage';
 import i18next from 'i18next';
-import { replyWithError } from '../utils/responses';
-import { GuildSettings } from '../types/DataTypes';
-import { truncateEmbed } from '../utils';
+import { replyWithError } from '../../../utils/responses';
+import { GuildSettings } from '../../../types/DataTypes';
+import { truncateEmbed } from '../../../utils';
 
 export async function handleTestCommand(
 	interaction: CommandInteraction,

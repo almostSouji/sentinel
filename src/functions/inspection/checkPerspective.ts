@@ -1,7 +1,7 @@
 import { GuildSettings, GuildSettingFlags } from '../../types/DataTypes';
 import { PerspectiveAttribute, Scores } from '../../types/perspective';
-import { STRICTNESS_LEVELS, AttributeHit } from '../checkMessage';
-import { analyzeText, forcedAttributes, nsfwAtrributes, perspectiveAttributes } from '../perspective';
+import { STRICTNESS_LEVELS, AttributeHit } from './checkMessage';
+import { analyzeText, forcedAttributes, nsfwAtrributes, perspectiveAttributes } from './perspective';
 
 export function strictnessPick(level: number, highValue: number, mediumValue: number, lowValue: number) {
 	return level === STRICTNESS_LEVELS.HIGH ? highValue : level === STRICTNESS_LEVELS.MEDIUM ? mediumValue : lowValue;

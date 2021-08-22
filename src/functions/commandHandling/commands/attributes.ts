@@ -1,13 +1,13 @@
 import { CommandInteraction, DMChannel } from 'discord.js';
-import { ArgumentsOf } from '../types/ArgumentsOf';
-import { AttributesCommand } from '../interactions/attributes';
-import { GuildSettings } from '../types/DataTypes';
+import { ArgumentsOf } from '../../../types/ArgumentsOf';
+import { AttributesCommand } from '../../../interactions/attributes';
+import { GuildSettings } from '../../../types/DataTypes';
 import i18next from 'i18next';
-import { formatFlag, formatFlagString } from '../utils/formatting';
-import { replyWithError } from '../utils/responses';
-import { emojiOrFallback } from '../utils';
-import { EMOJI_ID_SHIELD_GREEN_SMALL, EMOJI_ID_SHIELD_YELLOW_SMALL, LIST_BULLET } from '../constants';
-import { NYTAttributesCommand } from '../interactions/nytAttributes';
+import { formatFlag, formatFlagString } from '../../../utils/formatting';
+import { replyWithError } from '../../../utils/responses';
+import { emojiOrFallback } from '../../../utils';
+import { EMOJI_ID_SHIELD_GREEN_SMALL, EMOJI_ID_SHIELD_YELLOW_SMALL, LIST_BULLET } from '../../../utils/constants';
+import { NYTAttributesCommand } from '../../../interactions/nytAttributes';
 import { formatEmoji, inlineCode } from '@discordjs/builders';
 
 export async function handleAttributesCommand(

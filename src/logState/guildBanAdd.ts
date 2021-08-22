@@ -1,6 +1,6 @@
 import { Client, GuildBan, MessageActionRow, MessageButton, MessageEmbed } from 'discord.js';
 import i18next from 'i18next';
-import { logger } from '../functions/logger';
+import { logger } from '../utils/logger';
 import { GuildSettings, Incident, IncidentResolvedBy } from '../types/DataTypes';
 import { truncateEmbed } from '../utils';
 import { fetchLog } from './fetchLog';

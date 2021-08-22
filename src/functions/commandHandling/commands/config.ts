@@ -1,8 +1,8 @@
-import { ConfigCommand } from '../interactions/config';
+import { ConfigCommand } from '../../../interactions/config';
 
 import { CommandInteraction, DMChannel, MessageEmbed, Permissions, Snowflake, TextChannel } from 'discord.js';
-import { ArgumentsOf } from '../types/ArgumentsOf';
-import { forcedAttributes, nsfwAtrributes, nytAttributes } from '../functions/perspective';
+import { ArgumentsOf } from '../../../types/ArgumentsOf';
+import { forcedAttributes, nsfwAtrributes, nytAttributes } from '../../inspection/perspective';
 import {
 	COLOR_DARK,
 	EMOJI_ID_SHIELD_GREEN_SMALL,
@@ -14,11 +14,11 @@ import {
 	PREFIX_LOCKED,
 	PREFIX_NSFW,
 	PREFIX_NYT,
-} from '../constants';
+} from '../../../utils/constants';
 import i18next from 'i18next';
-import { GuildSettings, GuildSettingFlags, Immunity, Strictness } from '../types/DataTypes';
-import { emojiOrFallback, truncateEmbed } from '../utils';
-import { replyWithError } from '../utils/responses';
+import { GuildSettings, GuildSettingFlags, Immunity, Strictness } from '../../../types/DataTypes';
+import { emojiOrFallback, truncateEmbed } from '../../../utils';
+import { replyWithError } from '../../../utils/responses';
 import { channelMention, formatEmoji, inlineCode } from '@discordjs/builders';
 
 export enum IMMUNITY_LEVEL {

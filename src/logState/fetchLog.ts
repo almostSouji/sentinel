@@ -1,5 +1,5 @@
 import { Client, GuildChannel, Message } from 'discord.js';
-import { logger } from '../functions/logger';
+import { logger } from '../utils/logger';
 import { IncidentResolvedBy } from '../types/DataTypes';
 
 export async function fetchLog(

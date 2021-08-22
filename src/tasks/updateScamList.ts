@@ -1,5 +1,5 @@
 import fetch from 'node-fetch';
-import { logger } from '../functions/logger';
+import { logger } from '../utils/logger';
 import { Client } from 'discord.js';
 
 export async function updateScamList(client: Client<true>) {

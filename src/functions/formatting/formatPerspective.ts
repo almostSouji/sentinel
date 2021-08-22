@@ -1,8 +1,8 @@
 import i18next from 'i18next';
-import { LIST_BULLET, PREFIX_LOCKED, PREFIX_NSFW, PREFIX_NYT } from '../../constants';
+import { LIST_BULLET, PREFIX_LOCKED, PREFIX_NSFW, PREFIX_NYT } from '../../utils/constants';
 import { formatFlagString } from '../../utils/formatting';
 import { PerspectiveResult } from '../inspection/checkPerspective';
-import { AttributeScoreMapEntry, nsfwAtrributes, nytAttributes } from '../perspective';
+import { AttributeScoreMapEntry, nsfwAtrributes, nytAttributes } from '../inspection/perspective';
 import { inlineCode } from '@discordjs/builders';
 
 function mapKeyToVerbose(key: string, locale: string): string {

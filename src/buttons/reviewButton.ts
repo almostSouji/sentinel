@@ -1,7 +1,7 @@
 import { MessageComponentInteraction, MessageActionRow, MessageEmbed, DMChannel } from 'discord.js';
 import i18next from 'i18next';
 import { clearButtons } from '../functions/buttons';
-import { logger } from '../functions/logger';
+import { logger } from '../utils/logger';
 import { GuildSettings, Incident, IncidentResolvedBy } from '../types/DataTypes';
 import { truncateEmbed } from '../utils';
 

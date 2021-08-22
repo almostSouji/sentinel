@@ -10,8 +10,8 @@ import {
 	EMOJI_ID_SHIELD_BLUE_SMALL,
 	EMOJI_ID_SHIELD_ORANGE_SMALL,
 	EMOJI_ID_SHIELD_RAINBOW_SMALL,
-} from '../constants';
-import { nytAttributes, nsfwAtrributes, forcedAttributes } from '../functions/perspective';
+} from './constants';
+import { nytAttributes, nsfwAtrributes, forcedAttributes } from '../functions/inspection/perspective';
 import { formatEmoji, inlineCode } from '@discordjs/builders';
 
 /**

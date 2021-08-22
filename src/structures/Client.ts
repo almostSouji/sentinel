@@ -6,7 +6,7 @@ import Backend from 'i18next-fs-backend';
 import * as Redis from 'ioredis';
 import { join } from 'path';
 import postgres from 'postgres';
-import { logger } from '../functions/logger';
+import { logger } from '../utils/logger';
 import { incidentCheck } from '../tasks/incidentCheck';
 import { updateScamList } from '../tasks/updateScamList';
 import { LAST_INCIDENT } from '../utils/keys';

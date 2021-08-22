@@ -1,6 +1,6 @@
 import { Client, GuildChannel, MessageActionRow, MessageButton } from 'discord.js';
 import { OpCodes } from '..';
-import { logger } from '../functions/logger';
+import { logger } from '../utils/logger';
 import { Incident, IncidentResolvedBy } from '../types/DataTypes';
 import { destructureIncidentButtonId } from '../utils';
 import { fetchLog } from './fetchLog';

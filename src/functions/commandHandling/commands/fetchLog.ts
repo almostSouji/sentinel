@@ -7,16 +7,16 @@ import {
 	MessageEmbed,
 	ThreadChannel,
 } from 'discord.js';
-import { ArgumentsOf } from '../types/ArgumentsOf';
-import { FetchLogCommand } from '../interactions/fetchLog';
+import { ArgumentsOf } from '../../../types/ArgumentsOf';
+import { FetchLogCommand } from '../../../interactions/fetchLog';
 import i18next from 'i18next';
-import { replyWithError } from '../utils/responses';
-import { truncate } from '../utils';
+import { replyWithError } from '../../../utils/responses';
+import { truncate } from '../../../utils';
 import { codeBlock } from '@discordjs/builders';
-import { GuildSettings, Incident } from '../types/DataTypes';
+import { GuildSettings, Incident } from '../../../types/DataTypes';
 import { inspect } from 'util';
-import { COLOR_DARK } from '../constants';
-import { logger } from '../functions/logger';
+import { COLOR_DARK } from '../../../utils/constants';
+import { logger } from '../../../utils/logger';
 
 export async function handleFetchLogCommand(
 	interaction: CommandInteraction,

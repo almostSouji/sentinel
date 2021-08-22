@@ -1,16 +1,16 @@
 import { CategoryChannel, CommandInteraction, DMChannel, GuildChannel, Permissions, ThreadChannel } from 'discord.js';
-import { WatchCommand } from '../interactions/watch';
-import { ArgumentsOf } from '../types/ArgumentsOf';
+import { WatchCommand } from '../../../interactions/watch';
+import { ArgumentsOf } from '../../../types/ArgumentsOf';
 import i18next from 'i18next';
 import {
 	EMOJI_ID_SHIELD_GREEN_SMALL,
 	LIST_BULLET,
 	EMOJI_ID_SHIELD_YELLOW_SMALL,
 	EMOJI_ID_SHIELD_RED_SMALL,
-} from '../constants';
-import { emojiOrFallback } from '../utils';
-import { replyWithError } from '../utils/responses';
-import { GuildSettings } from '../types/DataTypes';
+} from '../../../utils/constants';
+import { emojiOrFallback } from '../../../utils';
+import { replyWithError } from '../../../utils/responses';
+import { GuildSettings } from '../../../types/DataTypes';
 import { formatEmoji, channelMention, inlineCode } from '@discordjs/builders';
 
 export async function handleWatchCommand(

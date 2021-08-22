@@ -19,7 +19,7 @@ import { WatchCommand } from '../interactions/watch';
 import { KarmaCommand } from '../interactions/karma';
 import { KarmaContextCommand } from '../interactions/karmacontext';
 /* eslint-enable @typescript-eslint/no-unused-vars */
-import { logger } from '../functions/logger';
+import { logger } from '../utils/logger';
 
 /*
 const commands = [
@@ -49,7 +49,7 @@ async function main() {
 				process.env.DISCORD_GUILD_ID as Snowflake,
 			),
 			{
-				body: NotifyCommand,
+				body: ConfigCommand,
 			},
 		);
 		// await rest.put(

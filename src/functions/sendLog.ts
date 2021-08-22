@@ -8,7 +8,7 @@ import {
 	Permissions,
 	ThreadChannel,
 } from 'discord.js';
-import { strictnessPick } from './checkMessage';
+import { strictnessPick } from './inspection/checkMessage';
 import { resolveNotifications, truncate, truncateEmbed } from '../utils';
 import { GuildSettings, Notification } from '../types/DataTypes';
 import { banButton, deleteButton, linkButton, reviewButton } from './buttons';

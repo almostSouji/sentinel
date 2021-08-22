@@ -1,7 +1,7 @@
 import { roleMention, userMention } from '@discordjs/builders';
 import { createHash } from 'crypto';
 import { Snowflake, MessageEmbed, DMChannel, GuildChannel, ThreadChannel, PartialDMChannel } from 'discord.js';
-import { CID_SEPARATOR } from '../constants';
+import { CID_SEPARATOR } from './constants';
 import { Notification } from '../types/DataTypes';
 
 /**

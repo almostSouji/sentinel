@@ -1,12 +1,12 @@
 import { CommandInteraction, DMChannel, Role } from 'discord.js';
-import { NotifyCommand } from '../interactions/notify';
-import { ArgumentsOf } from '../types/ArgumentsOf';
+import { NotifyCommand } from '../../../interactions/notify';
+import { ArgumentsOf } from '../../../types/ArgumentsOf';
 import i18next from 'i18next';
-import { replyWithError } from '../utils/responses';
-import { EMOJI_ID_SHIELD_GREEN_SMALL, LIST_BULLET } from '../constants';
-import { emojiOrFallback } from '../utils';
-import { formatSeverity } from '../utils/formatting';
-import { Notification, NotificationTargets, NotificationTopics } from '../types/DataTypes';
+import { replyWithError } from '../../../utils/responses';
+import { EMOJI_ID_SHIELD_GREEN_SMALL, LIST_BULLET } from '../../../utils/constants';
+import { emojiOrFallback } from '../../../utils';
+import { formatSeverity } from '../../../utils/formatting';
+import { Notification, NotificationTargets, NotificationTopics } from '../../../types/DataTypes';
 import { formatEmoji, userMention, roleMention } from '@discordjs/builders';
 
 export async function handleNotifyCommand(

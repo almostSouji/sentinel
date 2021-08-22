@@ -1,4 +1,11 @@
-import { COLOR_GREEN, COLOR_ORANGE, COLOR_RED, COLOR_YELLOW, LIST_BULLET, SPAM_EXPIRE_SECONDS } from '../../constants';
+import {
+	COLOR_GREEN,
+	COLOR_ORANGE,
+	COLOR_RED,
+	COLOR_YELLOW,
+	LIST_BULLET,
+	SPAM_EXPIRE_SECONDS,
+} from '../../utils/constants';
 import {
 	GuildSettings,
 	GuildSettingFlags,
@@ -18,7 +25,7 @@ import {
 import { GUILD_HASH_LOGMESSAGE, GUILD_USER_MESSAGE_CHANNEL_COUNT } from '../../utils/keys';
 import i18next from 'i18next';
 import { channelMention, inlineCode } from '@discordjs/builders';
-import { logger } from '../logger';
+import { logger } from '../../utils/logger';
 import { banButton, reviewButton } from '../buttons';
 import { ColorResolvable, Message, MessageActionRow, MessageEmbed, ThreadChannel, User } from 'discord.js';
 

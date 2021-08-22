@@ -1,13 +1,13 @@
 import { MessageEmbed, CommandInteraction, DMChannel } from 'discord.js';
 import i18next from 'i18next';
-import { COLOR_DARK, LIST_BULLET } from '../constants';
-import { KarmaCommand } from '../interactions/karma';
-import { ArgumentsOf } from '../types/ArgumentsOf';
-import { GuildSettings, Incident, IncidentTypes, UserStats } from '../types/DataTypes';
-import { truncateEmbed } from '../utils';
-import { replyWithError } from '../utils/responses';
+import { COLOR_DARK, LIST_BULLET } from '../../../utils/constants';
+import { KarmaCommand } from '../../../interactions/karma';
+import { ArgumentsOf } from '../../../types/ArgumentsOf';
+import { GuildSettings, Incident, IncidentTypes, UserStats } from '../../../types/DataTypes';
+import { truncateEmbed } from '../../../utils';
+import { replyWithError } from '../../../utils/responses';
 import { userMention, inlineCode } from '@discordjs/builders';
-import { formatSeverity } from '../utils/formatting';
+import { formatSeverity } from '../../../utils/formatting';
 
 export async function handleKarmaCommand(
 	interaction: CommandInteraction,

@@ -1,6 +1,6 @@
 import { ButtonInteraction, CommandInteraction, MessageComponentInteraction, SelectMenuInteraction } from 'discord.js';
 import { emojiOrFallback } from '.';
-import { EMOJI_ID_SHIELD_RED_SMALL, PREFIX_ERROR } from '../constants';
+import { EMOJI_ID_SHIELD_RED_SMALL, PREFIX_ERROR } from './constants';
 import { formatEmoji } from '@discordjs/builders';
 
 export type ReplyableInteraction =
