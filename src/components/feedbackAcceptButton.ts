@@ -34,6 +34,7 @@ export async function handleFeedbackAcceptButton(
 
 	const embed = new MessageEmbed(interaction.message.embeds[0] as MessageEmbed | undefined);
 	try {
+		await interaction.deferUpdate();
 		try {
 			await feedback(feedbackEntry.content, feedbackEntry.wrongattributes, feedbackEntry.guild ?? 'global');
 		} catch (error) {
@@ -63,7 +64,7 @@ export async function handleFeedbackAcceptButton(
 			OpCodes.PERSPECTIVE_FEEDBACK_REJECT,
 		]);
 
-		await interaction.update({
+		await interaction.editReply({
 			components: newRows,
 			embeds: [truncateEmbed(embed)],
 		});
