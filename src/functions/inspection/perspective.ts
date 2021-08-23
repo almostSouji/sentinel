@@ -68,7 +68,48 @@ export async function analyzeText(
 			},
 			(err: Error | undefined, response: PerspectiveResponse) => {
 				if (err) reject(err);
+				// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+				if (!response.data) {
+					reject(response);
+				}
 				resolve(response.data);
+			},
+		);
+	});
+}
+
+export async function feedback(text: string, attributes: PerspectiveAttribute[], communityId: string): Promise<any> {
+	const client = await google.discoverAPI('https://commentanalyzer.googleapis.com/$discovery/rest?version=v1alpha1');
+	const comments = client.comments as any;
+
+	const o: any = {} as any;
+
+	for (const attribute of attributes) {
+		o[attribute] = {
+			summaryScore: {
+				value: 0,
+			},
+		};
+	}
+
+	const feedbackRequest = {
+		comment: {
+			text,
+		},
+		attributeScores: o,
+		communityId: communityId,
+		languages: ['en'],
+	};
+
+	return new Promise((resolve, reject) => {
+		comments.suggestscore(
+			{
+				key: process.env.PERSPECTIVE_TOKEN,
+				resource: feedbackRequest,
+			},
+			(err: Error | undefined, response: PerspectiveResponse) => {
+				if (err) reject(err);
+				resolve(response);
 			},
 		);
 	});

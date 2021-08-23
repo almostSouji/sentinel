@@ -1,3 +1,5 @@
+import { PerspectiveAttribute } from './perspective';
+
 export enum Strictness {
 	LOW = 1,
 	MEDIUM,
@@ -56,6 +58,16 @@ export interface Notification {
 	subjects: string[];
 }
 
+export interface PerspectiveFeedback {
+	id: number;
+	incident: number;
+	user: string;
+	content: string;
+	guild: string | null;
+	wrongattributes: PerspectiveAttribute[];
+	approved: boolean;
+}
+
 export enum IncidentResolvedBy {
 	BUTTON_DELETE = 'BUTTON_DELETE',
 	BUTTON_BAN = 'BUTTON_BAN',
@@ -76,6 +88,7 @@ export enum GuildSettingFlags {
 	DEBUG = 'DEBUG',
 	SCAMBAN = 'SCAMBAN',
 	LOG_ALL = 'LOG_ALL',
+	PERSPECTIVE_FEEDBACK = 'PERSPECTIVE_FEEDBACK',
 }
 
 export enum NotificationTopics {

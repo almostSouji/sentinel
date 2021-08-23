@@ -155,7 +155,15 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 			});
 		}
 
-		const logMessage = await sendLog(logChannel, message, severityLevel, embed, isEdit, incidentId);
+		const logMessage = await sendLog(
+			logChannel,
+			message,
+			severityLevel,
+			embed,
+			isEdit,
+			incidentId,
+			settings.flags.includes(GuildSettingFlags.PERSPECTIVE_FEEDBACK),
+		);
 		if (!logMessage) return;
 		const buttonLevel = strictnessPick(strictness, 1, 2, 3);
 

@@ -2,6 +2,7 @@ import { Constants, MessageActionRow, MessageButton } from 'discord.js';
 import i18next from 'i18next';
 import { OpCodes } from '..';
 import { destructureIncidentButtonId, generateIncidentButtonId } from '../utils';
+import { EMOJI_ID_PERSPECTIVE } from '../utils/constants';
 
 export interface Component {
 	type: number;
@@ -54,6 +55,34 @@ export function linkButton(url: string, locale: string): MessageButton {
 			lng: locale,
 		})!,
 		url,
+	});
+}
+
+export function feedbackAcceptButton(incidentId: number, locale: string): MessageButton {
+	return new MessageButton({
+		style: Constants.MessageButtonStyles.SUCCESS,
+		customId: generateIncidentButtonId(OpCodes.PERSPECTIVE_FEEDBACK_ACCEPT, incidentId),
+		label: i18next.t('buttons.labels.accept', {
+			lng: locale,
+		})!,
+	});
+}
+
+export function feedbackRejectButton(incidentId: number, locale: string): MessageButton {
+	return new MessageButton({
+		style: Constants.MessageButtonStyles.DANGER,
+		customId: generateIncidentButtonId(OpCodes.PERSPECTIVE_FEEDBACK_REJECT, incidentId),
+		label: i18next.t('buttons.labels.reject', {
+			lng: locale,
+		})!,
+	});
+}
+
+export function feedbackButton(incidentId: number): MessageButton {
+	return new MessageButton({
+		style: Constants.MessageButtonStyles.SECONDARY,
+		customId: generateIncidentButtonId(OpCodes.PERSPECTIVE_FEEDBACK_BUTTON, incidentId),
+		emoji: EMOJI_ID_PERSPECTIVE,
 	});
 }
 

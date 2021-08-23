@@ -11,3 +11,7 @@ export const GUILD_HASH_LOGMESSAGE = (guild: string, user: string, hash: string)
 //* INT
 // last incident counter
 export const LAST_INCIDENT = 'pg:lastincidentid';
+
+//* INT
+// last feedback counter
+export const LAST_FEEDBACK = 'pg:lastfeedbackid';

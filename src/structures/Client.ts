@@ -9,7 +9,7 @@ import postgres from 'postgres';
 import { logger } from '../utils/logger';
 import { incidentCheck } from '../tasks/incidentCheck';
 import { updateScamList } from '../tasks/updateScamList';
-import { LAST_INCIDENT } from '../utils/keys';
+import { LAST_FEEDBACK, LAST_INCIDENT } from '../utils/keys';
 
 declare module 'discord.js' {
 	export interface Client {
@@ -17,6 +17,7 @@ declare module 'discord.js' {
 		readonly sql: postgres.Sql<Record<string, any>>;
 		readonly listDict: Map<string, string[]>;
 		incrIncident(): Promise<number>;
+		incrFeedback(): Promise<number>;
 	}
 }
 
@@ -85,13 +86,32 @@ export default class extends Client {
 					primary key(guild, entity)
 				);
 			`;
+
+			await sql`
+				create table if not exists perspectivefeedback(
+					id					integer primary key,
+					incident			integer not null,
+					"user"				text not null,
+					content 			text not null,
+					guild				text,
+					wrongattributes		text[] not null default '{}'::text[],
+					approved			boolean,
+					reviewedat			timestamp
+				);
+			`;
 		});
 		const [{ next_incident_id }] = await this.sql<[{ next_incident_id: number }]>`select next_incident_id();`;
 		await this.redis.set(LAST_INCIDENT, next_incident_id - 1);
+		const [{ next_feedback_id }] = await this.sql<[{ next_feedback_id: number }]>`select next_feedback_id();`;
+		await this.redis.set(LAST_FEEDBACK, next_feedback_id - 1);
 	}
 
 	public async incrIncident(): Promise<number> {
 		return this.redis.incr(LAST_INCIDENT);
+	}
+
+	public async incrFeedback(): Promise<number> {
+		return this.redis.incr(LAST_FEEDBACK);
 	}
 
 	public async init() {

@@ -11,7 +11,7 @@ import {
 import { strictnessPick } from './inspection/checkMessage';
 import { resolveNotifications, truncate, truncateEmbed } from '../utils';
 import { GuildSettings, Notification } from '../types/DataTypes';
-import { banButton, deleteButton, linkButton, reviewButton } from './buttons';
+import { banButton, deleteButton, feedbackButton, linkButton, reviewButton } from './buttons';
 
 export async function sendLog(
 	logChannel: TextChannel | NewsChannel | ThreadChannel,
@@ -20,6 +20,7 @@ export async function sendLog(
 	embed: MessageEmbed,
 	isEdit: boolean,
 	nextIncidentId: number,
+	feedback = false,
 ): Promise<Message | false> {
 	if (targetMessage.channel.type === 'DM' || targetMessage.partial) return false;
 	const {
@@ -59,29 +60,26 @@ export async function sendLog(
 	const { roles, users, notificationParts } = resolveNotifications(notifications, severityLevel);
 
 	const newContent = notificationParts.join(', ');
-	const buttons = [
-		banButton(nextIncidentId, targetMessage.member?.bannable ?? false, locale),
-		deleteButton(
-			nextIncidentId,
-			botPermissions?.has([Permissions.FLAGS.MANAGE_MESSAGES, Permissions.FLAGS.VIEW_CHANNEL]) ?? false,
-			locale,
-		),
-		reviewButton(nextIncidentId, locale),
-		linkButton(targetMessage.url, locale),
-	];
+	const row = new MessageActionRow();
 
 	truncateEmbed(embed);
 	if (severityLevel >= buttonLevel) {
-		return logChannel.send({
-			content: newContent.length ? newContent : undefined,
-			embeds: [truncateEmbed(embed)],
-			allowedMentions: {
-				users,
-				roles,
-			},
-			components: [new MessageActionRow().addComponents(buttons)],
-		});
+		row.addComponents(
+			banButton(nextIncidentId, targetMessage.member?.bannable ?? false, locale),
+			deleteButton(
+				nextIncidentId,
+				botPermissions?.has([Permissions.FLAGS.MANAGE_MESSAGES, Permissions.FLAGS.VIEW_CHANNEL]) ?? false,
+				locale,
+			),
+			reviewButton(nextIncidentId, locale),
+		);
 	}
+
+	if (feedback) {
+		row.addComponents(feedbackButton(nextIncidentId));
+	}
+
+	row.addComponents(linkButton(targetMessage.url, locale));
 
 	return logChannel.send({
 		content: newContent.length ? newContent : undefined,
@@ -90,6 +88,6 @@ export async function sendLog(
 			users,
 			roles,
 		},
-		components: [new MessageActionRow().addComponents(linkButton(targetMessage.url, locale))],
+		components: [row],
 	});
 }

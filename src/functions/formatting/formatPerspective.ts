@@ -5,7 +5,7 @@ import { PerspectiveResult } from '../inspection/checkPerspective';
 import { AttributeScoreMapEntry, nsfwAtrributes, nytAttributes } from '../inspection/perspective';
 import { inlineCode } from '@discordjs/builders';
 
-function mapKeyToVerbose(key: string, locale: string): string {
+export function mapKeyToVerbose(key: string, locale: string): string {
 	switch (key) {
 		case 'TOXICITY':
 			return i18next.t('flags.verbose.toxicity', {
