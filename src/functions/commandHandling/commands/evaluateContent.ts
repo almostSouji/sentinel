@@ -51,6 +51,10 @@ export async function handleTestCommand(
 		return replyWithError(interaction, i18next.t('command.evaluatecontent.empty_query', { lng: locale }));
 	}
 
+	await interaction.deferReply({
+		ephemeral: true,
+	});
+
 	const { perspective } = await checkContent(
 		query,
 		settings,
@@ -103,8 +107,7 @@ export async function handleTestCommand(
 
 	setSeverityColor(embed, perspectiveSeverity);
 
-	return interaction.reply({
+	await interaction.editReply({
 		embeds: [truncateEmbed(embed)],
-		ephemeral: true,
 	});
 }
