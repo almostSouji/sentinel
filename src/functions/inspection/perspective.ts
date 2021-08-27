@@ -66,13 +66,12 @@ export async function analyzeText(
 				key: process.env.PERSPECTIVE_TOKEN,
 				resource: analyzeRequest,
 			},
-			(err: Error | undefined, response: PerspectiveResponse) => {
+			(err: Error | undefined, response: PerspectiveResponse | undefined) => {
 				if (err) reject(err);
-				// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-				if (!response.data) {
-					reject(response);
+				if (!response?.data) {
+					return reject(response);
 				}
-				resolve(response.data);
+				return resolve(response.data);
 			},
 		);
 	});
@@ -108,8 +107,8 @@ export async function feedback(text: string, attributes: PerspectiveAttribute[],
 				resource: feedbackRequest,
 			},
 			(err: Error | undefined, response: PerspectiveResponse) => {
-				if (err) reject(err);
-				resolve(response);
+				if (err) return reject(err);
+				return resolve(response);
 			},
 		);
 	});
