@@ -145,6 +145,8 @@
 	},
 	"logstate": {
 		"attributes_fieldname": "Attributes",
+		"channel_fieldname": "Channel",
+		"channel_thread": "Thread {{-thread}} in {{-channel}}",
 		"ban": "Author has been banned from the guild",
 		"expired": "Incident is expired"
 	},

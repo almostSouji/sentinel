@@ -12,6 +12,8 @@ import { strictnessPick } from './inspection/checkMessage';
 import { resolveNotifications, truncate, truncateEmbed } from '../utils';
 import { GuildSettings, Notification } from '../types/DataTypes';
 import { banButton, deleteButton, feedbackButton, linkButton, reviewButton } from './buttons';
+import i18next from 'i18next';
+import { channelMention } from '@discordjs/builders';
 
 export async function sendLog(
 	logChannel: TextChannel | NewsChannel | ThreadChannel,
@@ -48,10 +50,22 @@ export async function sendLog(
 	const strictness = settings.strictness;
 	const buttonLevel = strictnessPick(strictness, 1, 2, 3);
 
-	embed.setDescription(
-		truncate(targetContent ? targetContent.replace(/\n+/g, '\n').replace(/\s+/g, ' ') : 'no content', 1_990),
-	);
-	embed.setAuthor(`${targetUser.tag} (${targetUser.id})`, targetUser.displayAvatarURL());
+	embed
+		.setDescription(
+			truncate(targetContent ? targetContent.replace(/\n+/g, '\n').replace(/\s+/g, ' ') : 'no content', 1_990),
+		)
+		.setAuthor(`${targetUser.tag} (${targetUser.id})`, targetUser.displayAvatarURL())
+		.addField(
+			i18next.t('logstate.channel_fieldname', { lng: locale }),
+			targetChannel.isThread()
+				? i18next.t('logstate.channel_thread', {
+						lng: locale,
+						channel: channelMention(targetChannel.parentId!),
+						thread: channelMention(targetChannel.id),
+				  })
+				: channelMention(targetChannel.id),
+			true,
+		);
 
 	const notifications = await sql<Notification[]>`
 		select * from notifications where guild = ${guild.id}
