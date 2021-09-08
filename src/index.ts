@@ -121,7 +121,10 @@ async function main() {
 				const [settings] = await sql<
 					GuildSettings[]
 				>`select * from guild_settings where guild = ${interaction.guild.id}`;
-				if (!settings) return;
+				if (!settings) {
+					logger.info(`Button seen on guild ${interaction.guild.id}, but could not find settings`);
+					return;
+				}
 				const lng = settings.locale;
 
 				if (
