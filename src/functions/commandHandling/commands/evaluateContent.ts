@@ -41,13 +41,11 @@ export async function handleTestCommand(
 
 	const message = interaction.options.getMessage('message');
 	const query =
-		args.query ?? message?.content.length
-			? message?.content
-			: message?.embeds.length
-			? message.embeds[0].description
-			: '';
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+		args.query ??
+		(message?.content.length ? message.content : message?.embeds.length ? message.embeds[0].description : '');
 
-	if (!query?.length) {
+	if (!query.length) {
 		return replyWithError(interaction, i18next.t('command.evaluatecontent.empty_query', { lng: locale }));
 	}
 
