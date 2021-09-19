@@ -51,17 +51,11 @@ export async function handleNotifyCommand(
 				`;
 
 				messageParts.push(
-					args.add.spamalert
-						? `${successEmoji}${i18next.t('command.notify.notification_change_antispam', {
-								entity: entity instanceof Role ? roleMention(entity.id) : userMention(entity.user.id),
-								level: formatSeverity(channel, level),
-								lng: locale,
-						  })}`
-						: `${successEmoji}${i18next.t('command.notify.notification_change', {
-								entity: entity instanceof Role ? roleMention(entity.id) : userMention(entity.user.id),
-								level: formatSeverity(channel, level),
-								lng: locale,
-						  })}`,
+					`${successEmoji}${i18next.t('command.notify.notification_change', {
+						entity: entity instanceof Role ? roleMention(entity.id) : userMention(entity.user.id),
+						level: formatSeverity(channel, level),
+						lng: locale,
+					})}`,
 				);
 			}
 			break;

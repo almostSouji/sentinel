@@ -48,12 +48,6 @@ export const NotifyCommand = {
 						},
 					],
 				},
-				{
-					type: ApplicationCommandOptionType.Boolean,
-					name: 'spamalert',
-					description: 'Wheter the entity should be notified on spam',
-					required: false,
-				},
 			],
 		},
 		{
