@@ -9,7 +9,6 @@ import { handleCommands } from './functions/commandHandling/handleCommands';
 import { GuildSettings, Incident } from './types/DataTypes';
 import i18next from 'i18next';
 import { replyWithError } from './utils/responses';
-import { messageSpam } from './functions/antiRaid/messageSpam';
 import { handleBanButton } from './components/banButton';
 import { handleDeleteButton } from './components/deleteButton';
 import { handleReviewButton } from './components/reviewButton';
@@ -66,7 +65,6 @@ async function main() {
 			try {
 				if (message.author.bot || !message.content.length) return;
 				await checkMessage(message);
-				await messageSpam(message);
 			} catch (err: any) {
 				logger.error(err, err.message);
 			}
