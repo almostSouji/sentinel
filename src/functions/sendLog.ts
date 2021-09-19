@@ -10,7 +10,7 @@ import {
 } from 'discord.js';
 import { resolveNotifications, truncate, truncateEmbed } from '../utils';
 import { GuildSettings, Notification } from '../types/DataTypes';
-import { feedbackButton, linkButton } from './buttons';
+import { feedbackButton, linkButton, reviewButton } from './buttons';
 import i18next from 'i18next';
 import { channelMention } from '@discordjs/builders';
 
@@ -73,6 +73,8 @@ export async function sendLog(
 	const row = new MessageActionRow();
 
 	truncateEmbed(embed);
+
+	row.addComponents(reviewButton(nextIncidentId, locale));
 
 	if (feedback) {
 		row.addComponents(feedbackButton(nextIncidentId));

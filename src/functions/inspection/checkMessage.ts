@@ -165,7 +165,6 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 			settings.flags.includes(GuildSettingFlags.PERSPECTIVE_FEEDBACK),
 		);
 		if (!logMessage) return;
-		const buttonLevel = strictnessPick(strictness, 1, 2, 3);
 
 		await sql`
 			insert into incidents (
@@ -178,9 +177,7 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 				attributes,
 				severity,
 				logchannel,
-				logmessage,
-				resolvedat,
-				resolvedbyuser
+				logmessage
 			) values (
 				${incidentId},
 				${IncidentTypes.PERSPECTIVE},
@@ -191,9 +188,7 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 				${sql.array(high.map((t) => t.key))},
 				${severityLevel},
 				${logMessage.channelId},
-				${logMessage.id},
-				${severityLevel < buttonLevel ? new Date() : null},
-				${severityLevel < buttonLevel ? client.user!.id : null}
+				${logMessage.id}
 			)
 			on conflict do nothing
 		`;
