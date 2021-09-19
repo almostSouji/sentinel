@@ -67,8 +67,8 @@ async function main() {
 				if (message.author.bot || !message.content.length) return;
 				await checkMessage(message);
 				await messageSpam(message);
-			} catch (err) {
-				logger.error(err);
+			} catch (err: any) {
+				logger.error(err, err.message);
 			}
 		});
 
@@ -81,8 +81,8 @@ async function main() {
 				return;
 			try {
 				await checkMessage(newMessage, true);
-			} catch (error) {
-				logger.error(error);
+			} catch (error: any) {
+				logger.error(error, error.message);
 			}
 		});
 
@@ -100,9 +100,9 @@ async function main() {
 			if (interaction.isCommand() || interaction.isContextMenu()) {
 				try {
 					await handleCommands(interaction);
-				} catch (error) {
+				} catch (error: any) {
 					Error.stackTraceLimit = Infinity;
-					logger.error(error);
+					logger.error(error, error.message);
 					await replyWithError(interaction, i18next.t('common.errors.during_command'));
 				}
 				return;
@@ -221,8 +221,8 @@ async function main() {
 			if (message.author?.bot || message.channel.type !== 'GUILD_TEXT' || message.partial) return;
 			try {
 				await handleMessageDeleteLogstate(client, message);
-			} catch (error) {
-				logger.error(error);
+			} catch (error: any) {
+				logger.error(error, error.message);
 			}
 		});
 
@@ -231,8 +231,8 @@ async function main() {
 				if (message.author?.bot || message.channel.type !== 'GUILD_TEXT' || message.partial) return;
 				try {
 					await handleMessageDeleteLogstate(client, message);
-				} catch (error) {
-					logger.error(error);
+				} catch (error: any) {
+					logger.error(error, error.message);
 				}
 			}
 		});
@@ -240,14 +240,14 @@ async function main() {
 		client.on('guildBanAdd', async (ban) => {
 			try {
 				await handleGuildBanAddLogstate(client, ban);
-			} catch (error) {
-				logger.error(error);
+			} catch (error: any) {
+				logger.error(error, error.message);
 			}
 		});
 
 		await client.login(process.env.DISCORD_TOKEN);
-	} catch (error) {
-		logger.error(error);
+	} catch (error: any) {
+		logger.error(error, error.message);
 	}
 }
 

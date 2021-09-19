@@ -116,7 +116,7 @@ export async function handleFetchLogCommand(
 				components: row.components.length ? [row] : [],
 				ephemeral: true,
 			});
-		} catch (error) {
+		} catch (error: any) {
 			const dataEmbeds: MessageEmbed[] = [];
 			const row = new MessageActionRow();
 
@@ -156,7 +156,7 @@ export async function handleFetchLogCommand(
 				ephemeral: true,
 			});
 		}
-	} catch (error) {
+	} catch (error: any) {
 		return void interaction
 			.reply({
 				content: codeBlock(truncate(error.toString(), 1990, '\n')),

@@ -55,7 +55,7 @@ export async function handleFeedbackRejectButton(
 			components: newRows,
 			embeds: [truncateEmbed(embed)],
 		});
-	} catch (error) {
-		logger.error(error);
+	} catch (error: any) {
+		logger.error(error, error.message);
 	}
 }

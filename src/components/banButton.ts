@@ -54,7 +54,7 @@ export async function handleBanButton(
 			components: newRows,
 			embeds: [truncateEmbed(embed)],
 		});
-	} catch (error) {
+	} catch (error: any) {
 		// - ban failed
 		const errorMsg =
 			error.code === ERROR_CODE_MISSING_PERMISSIONS
@@ -91,8 +91,8 @@ export async function handleBanButton(
 				embeds: [truncateEmbed(embed)],
 				components: newRows,
 			});
-		} catch (err) {
-			logger.error(err);
+		} catch (err: any) {
+			logger.error(err, err.message);
 		}
 	}
 }

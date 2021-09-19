@@ -51,7 +51,7 @@ export async function handleDeleteButton(
 			components: newRows,
 			embeds: [truncateEmbed(embed)],
 		});
-	} catch (error) {
+	} catch (error: any) {
 		// - message deletion failed
 		const errorMsg =
 			error.code === ERROR_CODE_UNKNOWN_MESSAGE
@@ -85,8 +85,8 @@ export async function handleDeleteButton(
 				embeds: [truncateEmbed(embed)],
 				components: newRows,
 			});
-		} catch (err) {
-			logger.error(err);
+		} catch (err: any) {
+			logger.error(err, err.message);
 		}
 	}
 }

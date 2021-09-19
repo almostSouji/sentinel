@@ -11,7 +11,7 @@ export async function updateScamList(client: Client<true>) {
 			)}`,
 		);
 		client.listDict.set('scamdomains', list);
-	} catch (error) {
-		logger.error(error);
+	} catch (error: any) {
+		logger.error(error, error.message);
 	}
 }

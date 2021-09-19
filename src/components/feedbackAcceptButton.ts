@@ -37,8 +37,8 @@ export async function handleFeedbackAcceptButton(
 		await interaction.deferUpdate();
 		try {
 			await feedback(feedbackEntry.content, feedbackEntry.wrongattributes, feedbackEntry.guild ?? 'global');
-		} catch (error) {
-			logger.error(error);
+		} catch (error: any) {
+			logger.error(error, error.message);
 			return replyWithError(
 				interaction,
 				i18next.t('buttons.perspective_feedback_error', {
@@ -68,7 +68,7 @@ export async function handleFeedbackAcceptButton(
 			components: newRows,
 			embeds: [truncateEmbed(embed)],
 		});
-	} catch (error) {
-		logger.error(error);
+	} catch (error: any) {
+		logger.error(error, error.message);
 	}
 }

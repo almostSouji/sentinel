@@ -199,7 +199,7 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 			)
 			on conflict do nothing
 		`;
-	} catch (err) {
-		logger.error(err);
+	} catch (err: any) {
+		logger.error(err, err.message);
 	}
 }

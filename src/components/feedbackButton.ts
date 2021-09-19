@@ -63,7 +63,7 @@ export async function handleFeedbackButton(
 			components: [row],
 			ephemeral: true,
 		});
-	} catch (error) {
-		logger.error(error);
+	} catch (error: any) {
+		logger.error(error, error.message);
 	}
 }

@@ -48,8 +48,8 @@ export async function handleRedisCommand(
 			ephemeral: true,
 		});
 		logger.debug(res);
-	} catch (error) {
-		logger.error(error);
+	} catch (error: any) {
+		logger.error(error, error.message);
 		void interaction.reply({
 			content: codeBlock(truncate(error.toString(), 1990, '\n')),
 			ephemeral: true,

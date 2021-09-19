@@ -215,8 +215,8 @@ export async function messageSpam(message: Message) {
 		await redis.expire(logkey, SPAM_EXPIRE_SECONDS);
 
 		return;
-	} catch (err) {
-		logger.error(err);
+	} catch (err: any) {
+		logger.error(err, err.message);
 		void redis.del(logkey);
 	}
 }
