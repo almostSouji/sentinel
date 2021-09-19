@@ -1,5 +1,5 @@
 FROM node:16-alpine
-LABEL name "tai"
+LABEL name "sentinel"
 LABEL version "0.0.0"
 LABEL maintainer "almostSouji <https://github.com/almostSouji>"
 ENV DISCORD_CLIENT_ID=\
@@ -7,7 +7,7 @@ ENV DISCORD_CLIENT_ID=\
 	DISCORD_TOKEN=\
 	PERSPECTIVE_TOKEN=\
 	FORCE_COLOR=1
-WORKDIR /usr/tai
+WORKDIR /usr/sentinel
 COPY package.json ./
 RUN apk add --update \
 	&& apk add --no-cache ca-certificates \

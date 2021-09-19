@@ -9,7 +9,7 @@ export const EvaluateContentCommand = {
 			type: ApplicationCommandOptionType.String,
 			name: 'query',
 			description: 'Phrase to test',
-			required: false, // required to be false because of context command handling
+			required: true,
 		},
 	],
 } as const;

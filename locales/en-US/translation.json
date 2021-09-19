@@ -91,9 +91,6 @@
 	},
 	"buttons": {
 		"labels": {
-			"ban": "Ban",
-			"forceban": "Ban (force)",
-			"delete": "Delete",
 			"review": "Review",
 			"link": "Message",
 			"accept": "Accept",
@@ -107,19 +104,10 @@
 		"perspective_feedback_approved": "{{-executor}} approved feedback",
 		"perspective_feedback_rejected": "{{-executor}} rejected feedback",
 		"perspective_feedback_error": "Something went wrong while sending feedback.",
-		"incident_handling_not_allowed": "To handle the queue you need permissions to manage messages in the log channel.",
+		"incident_handling_not_allowed": "To mark incidents as reviewed you need permissions to manage messages in the log channel.",
 		"legacy": "Old buttons are no longer supported",
 		"no_incident": "Cannot find an incident associated with this button.",
-		"ban_success": "{{-executor}} banned {{-target}}",
-		"ban_missing_permissions": "{{-executor}} could not ban {{target}} (missing permissions)",
-		"ban_unknown_user": "{{-executor}} could not ban {{target}} (unknown user)",
-		"ban_unsuccessful": "{{-executor}} could not ban {{target}}",
-		"delete_success": "{{-executor}} deleted the message",
-		"delete_unknown_message": "{{-executor}} could not delete the message (unknown message)",
-		"delete_missing_permissions": "{{-executor}} could not delete the message (missing permissions)",
-		"delete_unsuccessful": "{{-executor}} could not delete the message",
 		"reviewed": "{{-executor}} handled this incident",
-		"button_action_reason": "button action by {{-executor}}",
 		"unknown_button": "Unknown button!"
 	},
 	"select": {
@@ -138,8 +126,7 @@
 		"attributes_fieldname": "Attributes",
 		"channel_fieldname": "Channel",
 		"channel_thread": "Thread {{-thread}} in {{-channel}}",
-		"ban": "Author has been banned from the guild",
-		"expired": "Incident is expired"
+		"ban": "Author has been banned from the guild"
 	},
 	"flags": {
 		"verbose": {

@@ -23,10 +23,6 @@ export const EMOJI_ID_SHIELD_RAINBOW_SMALL = '870421219684536330' as const;
 export const EMOJI_ID_GOOGLE_SHIELD = '879161007891677204' as const;
 export const EMOJI_ID_PERSPECTIVE = '879371287133306890' as const;
 
-export const ERROR_CODE_UNKNOWN_MESSAGE = 10008 as const;
-export const ERROR_CODE_UNKNOWN_USER = 10013 as const;
-export const ERROR_CODE_MISSING_PERMISSIONS = 50013 as const;
-
 export const PREFIX_ERROR = '`❌`' as const;
 export const PREFIX_SUCCESS = '`✅`' as const;
 export const PREFIX_LOCKED = '`🔒`' as const;

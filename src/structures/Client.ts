@@ -1,4 +1,3 @@
-import { CronJob } from 'cron';
 import { Client } from 'discord.js';
 import i18next from 'i18next';
 import Backend from 'i18next-fs-backend';
@@ -6,7 +5,6 @@ import * as Redis from 'ioredis';
 import { join } from 'path';
 import postgres from 'postgres';
 import { logger } from '../utils/logger';
-import { incidentCheck } from '../tasks/incidentCheck';
 import { LAST_FEEDBACK, LAST_INCIDENT } from '../utils/keys';
 
 declare module 'discord.js' {
@@ -41,7 +39,6 @@ export default class extends Client {
 					flags			text[] not null default '{}'::text[],
 					severity		smallint,
 					createdat		timestamp not null default now(),
-					expiresat		timestamp not null default now() + interval '1 day',
 					logchannel		text,
 					logmessage		text,
 					resolvedby		text,
@@ -68,8 +65,7 @@ export default class extends Client {
 					attributes		text[] not null default '{}'::text[],
 					immunity		text not null default 'NONE',
 					flags			text[] not null default '{}'::text[],
-					locale			text not null default 'en-US',
-					spamthreshold	smallint
+					locale			text not null default 'en-US'
 				);
 			`;
 
@@ -123,10 +119,5 @@ export default class extends Client {
 			ns: ['translation'],
 		});
 		await this.initDB();
-
-		const incidentCheckJob = new CronJob('* * * * *', () => {
-			void incidentCheck(this);
-		});
-		incidentCheckJob.start();
 	}
 }

@@ -8,7 +8,7 @@ import { checkContent } from './checkContent';
 import { formatPerspectiveShort } from '../formatting/formatPerspective';
 import { cleanContent } from '../../utils';
 import { COLOR_BLUE, COLOR_GREEN, COLOR_RED, COLOR_YELLOW, COLOR_DARK, COLOR_ORANGE } from '../../utils/constants';
-import { GuildSettings, GuildSettingFlags, Immunity, IncidentTypes, IncidentResolvedBy } from '../../types/DataTypes';
+import { GuildSettings, GuildSettingFlags, Immunity, IncidentTypes } from '../../types/DataTypes';
 import i18next from 'i18next';
 
 const colors = [COLOR_DARK, COLOR_GREEN, COLOR_YELLOW, COLOR_ORANGE, COLOR_RED, COLOR_BLUE] as const;
@@ -179,7 +179,6 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 				severity,
 				logchannel,
 				logmessage,
-				resolvedby,
 				resolvedat,
 				resolvedbyuser
 			) values (
@@ -193,7 +192,6 @@ export async function checkMessage(message: Message | PartialMessage, isEdit = f
 				${severityLevel},
 				${logMessage.channelId},
 				${logMessage.id},
-				${severityLevel < buttonLevel ? IncidentResolvedBy.BELOW_BUTTON_LVL : null},
 				${severityLevel < buttonLevel ? new Date() : null},
 				${severityLevel < buttonLevel ? client.user!.id : null}
 			)

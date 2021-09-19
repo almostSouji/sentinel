@@ -16,28 +16,6 @@ export interface Component {
 	disabled?: boolean;
 }
 
-export function banButton(incidentId: number, canBan: boolean, locale: string): MessageButton {
-	return new MessageButton({
-		style: Constants.MessageButtonStyles.DANGER,
-		customId: generateIncidentButtonId(OpCodes.BAN, incidentId),
-		label: i18next.t('buttons.labels.ban', {
-			lng: locale,
-		})!,
-		disabled: !canBan,
-	});
-}
-
-export function deleteButton(incidentId: number, canDelete: boolean, locale: string): MessageButton {
-	return new MessageButton({
-		style: Constants.MessageButtonStyles.DANGER,
-		customId: generateIncidentButtonId(OpCodes.DELETE, incidentId),
-		label: i18next.t('buttons.labels.delete', {
-			lng: locale,
-		})!,
-		disabled: !canDelete,
-	});
-}
-
 export function reviewButton(incidentId: number, locale: string): MessageButton {
 	return new MessageButton({
 		style: Constants.MessageButtonStyles.SECONDARY,
@@ -93,10 +71,7 @@ export function feedbackButton(incidentId: number): MessageButton {
  * @param ops - OP codes to clear
  * @returns The cleared rows
  */
-export function clearButtons(
-	rows: MessageActionRow[],
-	ops = [OpCodes.BAN, OpCodes.DELETE, OpCodes.REVIEW],
-): MessageActionRow[] {
+export function clearButtons(rows: MessageActionRow[], ops = [OpCodes.REVIEW]): MessageActionRow[] {
 	const newRows: MessageActionRow[] = [];
 	for (const row of rows) {
 		const newRow = new MessageActionRow();
@@ -108,26 +83,6 @@ export function clearButtons(
 			const [op] = destructureIncidentButtonId(component.customId);
 			if (ops.includes(op)) continue;
 			newRow.addComponents(component);
-		}
-		if (newRow.components.length) newRows.push(newRow);
-	}
-	return newRows;
-}
-
-export function flipButtons(rows: MessageActionRow[], opsEnable: OpCodes[], opsDisable: OpCodes[]): MessageActionRow[] {
-	const newRows: MessageActionRow[] = [];
-	for (const row of rows) {
-		const newRow = new MessageActionRow();
-		for (const component of row.components) {
-			if (!component.customId) {
-				newRow.addComponents(component);
-				continue;
-			}
-			const [op] = destructureIncidentButtonId(component.customId);
-			newRow.addComponents(
-				component.setDisabled(opsEnable.includes(op) ? true : opsDisable.includes(op) ? false : component.disabled),
-			);
-			continue;
 		}
 		if (newRow.components.length) newRows.push(newRow);
 	}

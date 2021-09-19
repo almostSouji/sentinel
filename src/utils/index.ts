@@ -1,5 +1,4 @@
 import { roleMention, userMention } from '@discordjs/builders';
-import { createHash } from 'crypto';
 import { Snowflake, MessageEmbed, DMChannel, GuildChannel, ThreadChannel, PartialDMChannel } from 'discord.js';
 import { CID_SEPARATOR } from './constants';
 import { Notification } from '../types/DataTypes';
@@ -96,15 +95,6 @@ export function escapeRegex(str: string): string {
  */
 export function cleanContent(initial: string): string {
 	return initial.replace(/\b(?:fuck(?:ing)?|shi+t)\b/g, '').trim();
-}
-
-/**
- * Hashes a text with md5 to use for bucketing
- * @param initial - Text to hash
- * @returns Hashed text
- */
-export function hashString(initial: string): string {
-	return createHash('md5').update(initial).digest('hex');
 }
 
 /**

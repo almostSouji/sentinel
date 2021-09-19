@@ -1,4 +1,4 @@
-import { Client, GuildBan, MessageActionRow, MessageButton, MessageEmbed } from 'discord.js';
+import { Client, GuildBan, MessageEmbed } from 'discord.js';
 import i18next from 'i18next';
 import { logger } from '../utils/logger';
 import { GuildSettings, Incident, IncidentResolvedBy } from '../types/DataTypes';
@@ -21,21 +21,6 @@ export async function handleGuildBanAddLogstate(client: Client, ban: GuildBan) {
 		const logMessage = await fetchLog(client, incident.logchannel, incident.logmessage);
 		if (!logMessage) return;
 
-		//* ban resolves everything, remove action buttons
-		const rows: MessageActionRow[] = [];
-		for (const row of logMessage.components) {
-			const newRow = new MessageActionRow().addComponents(
-				row.components.filter((c) => {
-					if (!(c instanceof MessageButton)) return true;
-					if (!c.customId) return true;
-					return false;
-				}),
-			);
-			if (newRow.components.length) {
-				rows.push(newRow);
-			}
-		}
-
 		const embed = new MessageEmbed(logMessage.embeds[0])
 			.setFooter(
 				i18next.t('logstate.ban', {
@@ -45,7 +30,7 @@ export async function handleGuildBanAddLogstate(client: Client, ban: GuildBan) {
 			)
 			.setTimestamp();
 		await logMessage.edit({
-			components: rows,
+			components: logMessage.components,
 			embeds: [truncateEmbed(embed)],
 		});
 	}

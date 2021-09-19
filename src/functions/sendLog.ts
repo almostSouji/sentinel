@@ -8,10 +8,9 @@ import {
 	Permissions,
 	ThreadChannel,
 } from 'discord.js';
-import { strictnessPick } from './inspection/checkMessage';
 import { resolveNotifications, truncate, truncateEmbed } from '../utils';
 import { GuildSettings, Notification } from '../types/DataTypes';
-import { banButton, deleteButton, feedbackButton, linkButton, reviewButton } from './buttons';
+import { feedbackButton, linkButton } from './buttons';
 import i18next from 'i18next';
 import { channelMention } from '@discordjs/builders';
 
@@ -46,9 +45,6 @@ export async function sendLog(
 
 	if (!settings) return false;
 	const locale = settings.locale;
-	const botPermissions = targetChannel.permissionsFor(clientUser!);
-	const strictness = settings.strictness;
-	const buttonLevel = strictnessPick(strictness, 1, 2, 3);
 
 	embed
 		.setDescription(
@@ -77,17 +73,6 @@ export async function sendLog(
 	const row = new MessageActionRow();
 
 	truncateEmbed(embed);
-	if (severityLevel >= buttonLevel) {
-		row.addComponents(
-			banButton(nextIncidentId, targetMessage.member?.bannable ?? false, locale),
-			deleteButton(
-				nextIncidentId,
-				botPermissions?.has([Permissions.FLAGS.MANAGE_MESSAGES, Permissions.FLAGS.VIEW_CHANNEL]) ?? false,
-				locale,
-			),
-			reviewButton(nextIncidentId, locale),
-		);
-	}
 
 	if (feedback) {
 		row.addComponents(feedbackButton(nextIncidentId));

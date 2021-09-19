@@ -3,7 +3,7 @@ import i18next from 'i18next';
 import { COLOR_DARK, LIST_BULLET } from '../../../utils/constants';
 import { KarmaCommand } from '../../../interactions/karma';
 import { ArgumentsOf } from '../../../types/ArgumentsOf';
-import { GuildSettings, Incident, IncidentTypes, UserStats } from '../../../types/DataTypes';
+import { Incident, IncidentTypes, UserStats } from '../../../types/DataTypes';
 import { truncateEmbed } from '../../../utils';
 import { replyWithError } from '../../../utils/responses';
 import { userMention, inlineCode } from '@discordjs/builders';
@@ -36,11 +36,6 @@ export async function handleKarmaCommand(
 		Incident[]
 	>`select * from incidents where guild = ${guild.id} and "user" = ${targetUser.id} and type = ${IncidentTypes.PERSPECTIVE}`;
 	const [stats] = await sql<UserStats[]>`select * from users where "user" = ${targetUser.id} and guild = ${guild.id}`;
-	const [{ count: spamIncidentAmount }] = await sql<
-		[{ count: number }]
-	>`select count(*) from incidents where guild = ${guild.id} and "user" = ${targetUser.id} and type = ${IncidentTypes.SPAM}`;
-
-	const [settings] = await sql<GuildSettings[]>`select * from guild_settings where guild = ${guild.id}`;
 
 	if (!stats || !incidents.length) {
 		return replyWithError(
@@ -84,10 +79,6 @@ export async function handleKarmaCommand(
 		.addField(i18next.t('command.karma.severity_fieldname', { lng: locale }), severityFormatted.join('\n'), true)
 		.setAuthor(`${targetUser.tag} (${targetUser.id})`, targetUser.displayAvatarURL())
 		.setColor(COLOR_DARK);
-
-	if (settings?.spamthreshold && spamIncidentAmount) {
-		embed.addField(i18next.t('command.karma.spam_fieldname', { lng: locale }), String(spamIncidentAmount), true);
-	}
 
 	void interaction.reply({
 		embeds: [truncateEmbed(embed)],

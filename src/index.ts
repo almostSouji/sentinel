@@ -9,8 +9,6 @@ import { handleCommands } from './functions/commandHandling/handleCommands';
 import { GuildSettings, Incident } from './types/DataTypes';
 import i18next from 'i18next';
 import { replyWithError } from './utils/responses';
-import { handleBanButton } from './components/banButton';
-import { handleDeleteButton } from './components/deleteButton';
 import { handleReviewButton } from './components/reviewButton';
 import { handleMessageDeleteLogstate } from './logState/messageDelete';
 import { handleGuildBanAddLogstate } from './logState/guildBanAdd';
@@ -33,15 +31,15 @@ export interface ProcessEnv {
 export enum OpCodes {
 	NOOP,
 	REVIEW,
-	BAN,
-	DELETE,
+	BAN_LEGACY,
+	DELETE_LEGACY,
 	PERSPECTIVE_FEEDBACK,
 	PERSPECTIVE_FEEDBACK_ACCEPT,
 	PERSPECTIVE_FEEDBACK_REJECT,
 	PERSPECTIVE_FEEDBACK_BUTTON,
 }
 
-export type ActionOpCodes = OpCodes.REVIEW | OpCodes.BAN | OpCodes.DELETE;
+export type ActionOpCodes = OpCodes.REVIEW;
 const feedbackOPCodes = [
 	OpCodes.PERSPECTIVE_FEEDBACK,
 	OpCodes.PERSPECTIVE_FEEDBACK_ACCEPT,
@@ -155,10 +153,6 @@ async function main() {
 				}
 
 				switch (op) {
-					case OpCodes.BAN:
-						return handleBanButton(interaction, settings, incident);
-					case OpCodes.DELETE:
-						return handleDeleteButton(interaction, settings, incident);
 					case OpCodes.REVIEW:
 						return handleReviewButton(interaction, settings, incident);
 					case OpCodes.PERSPECTIVE_FEEDBACK_BUTTON:
@@ -167,6 +161,10 @@ async function main() {
 						return handleFeedbackAcceptButton(interaction, settings, incidentId);
 					case OpCodes.PERSPECTIVE_FEEDBACK_REJECT:
 						return handleFeedbackRejectButton(interaction, settings, incidentId);
+					case OpCodes.NOOP:
+					case OpCodes.BAN_LEGACY:
+					case OpCodes.DELETE_LEGACY:
+						return;
 					default:
 						// - unknown button
 						return replyWithError(interaction, i18next.t('common.errors.unknown_button', { lng }));
