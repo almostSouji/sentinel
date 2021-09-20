@@ -3,7 +3,7 @@
 <img src="./images/sentinel_100.png" style="float: left; margin-right: 1rem; margin-bottom: 1rem;" alt="Sentinel avatar (Rainbow shield)"/>
 Sentinel watches configured Discord channels for unwanted conversation attributes through usage of the [Perspective API](https://perspectiveapi.com/). Based on server configuration and Attribute probabilities, the bot sets thresholds and emphasis to classify and pre-sort comments posted. Moderators can then review these comments via message links and investigate and handle the situation as appropriate.
 
-- Sentinel (Toxicity watch): ![discord clyde icon](./images/clyde_20.png) `Tai#0998` ID: `840710376831057920`
+- Sentinel (Toxicity watch): ![discord clyde icon](./images/clyde_20.png) `Sentinel#0155` ID: `840710376831057920`
 - Owner and Developer: ![discord clyde icon](./images/clyde_20.png) `Souji#0001` ID: `83886770768314368`
 
 This project is in a very early alpha state!
