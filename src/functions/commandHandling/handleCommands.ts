@@ -9,7 +9,7 @@ import { WatchCommand } from '../../interactions/watch';
 import { KarmaCommand } from '../../interactions/karma';
 import { FetchLogCommand } from '../../interactions/fetchLog';
 import { RedisCommand } from '../../interactions/redis';
-import { EnableCommandsCommand } from '../../interactions/enableCommands';
+import { SetPermissionsCommand } from '../../interactions/setPermissions';
 import { handleAttributesCommand } from './commands/attributes';
 import { handleConfigCommand } from './commands/config';
 import { handleNotifyCommand } from './commands/notify';
@@ -18,7 +18,7 @@ import { handleWatchCommand } from './commands/watch';
 import { handleKarmaCommand } from './commands/karma';
 import { handleFetchLogCommand } from './commands/fetchLog';
 import { handleRedisCommand } from './commands/redis';
-import { handleEnableCommandsCommand } from './commands/enableCommands';
+import { handleSetPermissionsCommand } from './commands/setPermissions';
 import { GuildSettings } from '../../types/DataTypes';
 import { replyWithError } from '../../utils/responses';
 import i18next from 'i18next';
@@ -74,8 +74,8 @@ export async function handleCommands(interaction: CommandInteraction) {
 		case KarmaContextCommand.name:
 			return handleKarmaCommand(interaction, transformInteraction<typeof KarmaCommand>(args), locale);
 
-		case EnableCommandsCommand.name:
-			return handleEnableCommandsCommand(interaction, transformInteraction<typeof EnableCommandsCommand>(args));
+		case SetPermissionsCommand.name:
+			return handleSetPermissionsCommand(interaction, transformInteraction<typeof SetPermissionsCommand>(args));
 
 		default:
 			await replyWithError(

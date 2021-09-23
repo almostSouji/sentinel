@@ -1,7 +1,7 @@
 import { ApplicationCommandOptionType } from 'discord-api-types/v9';
 
-export const EnableCommandsCommand = {
-	name: 'enable-commands',
+export const SetPermissionsCommand = {
+	name: 'set-permissions',
 	description: '🔧 Set command permissions on a guild for users and roles',
 	default_permission: false,
 	options: [

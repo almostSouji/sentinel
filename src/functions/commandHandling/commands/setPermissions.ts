@@ -3,12 +3,12 @@ import { ArgumentsOf } from '../../../types/ArgumentsOf';
 import { emojiOrFallback } from '../../../utils';
 import { EMOJI_ID_SHIELD_GREEN_SMALL, EMOJI_ID_SHIELD_RED_SMALL, LIST_BULLET } from '../../../utils/constants';
 import { formatEmoji, inlineCode } from '@discordjs/builders';
-import { EnableCommandsCommand } from '../../../interactions/enableCommands';
+import { SetPermissionsCommand } from '../../../interactions/setPermissions';
 import { logger } from '../../../utils/logger';
 
-export async function handleEnableCommandsCommand(
+export async function handleSetPermissionsCommand(
 	interaction: CommandInteraction,
-	args: ArgumentsOf<typeof EnableCommandsCommand>,
+	args: ArgumentsOf<typeof SetPermissionsCommand>,
 ): Promise<void> {
 	const {
 		client: { guilds },
@@ -20,6 +20,8 @@ export async function handleEnableCommandsCommand(
 	}
 	const successEmoji = emojiOrFallback(channel, formatEmoji(EMOJI_ID_SHIELD_GREEN_SMALL), LIST_BULLET);
 	const failEmoji = emojiOrFallback(channel, formatEmoji(EMOJI_ID_SHIELD_RED_SMALL), LIST_BULLET);
+
+	await interaction.deferReply({ ephemeral: true });
 
 	if (!args.roles && !args.users) {
 		// - have to provide users or roles
@@ -40,9 +42,6 @@ export async function handleEnableCommandsCommand(
 	}
 
 	const messageParts = [];
-	await interaction.deferReply({
-		ephemeral: true,
-	});
 
 	try {
 		const users = args.users?.split(/[,\s]+/) ?? [];
