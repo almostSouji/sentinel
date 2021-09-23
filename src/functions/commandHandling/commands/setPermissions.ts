@@ -23,20 +23,20 @@ export async function handleSetPermissionsCommand(
 
 	await interaction.deferReply({ ephemeral: true });
 
-	if (!args.roles && !args.users) {
-		// - have to provide users or roles
-		await interaction.editReply({
-			content: 'At least a role or a user is required.',
-		});
-		return;
-	}
-
 	const targetGuild = guilds.resolve(args.guild);
 
 	if (!targetGuild) {
 		// - cannot resolve guild
 		await interaction.editReply({
 			content: 'Cannot resolve input to target guild.',
+		});
+		return;
+	}
+
+	if (!args.roles && !args.users) {
+		// - have to provide users or roles
+		await interaction.editReply({
+			content: 'At least a role or a user is required.',
 		});
 		return;
 	}

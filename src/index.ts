@@ -16,6 +16,7 @@ import { handleFeedbackSelect } from './components/feedbackSelect';
 import { handleFeedbackAcceptButton } from './components/feedbackAcceptButton';
 import { handleFeedbackRejectButton } from './components/feedbackRejectButton';
 import { handleFeedbackButton } from './components/feedbackButton';
+import { handleSetCommandSelect } from './components/setCommandSelect';
 
 export interface ProcessEnv {
 	DISCORD_TOKEN: string;
@@ -37,6 +38,7 @@ export enum OpCodes {
 	PERSPECTIVE_FEEDBACK_ACCEPT,
 	PERSPECTIVE_FEEDBACK_REJECT,
 	PERSPECTIVE_FEEDBACK_BUTTON,
+	SET_COMMANDS_SELECT,
 }
 
 export type ActionOpCodes = OpCodes.REVIEW;
@@ -181,6 +183,16 @@ async function main() {
 				)
 					return;
 
+				const [op, incidentId] = destructureIncidentButtonId(interaction.customId);
+
+				if (op === OpCodes.SET_COMMANDS_SELECT) {
+					const [, guildId] = interaction.customId.split(CID_SEPARATOR);
+					const targetGuild = client.guilds.resolve(guildId);
+					// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+					if (!targetGuild) return replyWithError(interaction, 'Cannot resolve guild');
+					return handleSetCommandSelect(interaction, targetGuild);
+				}
+
 				const [settings] = await sql<
 					GuildSettings[]
 				>`select * from guild_settings where guild = ${interaction.guild.id}`;
@@ -196,7 +208,6 @@ async function main() {
 					return replyWithError(interaction, i18next.t('select.incident_handling_not_allowed', { lng }));
 				}
 
-				const [op, incidentId] = destructureIncidentButtonId(interaction.customId);
 				switch (op) {
 					case OpCodes.PERSPECTIVE_FEEDBACK:
 						return handleFeedbackSelect(interaction, incidentId, settings);

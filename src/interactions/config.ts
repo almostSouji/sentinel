@@ -1,6 +1,7 @@
 import { ApplicationCommandOptionType } from 'discord-api-types/v9';
 
 export const ConfigCommand = {
+	type: 1,
 	name: 'config',
 	description: 'Edit or show server configuration',
 	default_permission: false,

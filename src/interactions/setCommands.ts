@@ -1,15 +1,14 @@
 import { ApplicationCommandOptionType } from 'discord-api-types/v9';
-
-export const RedisCommand = {
+export const SetCommandsCommand = {
 	type: 1,
-	name: 'redis',
-	description: '🔧 Execute redis query',
+	name: 'set-commands',
+	description: '🔧 Set commands for a guild',
 	default_permission: false,
 	options: [
 		{
 			type: ApplicationCommandOptionType.String,
-			name: 'query',
-			description: 'Query to execute',
+			name: 'guild',
+			description: 'Guild to target',
 			required: true,
 		},
 	],

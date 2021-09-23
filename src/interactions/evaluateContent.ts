@@ -1,6 +1,7 @@
 import { ApplicationCommandOptionType } from 'discord-api-types/v9';
 
 export const EvaluateContentCommand = {
+	type: 1,
 	name: 'evaluate-content',
 	description: 'Evaluate a phrase for tracked attributes and custom triggers',
 	default_permission: false,

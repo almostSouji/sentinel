@@ -1,6 +1,7 @@
 import { ApplicationCommandOptionType } from 'discord-api-types/v9';
 
 export const WatchCommand = {
+	type: 1,
 	name: 'watch',
 	description: 'Edit which channels are watched',
 	default_permission: false,

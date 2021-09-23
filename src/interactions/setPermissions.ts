@@ -1,6 +1,7 @@
 import { ApplicationCommandOptionType } from 'discord-api-types/v9';
 
 export const SetPermissionsCommand = {
+	type: 1,
 	name: 'set-permissions',
 	description: '🔧 Set command permissions on a guild for users and roles',
 	default_permission: false,

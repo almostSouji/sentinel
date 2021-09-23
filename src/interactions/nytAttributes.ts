@@ -1,6 +1,7 @@
 import { ApplicationCommandOptionType } from 'discord-api-types/v9';
 
 export const NYTAttributesCommand = {
+	type: 1,
 	name: 'attributes-nyt',
 	description: 'Configure which attributes of the New York Times set are tracked (trained on a comment section)',
 	default_permission: false,

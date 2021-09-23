@@ -1,6 +1,7 @@
 import { ApplicationCommandOptionType } from 'discord-api-types/v9';
 
 export const FetchLogCommand = {
+	type: 1,
 	name: 'fetchlog',
 	description: '🔧 Fetch log entries from anywhere',
 	default_permission: false,

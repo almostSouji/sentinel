@@ -1,6 +1,7 @@
 import { ApplicationCommandOptionType } from 'discord-api-types/v9';
 
 export const NotifyCommand = {
+	type: 1,
 	name: 'notify',
 	description: 'Show or edit server notifications',
 	default_permission: false,

@@ -1,6 +1,7 @@
 import { ApplicationCommandOptionType } from 'discord-api-types/v9';
 
 export const AttributesCommand = {
+	type: 1,
 	name: 'attributes',
 	description: 'Configure which attributes are tracked in this guild',
 	default_permission: false,

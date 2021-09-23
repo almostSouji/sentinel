@@ -28,6 +28,8 @@ import { KarmaContextCommand } from '../../interactions/karmacontext';
 import { SQLCommand } from '../../interactions/sql';
 import { handleSQLCommand } from './commands/sql';
 import { inlineCode } from '@discordjs/builders';
+import { SetCommandsCommand } from '../../interactions/setCommands';
+import { handleSetCommandsCommand } from './commands/setCommands';
 
 export async function handleCommands(interaction: CommandInteraction) {
 	const { commandName, options } = interaction;
@@ -76,6 +78,9 @@ export async function handleCommands(interaction: CommandInteraction) {
 
 		case SetPermissionsCommand.name:
 			return handleSetPermissionsCommand(interaction, transformInteraction<typeof SetPermissionsCommand>(args));
+
+		case SetCommandsCommand.name:
+			return handleSetCommandsCommand(interaction, transformInteraction<typeof SetCommandsCommand>(args));
 
 		default:
 			await replyWithError(
