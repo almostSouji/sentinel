@@ -46,7 +46,7 @@ export async function handleFetchLogCommand(
 		if (!incident) {
 			return replyWithError(
 				interaction,
-				i18next.t('commands.fetchlog.no_incident', {
+				i18next.t('command.fetchlog.no_incident', {
 					lng: locale,
 				}),
 			);
@@ -56,7 +56,7 @@ export async function handleFetchLogCommand(
 		if (!channel || !channel.isText() || channel instanceof ThreadChannel || channel instanceof DMChannel) {
 			return replyWithError(
 				interaction,
-				i18next.t('commands.fetchlog.invalid_channel_type', {
+				i18next.t('command.fetchlog.invalid_channel_type', {
 					lng: locale,
 				}),
 			);
@@ -65,7 +65,7 @@ export async function handleFetchLogCommand(
 		try {
 			const message = await channel.messages.fetch(incident.logmessage ?? '');
 			if (!message.embeds.length || message.author.id !== client.user!.id) {
-				return replyWithError(interaction, i18next.t('commands.fetchlog.not_a_log', { lng: locale }));
+				return replyWithError(interaction, i18next.t('command.fetchlog.not_a_log', { lng: locale }));
 			}
 			const { content, components, embeds } = message;
 
