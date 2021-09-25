@@ -159,3 +159,7 @@ export function destructureIncidentButtonId(buttonId: string): [number, number] 
 	const incidentId = parseInt(incidentString, 10);
 	return [op, incidentId];
 }
+
+export function arraysEqual<T>(a1: T[], a2: T[]): boolean {
+	return a1.every((e) => a2.includes(e)) && a2.every((e) => a1.includes(e));
+}

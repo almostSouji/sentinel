@@ -62,7 +62,7 @@ export interface PerspectiveFeedback {
 	user: string;
 	content: string;
 	guild: string | null;
-	wrongattributes: PerspectiveAttribute[];
+	suggested: PerspectiveAttribute[];
 	approved: boolean;
 }
 

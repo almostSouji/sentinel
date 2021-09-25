@@ -87,7 +87,7 @@ export default class extends Client {
 					"user"				text not null,
 					content 			text not null,
 					guild				text,
-					wrongattributes		text[] not null default '{}'::text[],
+					suggested			text[] not null default '{}'::text[],
 					approved			boolean,
 					reviewedat			timestamp
 				);

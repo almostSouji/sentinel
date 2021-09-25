@@ -77,13 +77,26 @@ export async function analyzeText(
 	});
 }
 
-export async function feedback(text: string, attributes: PerspectiveAttribute[], communityId: string): Promise<any> {
+export async function feedback(
+	text: string,
+	shouldBeFlagged: PerspectiveAttribute[],
+	shouldNotBeFlagged: PerspectiveAttribute[],
+	communityId: string,
+): Promise<any> {
 	const client = await google.discoverAPI('https://commentanalyzer.googleapis.com/$discovery/rest?version=v1alpha1');
 	const comments = client.comments as any;
 
 	const o: any = {} as any;
 
-	for (const attribute of attributes) {
+	for (const attribute of shouldBeFlagged) {
+		o[attribute] = {
+			summaryScore: {
+				value: 1,
+			},
+		};
+	}
+
+	for (const attribute of shouldNotBeFlagged) {
 		o[attribute] = {
 			summaryScore: {
 				value: 0,

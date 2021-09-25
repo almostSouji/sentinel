@@ -1,13 +1,14 @@
 import { MessageComponentInteraction, MessageActionRow, DMChannel, MessageSelectMenu, MessageEmbed } from 'discord.js';
 import i18next from 'i18next';
 import { logger } from '../utils/logger';
-import { GuildSettings, Incident, PerspectiveFeedback } from '../types/DataTypes';
+import { GuildSettingFlags, GuildSettings, Incident, PerspectiveFeedback } from '../types/DataTypes';
 import { generateIncidentButtonId, truncateEmbed } from '../utils';
 import { OpCodes } from '..';
 import { mapKeyToVerbose } from '../functions/formatting/formatPerspective';
-import { COLOR_DARK, EMOJI_ID_SHIELD_RED_SMALL, EMOJI_ID_SHIELD_YELLOW_SMALL } from '../utils/constants';
-import { forcedAttributes } from '../functions/inspection/perspective';
+import { COLOR_DARK, EMOJI_ID_SHIELD_GREEN_SMALL, EMOJI_ID_SHIELD_RED_SMALL } from '../utils/constants';
+
 import { replyWithError } from '../utils/responses';
+import { forcedAttributes, perspectiveAttributes } from '../functions/inspection/perspective';
 
 export async function handleFeedbackButton(
 	interaction: MessageComponentInteraction,
@@ -29,19 +30,24 @@ export async function handleFeedbackButton(
 		return replyWithError(interaction, i18next.t('buttons.perspective_feedback_already', { lng }));
 	}
 
+	const settingAttributes = settings.flags.includes(GuildSettingFlags.LOG_ALL)
+		? perspectiveAttributes
+		: [...settings.attributes, ...forcedAttributes];
+
+	const possible = [...new Set([...settings.attributes, ...settingAttributes])];
+
 	const row = new MessageActionRow();
 	const menu = new MessageSelectMenu()
 		.setCustomId(generateIncidentButtonId(OpCodes.PERSPECTIVE_FEEDBACK, incident.id))
 		.setPlaceholder(i18next.t('buttons.placeholder_perspective_feedback', { lng }))
-		.setMaxValues(incident.attributes.length)
+		.setMinValues(0)
+		.setMaxValues(possible.length)
 		.addOptions(
-			incident.attributes.map((p) => ({
+			possible.map((p) => ({
 				value: p,
-				label: i18next.t('buttons.perspective_feedback_entry', {
-					lng: settings.locale,
-					attribute: mapKeyToVerbose(p, settings.locale).toLowerCase(),
-				}),
-				emoji: forcedAttributes.includes(p) ? EMOJI_ID_SHIELD_RED_SMALL : EMOJI_ID_SHIELD_YELLOW_SMALL,
+				label: mapKeyToVerbose(p, settings.locale).toLowerCase(),
+				emoji: incident.attributes.includes(p) ? EMOJI_ID_SHIELD_GREEN_SMALL : EMOJI_ID_SHIELD_RED_SMALL,
+				default: incident.attributes.includes(p),
 			})),
 		);
 

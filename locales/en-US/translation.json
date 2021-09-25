@@ -97,9 +97,9 @@
 			"reject": "Reject"
 		},
 		"placeholder_perspective_feedback": "API Feedback",
-		"perspective_feedback_entry": "NOT {{-attribute}}",
 		"perspective_feedback_success": "Thank you! Your feedback has been recorded and will be forwarded to the API after review",
 		"perspective_feedback_already": "You have already given feedback for this incident.",
+		"perspective_incident_none": "There is no incident with this id.",
 		"perspective_feedback_none": "No feedback for ID {{-id}}.",
 		"perspective_feedback_approved": "{{-executor}} approved feedback",
 		"perspective_feedback_rejected": "{{-executor}} rejected feedback",
@@ -112,10 +112,14 @@
 	},
 	"select": {
 		"incident_handling_not_allowed": "To provide feedback you need permissions to manage messages in the log channel.",
-		"feedback_wrong_attributes_fieldtitle": "Wrong attribute",
-		"feedback_wrong_attributes_fieldtitle_plural": "Wrong attributes",
+		"feedback_equal": "The chosen attributes are the same as before. Please change something to provide feedback.",
+		"feedback_guild_fieldtitle": "Guild:",
+		"feedback_wrong_attributes_before_fieldtitle": "Attribute before",
+		"feedback_wrong_attributes_before_fieldtitle_plural": "Attributes before",
+		"feedback_wrong_attributes_after_fieldtitle": "Attribute after",
+		"feedback_wrong_attributes_after_fieldtitle_plural": "Attribute after",
 		"feedback_correction_by": "Correction submission by {{-user}}",
-		"feedback_explanation": "**Provide feedback to the perspective API:**\n• Make sure you select all statements you think are true at once, feedback cannot be changed after the selection is registered.\n• Feedback improves future results of the API and is guild specific.\n• To prevent abuse, feedback requests go through a manual review process."
+		"feedback_explanation": "**Provide feedback to the perspective API:**\n• Select all attributes you think should be flagged for this comment (flagged attributes are preselected). Feedback cannot be changed after the selection is registered.\n• Feedback improves future results of the API and is guild specific.\n• To prevent abuse, feedback requests go through a manual review process."
 	},
 	"attributes": {
 		"explain_nsfw": "Attributes are not considered in NSFW channels.",

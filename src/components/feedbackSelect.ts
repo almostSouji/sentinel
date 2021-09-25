@@ -2,8 +2,8 @@ import { inlineCode } from '@discordjs/builders';
 import { MessageActionRow, MessageEmbed, SelectMenuInteraction, TextChannel } from 'discord.js';
 import i18next from 'i18next';
 import { feedbackAcceptButton, feedbackRejectButton } from '../functions/buttons';
-import { GuildSettings, PerspectiveFeedback } from '../types/DataTypes';
-import { truncateEmbed } from '../utils';
+import { GuildSettings, Incident, PerspectiveFeedback } from '../types/DataTypes';
+import { arraysEqual, truncateEmbed } from '../utils';
 import { COLOR_DARK, LIST_BULLET } from '../utils/constants';
 import { logger } from '../utils/logger';
 import { replyWithError } from '../utils/responses';
@@ -14,7 +14,7 @@ export async function handleFeedbackSelect(
 	settings: GuildSettings,
 ) {
 	const {
-		client: { sql },
+		client: { sql, guilds },
 		client,
 	} = interaction;
 	try {
@@ -27,6 +27,14 @@ export async function handleFeedbackSelect(
 			return replyWithError(interaction, i18next.t('buttons.perspective_feedback_already', { lng: settings.locale }));
 		}
 
+		const [incident] = await sql<Incident[]>`select * from incidents where id = ${incidentId}`;
+
+		if (!incident) {
+			return replyWithError(interaction, i18next.t('buttons.perspective_feedback_already', { lng: settings.locale }));
+		}
+
+		const targetGuild = guilds.resolve(settings.guild);
+
 		const nextFeedbackId = await client.incrFeedback();
 
 		await sql`
@@ -36,7 +44,7 @@ export async function handleFeedbackSelect(
 				"user",
 				content,
 				guild,
-				wrongattributes
+				suggested
 			) values (
 				${nextFeedbackId},
 				${incidentId},
@@ -47,6 +55,13 @@ export async function handleFeedbackSelect(
 			)
 		`;
 
+		const before = incident.attributes.map((v) => `${LIST_BULLET} ${inlineCode(v)}`);
+		const after = interaction.values.map((v) => `${LIST_BULLET} ${inlineCode(v)}`);
+
+		if (arraysEqual(before, after)) {
+			return replyWithError(interaction, i18next.t('buttons.perspective_feedback_already', { lng: settings.locale }));
+		}
+
 		const embed = new MessageEmbed()
 			.setAuthor(
 				i18next.t('select.feedback_correction_by', {
@@ -55,13 +70,26 @@ export async function handleFeedbackSelect(
 				}),
 				interaction.user.displayAvatarURL(),
 			)
-			.setDescription(interaction.message.embeds[0]?.description ?? 'none')
+			.setDescription(interaction.message.embeds[0]?.description ?? 'None')
 			.addField(
-				i18next.t('select.feedback_wrong_attributes_fieldtitle', {
+				i18next.t('select.feedback_guild_fieldtitle', { lng: settings.locale }),
+				`${targetGuild ? `${inlineCode(targetGuild.name)} ${inlineCode(targetGuild.id)}` : 'None'}`,
+			)
+			.addField(
+				i18next.t('select.feedback_wrong_attributes_before_fieldtitle', {
+					lng: settings.locale,
+					count: incident.attributes.length,
+				}),
+				before.length ? before.join('\n') : 'None',
+				true,
+			)
+			.addField(
+				i18next.t('select.feedback_wrong_attributes_after_fieldtitle', {
 					lng: settings.locale,
 					count: interaction.values.length,
 				}),
-				interaction.values.map((v) => `${LIST_BULLET} ${inlineCode(v)}`).join('\n'),
+				after.length ? after.join('\n') : 'None',
+				true,
 			)
 			.setColor(COLOR_DARK);
 
