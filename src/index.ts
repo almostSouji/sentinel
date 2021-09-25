@@ -6,7 +6,7 @@ import { checkMessage } from './functions/inspection/checkMessage';
 import { logger } from './utils/logger';
 import { destructureIncidentButtonId } from './utils';
 import { handleCommands } from './functions/commandHandling/handleCommands';
-import { GuildSettings, Incident } from './types/DataTypes';
+import { Guildlist, GuildSettings, Incident } from './types/DataTypes';
 import i18next from 'i18next';
 import { replyWithError } from './utils/responses';
 import { handleReviewButton } from './components/reviewButton';
@@ -18,6 +18,8 @@ import { handleFeedbackRejectButton } from './components/feedbackRejectButton';
 import { handleFeedbackButton } from './components/feedbackButton';
 import { handleSetCommandSelect } from './components/setCommandSelect';
 import { handleDebugSelect } from './components/debugSelect';
+import { handleGuildListAddButton } from './components/guildListAddButton';
+import { handleGuildListRemoveButton } from './components/guildListRemoveButton';
 
 export interface ProcessEnv {
 	DISCORD_TOKEN: string;
@@ -41,6 +43,8 @@ export enum OpCodes {
 	PERSPECTIVE_FEEDBACK_BUTTON,
 	SET_COMMANDS_SELECT,
 	DEBUG_SELECT,
+	GUILD_LIST_ADD,
+	GUILD_LIST_REMOVE,
 }
 
 export type ActionOpCodes = OpCodes.REVIEW;
@@ -66,6 +70,8 @@ async function main() {
 		client.on('messageCreate', async (message) => {
 			try {
 				if (message.author.bot || !message.content.length) return;
+				const [allowed] = await client.sql<Guildlist[]>`select * from guild_list where guild = ${message.guildId}`;
+				if (!allowed) return;
 				await checkMessage(message);
 			} catch (err: any) {
 				logger.error(err, err.message);
@@ -79,6 +85,10 @@ async function main() {
 				newMessage.channel.type !== 'GUILD_TEXT'
 			)
 				return;
+
+			const [allowed] = await client.sql<Guildlist[]>`select * from guild_list where guild = ${oldMessage.guildId}`;
+			if (!allowed) return;
+
 			try {
 				await checkMessage(newMessage, true);
 			} catch (error: any) {
@@ -97,8 +107,11 @@ async function main() {
 		});
 
 		client.on('interactionCreate', async (interaction) => {
+			const [allowed] = await client.sql<Guildlist[]>`select * from guild_list where guild = ${interaction.guildId}`;
+
 			if (interaction.isCommand() || interaction.isContextMenu()) {
 				try {
+					if (!allowed) return replyWithError(interaction, i18next.t('common.errors.guild_disabled'));
 					await handleCommands(interaction);
 				} catch (error: any) {
 					Error.stackTraceLimit = Infinity;
@@ -110,6 +123,26 @@ async function main() {
 
 			const { sql } = client;
 			if (interaction.isButton()) {
+				if (!allowed) return replyWithError(interaction, i18next.t('common.errors.guild_disabled'));
+
+				const [preOPString, guildId] = interaction.customId.split(CID_SEPARATOR);
+				const preOp = parseInt(preOPString, 10);
+				const targetGuild = client.guilds.resolve(guildId);
+
+				if (preOp === OpCodes.GUILD_LIST_ADD) {
+					// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+					if (!targetGuild) return;
+
+					await handleGuildListAddButton(interaction, targetGuild);
+					return;
+				} else if (preOp === OpCodes.GUILD_LIST_REMOVE) {
+					// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+					if (!targetGuild) return;
+
+					await handleGuildListRemoveButton(interaction, targetGuild);
+					return;
+				}
+
 				if (
 					!interaction.guild ||
 					!(interaction.channel instanceof GuildChannel) ||
@@ -176,6 +209,8 @@ async function main() {
 			}
 
 			if (interaction.isSelectMenu()) {
+				if (!allowed) return replyWithError(interaction, i18next.t('common.errors.guild_disabled'));
+
 				if (
 					!interaction.guild ||
 					!interaction.channel ||
@@ -235,6 +270,9 @@ async function main() {
 		});
 
 		client.on('messageDelete', async (message) => {
+			const [allowed] = await client.sql<Guildlist[]>`select * from guild_list where guild = ${message.guildId}`;
+			if (!allowed) return;
+
 			if (message.author?.bot || message.channel.type !== 'GUILD_TEXT' || message.partial) return;
 			try {
 				await handleMessageDeleteLogstate(client, message);
@@ -244,6 +282,11 @@ async function main() {
 		});
 
 		client.on('messageDeleteBulk', async (messages) => {
+			const [allowed] = await client.sql<Guildlist[]>`select * from guild_list where guild = ${
+				messages.first()!.guildId
+			}`;
+			if (!allowed) return;
+
 			for (const message of messages.values()) {
 				if (message.author?.bot || message.channel.type !== 'GUILD_TEXT' || message.partial) return;
 				try {
@@ -255,6 +298,9 @@ async function main() {
 		});
 
 		client.on('guildBanAdd', async (ban) => {
+			const [allowed] = await client.sql<Guildlist[]>`select * from guild_list where guild = ${ban.guild.id}`;
+			if (!allowed) return;
+
 			try {
 				await handleGuildBanAddLogstate(client, ban);
 			} catch (error: any) {

@@ -7,7 +7,8 @@
 			"not_in_dm": "This command cannot be used in direct messages.",
 			"during_command": "Something went wrong while executing this command.",
 			"unknown_button": "Unknown button.",
-			"unknown_select": "Unknown select menu."
+			"unknown_select": "Unknown select menu.",
+			"guild_disabled": "Sentinel is currently disabled on this guild."
 		}
 	},
 	"command": {

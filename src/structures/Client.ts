@@ -92,6 +92,13 @@ export default class extends Client {
 					reviewedat			timestamp
 				);
 			`;
+
+			await sql`
+				create table if not exists guild_list(
+					guild			text primary key,
+					addedat			timestamp not null default now()
+				);
+			`;
 		});
 		const [{ next_incident_id }] = await this.sql<[{ next_incident_id: number }]>`select next_incident_id();`;
 		await this.redis.set(LAST_INCIDENT, next_incident_id - 1);

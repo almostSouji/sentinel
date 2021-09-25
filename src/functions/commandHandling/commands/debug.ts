@@ -1,4 +1,4 @@
-import { CommandInteraction, MessageActionRow, MessageEmbed, MessageSelectMenu } from 'discord.js';
+import { CommandInteraction, MessageActionRow, MessageButton, MessageEmbed, MessageSelectMenu } from 'discord.js';
 import { ArgumentsOf } from '../../../types/ArgumentsOf';
 import {
 	CID_SEPARATOR,
@@ -10,7 +10,7 @@ import {
 import { inlineCode } from '@discordjs/builders';
 import { logger } from '../../../utils/logger';
 import { DebugCommand } from '../../../interactions/debug';
-import { GuildSettingFlags, GuildSettings } from '../../../types/DataTypes';
+import { Guildlist, GuildSettingFlags, GuildSettings } from '../../../types/DataTypes';
 import { inspect } from 'util';
 import { OpCodes } from '../../..';
 
@@ -83,6 +83,8 @@ export async function handleDebugCommand(
 		parts.push(`${LIST_BULLET} Vanity: ${inlineCode(targetGuild.vanityURLCode ?? 'none')}`);
 		parts.push(`${LIST_BULLET} Vanity users: ${inlineCode(String(targetGuild.vanityURLUses ?? 0))}`);
 
+		const [allowed] = await sql<Guildlist[]>`select * from guild_list where guild = ${targetGuild.id}`;
+
 		await interaction.editReply({
 			content: `Guild settings for ${inlineCode(targetGuild.name)} ${inlineCode(targetGuild.id)}:`,
 			embeds: [
@@ -126,6 +128,17 @@ export async function handleDebugCommand(
 								};
 							}),
 						),
+				),
+				new MessageActionRow().addComponents(
+					allowed
+						? new MessageButton()
+								.setCustomId(`${String(OpCodes.GUILD_LIST_REMOVE)}${CID_SEPARATOR}${targetGuild.id}`)
+								.setLabel('Sentinel is enabled')
+								.setStyle('SUCCESS')
+						: new MessageButton()
+								.setCustomId(`${String(OpCodes.GUILD_LIST_ADD)}${CID_SEPARATOR}${targetGuild.id}`)
+								.setLabel('Sentinel is disabled')
+								.setStyle('SECONDARY'),
 				),
 			],
 		});

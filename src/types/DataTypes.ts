@@ -66,6 +66,11 @@ export interface PerspectiveFeedback {
 	approved: boolean;
 }
 
+export interface Guildlist {
+	guild: string;
+	addedat: number;
+}
+
 export enum IncidentResolvedBy {
 	BUTTON_REVIEW = 'BUTTON_REVIEW',
 	ACTION_EXPIRED = 'ACTION_EXPIRED',
