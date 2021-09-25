@@ -30,6 +30,8 @@ import { handleSQLCommand } from './commands/sql';
 import { inlineCode } from '@discordjs/builders';
 import { SetCommandsCommand } from '../../interactions/setCommands';
 import { handleSetCommandsCommand } from './commands/setCommands';
+import { DebugCommand } from '../../interactions/debug';
+import { handleDebugCommand } from './commands/debug';
 
 export async function handleCommands(interaction: CommandInteraction) {
 	const { commandName, options } = interaction;
@@ -81,6 +83,9 @@ export async function handleCommands(interaction: CommandInteraction) {
 
 		case SetCommandsCommand.name:
 			return handleSetCommandsCommand(interaction, transformInteraction<typeof SetCommandsCommand>(args));
+
+		case DebugCommand.name:
+			return handleDebugCommand(interaction, transformInteraction<typeof DebugCommand>(args));
 
 		default:
 			await replyWithError(

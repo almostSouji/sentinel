@@ -17,6 +17,7 @@ import { handleFeedbackAcceptButton } from './components/feedbackAcceptButton';
 import { handleFeedbackRejectButton } from './components/feedbackRejectButton';
 import { handleFeedbackButton } from './components/feedbackButton';
 import { handleSetCommandSelect } from './components/setCommandSelect';
+import { handleDebugSelect } from './components/debugSelect';
 
 export interface ProcessEnv {
 	DISCORD_TOKEN: string;
@@ -39,6 +40,7 @@ export enum OpCodes {
 	PERSPECTIVE_FEEDBACK_REJECT,
 	PERSPECTIVE_FEEDBACK_BUTTON,
 	SET_COMMANDS_SELECT,
+	DEBUG_SELECT,
 }
 
 export type ActionOpCodes = OpCodes.REVIEW;
@@ -191,6 +193,14 @@ async function main() {
 					// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 					if (!targetGuild) return replyWithError(interaction, 'Cannot resolve guild');
 					return handleSetCommandSelect(interaction, targetGuild);
+				}
+
+				if (op === OpCodes.DEBUG_SELECT) {
+					const [, guildId] = interaction.customId.split(CID_SEPARATOR);
+					const targetGuild = client.guilds.resolve(guildId);
+					// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+					if (!targetGuild) return replyWithError(interaction, 'Cannot resolve guild');
+					return handleDebugSelect(interaction, targetGuild);
 				}
 
 				const [settings] = await sql<

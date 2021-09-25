@@ -24,6 +24,7 @@ import { SetPermissionsCommand } from '../../../interactions/setPermissions';
 import { SQLCommand } from '../../../interactions/sql';
 import { WatchCommand } from '../../../interactions/watch';
 import { OpCodes } from '../../..';
+import { DebugCommand } from '../../../interactions/debug';
 
 export const defaultCommands = [ConfigCommand, WatchCommand, AttributesCommand, NotifyCommand, EvaluateContentCommand];
 
@@ -37,7 +38,14 @@ export const additionalCommands = [
 
 // ! 🔧 devcommand, not for public use
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const devCommands = [FetchLogCommand, RedisCommand, SQLCommand, SetPermissionsCommand, SetCommandsCommand];
+const devCommands = [
+	FetchLogCommand,
+	RedisCommand,
+	SQLCommand,
+	SetPermissionsCommand,
+	SetCommandsCommand,
+	DebugCommand,
+];
 
 export async function handleSetCommandsCommand(
 	interaction: CommandInteraction,
