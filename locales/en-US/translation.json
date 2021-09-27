@@ -114,7 +114,7 @@
 	"select": {
 		"incident_handling_not_allowed": "To provide feedback you need permissions to manage messages in the log channel.",
 		"feedback_equal": "The chosen attributes are the same as before. Please change something to provide feedback.",
-		"feedback_guild_fieldtitle": "Guild:",
+		"feedback_guild_fieldtitle": "Guild",
 		"feedback_wrong_attributes_before_fieldtitle": "Attribute before",
 		"feedback_wrong_attributes_before_fieldtitle_plural": "Attributes before",
 		"feedback_wrong_attributes_after_fieldtitle": "Attribute after",
