@@ -115,10 +115,8 @@
 		"incident_handling_not_allowed": "To provide feedback you need permissions to manage messages in the log channel.",
 		"feedback_equal": "The chosen attributes are the same as before. Please change something to provide feedback.",
 		"feedback_guild_fieldtitle": "Guild",
-		"feedback_wrong_attributes_before_fieldtitle": "Attribute before",
-		"feedback_wrong_attributes_before_fieldtitle_plural": "Attributes before",
-		"feedback_wrong_attributes_after_fieldtitle": "Attribute after",
-		"feedback_wrong_attributes_after_fieldtitle_plural": "Attribute after",
+		"feedback_wrong_attributes_before_fieldtitle": "Attributes before",
+		"feedback_wrong_attributes_after_fieldtitle": "Attributes after",
 		"feedback_correction_by": "Correction submission by {{-user}}",
 		"feedback_explanation": "**Provide feedback to the perspective API:**\n• Select all attributes you think should be flagged for this comment (flagged attributes are preselected). Feedback cannot be changed after the selection is registered.\n• Feedback improves future results of the API and is guild specific.\n• To prevent abuse, feedback requests go through a manual review process."
 	},

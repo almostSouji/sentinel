@@ -78,7 +78,6 @@ export async function handleFeedbackSelect(
 			.addField(
 				i18next.t('select.feedback_wrong_attributes_before_fieldtitle', {
 					lng: settings.locale,
-					count: incident.attributes.length,
 				}),
 				before.length ? before.join('\n') : 'None',
 				true,
@@ -86,7 +85,6 @@ export async function handleFeedbackSelect(
 			.addField(
 				i18next.t('select.feedback_wrong_attributes_after_fieldtitle', {
 					lng: settings.locale,
-					count: interaction.values.length,
 				}),
 				after.length ? after.join('\n') : 'None',
 				true,
