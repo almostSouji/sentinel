@@ -1,12 +1,19 @@
+# Discontinuation
+
+I decided to discontinue this project for multiple reasons. Some of them are:
+
+- Perspective API is not well scalable and might incur fees at a later date, should the project become well known
+- Perspective API has a strong bias to falsely flag talk about sexual indentity 
+- Perspective API may be useful for PG13 servers, but a strong bias against soft swear words (which are and have beed used non-maliciously in online communities)
+- Perspective API is clearly made for longer comments, not for rapid online messaging services like Discord
+- Trials with just high-risk flags enabled have proven a high rate of flags that we did not see a need for moderation for, making the use as mod-queue hard
+- Alternatives with better trained and purpose-tailored models exist in the moderation bot community. I cannot offer this level of service as a side project
+
+As such I decided to archive this repository and open the source code for anyone to adapt or run as they wish. If you decide to do so, please do not use assets from the projects gits history.
+
 # About
 
-<img src="./images/sentinel_100.png" style="float: left; margin-right: 1rem; margin-bottom: 1rem;" alt="Sentinel avatar (Rainbow shield)"/>
 Sentinel watches configured Discord channels for unwanted conversation attributes through usage of the [Perspective API](https://perspectiveapi.com/). Based on server configuration and Attribute probabilities, the bot sets thresholds and emphasis to classify and pre-sort comments posted. Moderators can then review these comments via message links and investigate and handle the situation as appropriate.
-
-- Sentinel (Toxicity watch): ![discord clyde icon](./images/clyde_20.png) `Sentinel#0155` ID: `840710376831057920`
-- Owner and Developer: ![discord clyde icon](./images/clyde_20.png) `Souji#0001` ID: `83886770768314368`
-
-This project is in a very early alpha state!
 
 ## Setup
 
